@@ -12,7 +12,7 @@ interface Event {
   status: string;
   privacy: string;
   creatorId: string;
-  assignedUserId: string | null;
+  participants?: { id: string; name?: string }[];
   clientId: string | null;
   employeeId: string | null;
   client?: { companyName: string } | null;
@@ -348,17 +348,15 @@ export default function DashboardCalendar({ events, users, clients, employees }:
               </div>
 
               <div>
-                <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 600, color: "#475569", marginBottom: "6px" }}>Usuário Responsável / Destinatário <span style={{ color: '#e74c3c' }}>*</span></label>
-                <select
-                  name="assignedUserId"
-                  required
-                  style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #cbd5e1", fontSize: "0.9rem", background: "white" }}
-                >
-                  <option value="">Selecione o responsável...</option>
+                <label style={{ display: "block", fontSize: "0.82rem", fontWeight: 600, color: "#475569", marginBottom: "6px" }}>Participantes <span style={{ color: '#e74c3c' }}>*</span></label>
+                <div style={{ maxHeight: "120px", overflowY: "auto", border: "1px solid #cbd5e1", borderRadius: "6px", padding: "10px", background: "white", display: "flex", flexDirection: "column", gap: "6px" }}>
                   {users.map((u) => (
-                    <option key={u.id} value={u.id}>{u.name || "Sem Nome"}</option>
+                    <label key={u.id} style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.85rem", cursor: "pointer", color: "#333" }}>
+                      <input type="checkbox" name="participantIds" value={u.id} />
+                      {u.name || "Sem Nome"}
+                    </label>
                   ))}
-                </select>
+                </div>
               </div>
 
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>

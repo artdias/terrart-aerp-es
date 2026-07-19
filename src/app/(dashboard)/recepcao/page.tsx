@@ -47,7 +47,7 @@ export default async function RecepcaoDashboard({
   const meetingConditions: any = {
     OR: [
       { creatorId: loggedUserId },
-      { assignedUserId: loggedUserId },
+      { participants: { some: { id: loggedUserId } } },
       { privacy: "PUBLICO" }
     ]
   };
@@ -57,7 +57,7 @@ export default async function RecepcaoDashboard({
       {
         OR: [
           { title: { contains: search } },
-          { assignedUser: { name: { contains: search } } },
+          { participants: { some: { name: { contains: search } } } },
           { client: { companyName: { contains: search } } },
           { employee: { firstName: { contains: search } } },
           { employee: { lastName: { contains: search } } }
@@ -91,7 +91,7 @@ export default async function RecepcaoDashboard({
     where: meetingConditions,
     include: {
       creator: true,
-      assignedUser: true,
+      participants: true,
       client: true,
       employee: { include: { user: true } }
     },
@@ -270,7 +270,7 @@ export default async function RecepcaoDashboard({
                     <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginTop: "12px", borderTop: "1px solid #f9f9f9", paddingTop: "8px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.82rem" }}>
                         <User size={14} style={{ color: "#777" }} />
-                        <span style={{ color: "#555" }}>Agenda de: <strong>{m.assignedUser?.name}</strong></span>
+                        <span style={{ color: "#555" }}>Agenda de: <strong>{m.participants.map((p: any) => p.name).join(", ")}</strong></span>
                       </div>
                       <div style={{ fontSize: "0.75rem", color: "#888", paddingLeft: "20px" }}>
                         Agendado por: {m.creator.name}

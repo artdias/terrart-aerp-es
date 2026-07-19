@@ -26,12 +26,13 @@ export default async function DashboardHome() {
     where: {
       OR: [
         { creatorId: userId },
-        { assignedUserId: userId }
+        { participants: { some: { id: userId } } }
       ]
     },
     include: {
       client: true,
-      employee: true
+      employee: true,
+      participants: true
     },
     orderBy: { startAt: "asc" }
   });
@@ -45,7 +46,7 @@ export default async function DashboardHome() {
     status: e.status,
     privacy: e.privacy,
     creatorId: e.creatorId,
-    assignedUserId: e.assignedUserId,
+    participants: e.participants.map((p: any) => ({ id: p.id, name: p.name })),
     clientId: e.clientId,
     employeeId: e.employeeId,
     client: e.client ? { companyName: e.client.companyName } : null,

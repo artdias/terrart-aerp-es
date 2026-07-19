@@ -18,13 +18,13 @@ export async function createScheduleEvent(formData: FormData) {
   const title = sanitizeInput(formData.get("title") as string);
   const startAtStr = formData.get("startAt") as string;
   const endAtStr = formData.get("endAt") as string;
-  const assignedUserId = formData.get("assignedUserId") as string;
+  const participantIds = formData.getAll("participantIds") as string[];
   const clientId = formData.get("clientId") as string || null;
   const employeeId = formData.get("employeeId") as string || null;
   const privacy = sanitizeInput(formData.get("privacy") as string) || "PUBLICO";
 
-  if (!title || !startAtStr || !endAtStr || !assignedUserId) {
-    throw new Error("Título, Data de Início, Data de Término e Usuário Responsável são obrigatórios.");
+  if (!title || !startAtStr || !endAtStr || participantIds.length === 0) {
+    throw new Error("Título, Data de Início, Data de Término e ao menos um Participante são obrigatórios.");
   }
 
   const startAt = new Date(startAtStr);
@@ -41,7 +41,9 @@ export async function createScheduleEvent(formData: FormData) {
       endAt,
       privacy,
       creatorId,
-      assignedUserId,
+      participants: {
+        connect: participantIds.map((id) => ({ id }))
+      },
       clientId: clientId || null,
       employeeId: employeeId || null,
       status: "PENDENTE"
@@ -132,13 +134,13 @@ export async function createCalendarEvent(formData: FormData) {
   const title = sanitizeInput(formData.get("title") as string);
   const startAtStr = formData.get("startAt") as string;
   const endAtStr = formData.get("endAt") as string;
-  const assignedUserId = formData.get("assignedUserId") as string;
+  const participantIds = formData.getAll("participantIds") as string[];
   const clientId = formData.get("clientId") as string || null;
   const employeeId = formData.get("employeeId") as string || null;
   const privacy = sanitizeInput(formData.get("privacy") as string) || "PUBLICO";
 
-  if (!title || !startAtStr || !endAtStr || !assignedUserId) {
-    throw new Error("Título, Data de Início, Data de Término e Usuário Responsável são obrigatórios.");
+  if (!title || !startAtStr || !endAtStr || participantIds.length === 0) {
+    throw new Error("Título, Data de Início, Data de Término e ao menos um Participante são obrigatórios.");
   }
 
   const startAt = new Date(startAtStr);
@@ -155,7 +157,9 @@ export async function createCalendarEvent(formData: FormData) {
       endAt,
       privacy,
       creatorId,
-      assignedUserId,
+      participants: {
+        connect: participantIds.map((id) => ({ id }))
+      },
       clientId: clientId || null,
       employeeId: employeeId || null,
       status: "PENDENTE"

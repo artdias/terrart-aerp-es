@@ -76,27 +76,25 @@ export default async function NovoAgendamentoPage() {
 
           <div className={styles.formRow}>
             <div className={styles.inputGroup} style={{ flex: 1 }}>
-              <label htmlFor="assignedUserId">Agenda do Colaborador <span style={{ color: '#e74c3c' }}>*</span></label>
-              <select
-                id="assignedUserId"
-                name="assignedUserId"
-                required
-                style={{
-                  width: '100%',
+              <label>Participantes / Agendas <span style={{ color: '#e74c3c' }}>*</span></label>
+              <div style={{
+                  maxHeight: '150px',
+                  overflowY: 'auto',
                   padding: '0.95rem',
                   borderRadius: '8px',
                   border: '1px solid #ddd',
                   background: '#fafafa',
-                  fontSize: '0.9rem'
-                }}
-              >
-                <option value="">-- Selecione o Colaborador --</option>
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '8px'
+              }}>
                 {users.map((u) => (
-                  <option key={u.id} value={u.id}>
+                  <label key={u.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9rem', color: '#333' }}>
+                    <input type="checkbox" name="participantIds" value={u.id} />
                     {u.name} ({u.role})
-                  </option>
+                  </label>
                 ))}
-              </select>
+              </div>
             </div>
 
             <div className={styles.inputGroup} style={{ flex: 1 }}>
