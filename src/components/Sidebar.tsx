@@ -56,8 +56,10 @@ export function Sidebar() {
 
   return (
     <aside className={styles.sidebar}>
-      <div className={styles.header} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <img src="/logo.png" alt="ES Elite Soluções" style={{ maxWidth: "120px", maxHeight: "50px", objectFit: "contain" }} />
+      <div className={styles.header} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingRight: "10px" }}>
+        <div style={{ overflow: "hidden", display: "flex", alignItems: "center" }}>
+          <img src="/logo.png" alt="ES Elite Soluções" style={{ maxWidth: "160px", maxHeight: "80px", objectFit: "contain", transform: "scale(1.4)", transformOrigin: "left center", marginLeft: "10px" }} />
+        </div>
         <button 
           onClick={() => signOut({ callbackUrl: "/login" })} 
           className={styles.mobileLogoutBtn} 
