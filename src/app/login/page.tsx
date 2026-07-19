@@ -36,7 +36,9 @@ export default function LoginPage() {
   return (
     <div className={styles.container}>
       <div className={styles.loginBox}>
-        <div className={styles.logo}>AERP</div>
+        <div style={{ textAlign: "center", marginBottom: "20px", display: "flex", justifyContent: "center" }}>
+          <img src="/logo.png" alt="Elite Soluções" style={{ maxWidth: "160px", maxHeight: "160px", objectFit: "contain" }} />
+        </div>
         <p className={styles.subtitle}>Gestão Inteligente de Terceirização</p>
 
         {error && <div className={styles.error}>{error}</div>}

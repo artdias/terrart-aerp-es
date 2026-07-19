@@ -99,6 +99,19 @@ export default async function DashboardHome() {
       orderBy: { createdAt: "desc" },
       take: 5
     });
+  } else {
+    // Normal users see messages directed to them
+    const myName = session.user.name || "";
+    if (myName) {
+      recadosCount = await prisma.phoneMessage.count({ 
+        where: { status: "PENDENTE", recipientName: { contains: myName, mode: "insensitive" } } 
+      });
+      pendingMessages = await prisma.phoneMessage.findMany({
+        where: { status: "PENDENTE", recipientName: { contains: myName, mode: "insensitive" } },
+        orderBy: { createdAt: "desc" },
+        take: 5
+      });
+    }
   }
 
   // 3. Buscar perfil e atribuições se for colaborador comum (Não-Admin)
@@ -390,11 +403,11 @@ export default async function DashboardHome() {
                 </div>
               )}
 
-              {/* Card Recados da Recepção */}
-              {(isAdmin || userPermissions.allowRecepcao) && (
+              {/* Card Recados da Recepção ou Pessoais */}
+              {(isAdmin || userPermissions.allowRecepcao || recadosCount > 0) && (
                 <div style={{ background: "white", padding: "20px", borderRadius: "12px", border: "1px solid #eee" }}>
                   <h4 style={{ margin: "0 0 12px 0", fontSize: "0.95rem", color: "#002244", borderBottom: "1px solid #eee", paddingBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
-                    <PhoneCall size={16} /> Caixa de Recados (Recepção)
+                    <PhoneCall size={16} /> {(isAdmin || userPermissions.allowRecepcao) ? "Caixa de Recados (Recepção)" : "Meus Recados"}
                   </h4>
                   {pendingMessages.length === 0 ? (
                     <p style={{ margin: 0, fontSize: "0.8rem", color: "#999", fontStyle: "italic", textAlign: "center", padding: "10px 0" }}>
