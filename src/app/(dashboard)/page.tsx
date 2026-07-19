@@ -356,29 +356,39 @@ export default async function DashboardHome() {
             </>
           )}
 
-          {/* Se for ADMIN Master / Recepção (Visualização de Recados e Atalhos Rápidos) */}
-          {isAdmin && (
+          {/* Se tiver permissões administrativas (Visualização de Recados e Atalhos Rápidos) */}
+          {(isAdmin || userPermissions.allowRecepcao || userPermissions.allowClientes || userPermissions.allowFuncionarios || userPermissions.allowEstoque || userPermissions.allowFinanceiro) && (
             <>
               {/* Card Atalhos Rápidos */}
-              <div style={{ background: "white", padding: "20px", borderRadius: "12px", border: "1px solid #eee" }}>
-                <h4 style={{ margin: "0 0 12px 0", fontSize: "0.95rem", color: "#002244", borderBottom: "1px solid #eee", paddingBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
-                  <Settings size={16} /> Atalhos Rápidos
-                </h4>
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <Link href="/clientes" style={{ display: "block", background: "#f8fafc", border: "1px solid #e2e8f0", padding: "10px", borderRadius: "6px", fontSize: "0.85rem", color: "#1e293b", textDecoration: "none", fontWeight: 600 }}>
-                    ＋ Adicionar Posto/Cliente
-                  </Link>
-                  <Link href="/funcionarios" style={{ display: "block", background: "#f8fafc", border: "1px solid #e2e8f0", padding: "10px", borderRadius: "6px", fontSize: "0.85rem", color: "#1e293b", textDecoration: "none", fontWeight: 600 }}>
-                    ＋ Contratar Colaborador
-                  </Link>
-                  <Link href="/estoque" style={{ display: "block", background: "#f8fafc", border: "1px solid #e2e8f0", padding: "10px", borderRadius: "6px", fontSize: "0.85rem", color: "#1e293b", textDecoration: "none", fontWeight: 600 }}>
-                    ＋ Lançamento de Estoque/EPI
-                  </Link>
-                  <Link href="/financeiro" style={{ display: "block", background: "#f8fafc", border: "1px solid #e2e8f0", padding: "10px", borderRadius: "6px", fontSize: "0.85rem", color: "#1e293b", textDecoration: "none", fontWeight: 600 }}>
-                    ＋ Registrar Despesa/Pagamento
-                  </Link>
+              {(isAdmin || userPermissions.allowClientes || userPermissions.allowFuncionarios || userPermissions.allowEstoque || userPermissions.allowFinanceiro) && (
+                <div style={{ background: "white", padding: "20px", borderRadius: "12px", border: "1px solid #eee" }}>
+                  <h4 style={{ margin: "0 0 12px 0", fontSize: "0.95rem", color: "#002244", borderBottom: "1px solid #eee", paddingBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
+                    <Settings size={16} /> Atalhos Rápidos
+                  </h4>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    {(isAdmin || userPermissions.allowClientes) && (
+                      <Link href="/clientes" style={{ display: "block", background: "#f8fafc", border: "1px solid #e2e8f0", padding: "10px", borderRadius: "6px", fontSize: "0.85rem", color: "#1e293b", textDecoration: "none", fontWeight: 600 }}>
+                        ＋ Adicionar Posto/Cliente
+                      </Link>
+                    )}
+                    {(isAdmin || userPermissions.allowFuncionarios) && (
+                      <Link href="/funcionarios" style={{ display: "block", background: "#f8fafc", border: "1px solid #e2e8f0", padding: "10px", borderRadius: "6px", fontSize: "0.85rem", color: "#1e293b", textDecoration: "none", fontWeight: 600 }}>
+                        ＋ Contratar Colaborador
+                      </Link>
+                    )}
+                    {(isAdmin || userPermissions.allowEstoque) && (
+                      <Link href="/estoque" style={{ display: "block", background: "#f8fafc", border: "1px solid #e2e8f0", padding: "10px", borderRadius: "6px", fontSize: "0.85rem", color: "#1e293b", textDecoration: "none", fontWeight: 600 }}>
+                        ＋ Lançamento de Estoque/EPI
+                      </Link>
+                    )}
+                    {(isAdmin || userPermissions.allowFinanceiro) && (
+                      <Link href="/financeiro" style={{ display: "block", background: "#f8fafc", border: "1px solid #e2e8f0", padding: "10px", borderRadius: "6px", fontSize: "0.85rem", color: "#1e293b", textDecoration: "none", fontWeight: 600 }}>
+                        ＋ Registrar Despesa/Pagamento
+                      </Link>
+                    )}
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Card Recados da Recepção */}
               {(isAdmin || userPermissions.allowRecepcao) && (
