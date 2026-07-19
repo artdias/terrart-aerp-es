@@ -39,7 +39,10 @@ export default function LoginPage() {
         <div style={{ textAlign: "center", marginBottom: "5px", display: "flex", justifyContent: "center" }}>
           <img src="/logo.png" alt="Elite Soluções" style={{ maxWidth: "200px", maxHeight: "200px", objectFit: "contain", transform: "scale(1.25)" }} />
         </div>
-        <p className={styles.subtitle}>Gestão Inteligente de Terceirização</p>
+        <p className={styles.subtitle}>
+          Gestão Inteligente de Terceirização 
+          <span style={{ fontSize: "0.75rem", background: "#f1f5f9", color: "#64748b", padding: "2px 6px", borderRadius: "10px", marginLeft: "8px", fontWeight: 600 }}>v1.0</span>
+        </p>
 
         {error && <div className={styles.error}>{error}</div>}
 

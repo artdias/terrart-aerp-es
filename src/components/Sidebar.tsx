@@ -98,6 +98,9 @@ export function Sidebar() {
           <LogOut size={20} />
           <span>Sair</span>
         </button>
+        <div style={{ textAlign: "center", marginTop: "12px", fontSize: "0.7rem", color: "#94a3b8", fontWeight: 600 }}>
+          AERP v1.0
+        </div>
       </div>
     </aside>
   );
