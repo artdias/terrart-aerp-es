@@ -1,0 +1,27 @@
+
+
+opçao de prolongar a escala ?\ 
+
+
+corrigir o desgni do arquivos anexados esato quebrando a tela
+
+
+demora na transiçao de modulos 
+
+logo no sistema 
+
+
+
+pensar no Dados de Contrato & Sistema login do funcionario 
+
+
+
+mudar o botao registrar entrega para registrar retirada em atribuiçao de material
+-----------------------
+
+criar a aba de historico do financeiro para deixar como consulta do que foi feito e colocar a opçao de editar caso tenha sido feito algo de errado
+lembrando que todas as movitaçoes sao salvas no log da auditoria seja ela qual for a açao
+
+
+
+

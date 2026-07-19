@@ -1,0 +1,468 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ========================
+// AUTH & USERS (RBAC)
+// ========================
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String
+  password  String   // Hash da senha
+  role      String   @default("EMPLOYEE") // "ADMIN", "CLIENT", "EMPLOYEE"
+  
+  // Permissões de Módulo
+  allowClientes     Boolean  @default(false)
+  allowFuncionarios Boolean  @default(false)
+  allowEscalas      Boolean  @default(false)
+  allowEstoque      Boolean  @default(false)
+  allowCautelas     Boolean  @default(false)
+  allowFinanceiro   Boolean  @default(false)
+  allowJuridico     Boolean  @default(false)
+  allowFaturamento  Boolean  @default(false)
+  allowRecepcao     Boolean  @default(false)
+  allowRelatorios   Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações opcionais (Um usuário de login pode ser um funcionário ou o representante de um cliente)
+  employeeProfile Employee?
+  clientProfile   Client?
+
+  // Agendamentos (NOVO)
+  createdEvents   ScheduleEvent[] @relation("CreatedEvents")
+  assignedEvents  ScheduleEvent[] @relation("AssignedEvents")
+
+  // Chat Interno (NOVO)
+  sentMessages     ChatMessage[] @relation("SentMessages")
+  receivedMessages ChatMessage[] @relation("ReceivedMessages")
+
+  // Recados Telefônicos
+  receivedPhoneMessages PhoneMessage[] @relation("ReceivedPhoneMessages")
+}
+
+// ========================
+// CLIENTS (Empresas Contratantes)
+// ========================
+model Client {
+  id           String   @id @default(cuid())
+  userId       String?  @unique
+  user         User?    @relation(fields: [userId], references: [id])
+  
+  cnpj         String   @unique
+  companyName  String
+  name         String?
+  address      String
+  city         String?
+  state        String?
+  cep          String?
+  totalArea    String?
+  phone        String?
+  cellphone    String?
+  email        String?
+  email2       String?
+  observations String?
+  managerName  String?
+  managerContact String?
+  
+  workplaces   Workplace[]
+  invoices     Invoice[]
+  inventory    InventoryAllocation[]
+  jobAllocations JobAllocation[]
+  documents    SignedDocument[]
+  contracts    ClientContract[]
+  meetings     ScheduleEvent[]
+
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  deleted      Boolean  @default(false)
+}
+
+// Locais de prestação de serviço (Postos de Trabalho do Cliente)
+model Workplace {
+  id          String   @id @default(cuid())
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id])
+  name        String   // Ex: Sede, Galpão 1, Portaria Principal
+  address     String
+  
+  employees   Employee[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ========================
+// EMPLOYEES (Terceirizados)
+// ========================
+model Employee {
+  id          String   @id @default(cuid())
+  userId      String?  @unique
+  user        User?    @relation(fields: [userId], references: [id])
+  
+  cpf         String   @unique
+  cnh         String?
+  cnhExpiration String?
+  rg          String?
+  firstName   String?
+  lastName    String?
+  birthDate   String?
+  educationLevel String?
+  gender      String?
+  status      String   @default("Ativo")
+  
+  roleTitle   String   
+  salary      Float?
+  
+  // Onde o funcionário está alocado atualmente
+  workplaceId String?
+  workplace   Workplace? @relation(fields: [workplaceId], references: [id])
+  
+  jobAllocations JobAllocation[]
+  equipments     EmployeeEquipment[]
+  attachments    Attachment[]
+  documents      SignedDocument[]
+  meetings       ScheduleEvent[]
+  interviews     Interview[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deleted     Boolean  @default(false)
+}
+
+// ========================
+// INVENTORY (Estoque de Materiais/EPI)
+// ========================
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  sku         String   @unique @default(uuid())
+  quantity    Int      @default(0) // Quantidade total no seu estoque central
+  minQuantity Int      @default(0)
+  unit        String   @default("un")
+  price       Float    @default(0.0)
+  
+  category    String?  // Limpeza, EPI, Uniforme, etc
+  size        String?  // P, M, G, 40, etc
+  modelType   String?  // Feminino, Masculino, etc
+
+  allocations InventoryAllocation[]
+  employeeLoans EmployeeEquipment[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deleted     Boolean  @default(false)
+}
+
+// Alocação de materiais para um Cliente/Posto
+model InventoryAllocation {
+  id          String   @id @default(cuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id])
+  
+  quantity    Int
+  allocatedAt DateTime @default(now())
+}
+
+// ========================
+// FINANCIAL (Faturamento)
+// ========================
+model Invoice {
+  id          String   @id @default(cuid())
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id])
+  
+  description String?
+  amount      Float
+  dueDate     DateTime
+  status      String   @default("PENDING") // PENDING, PAID, OVERDUE
+  
+  fileUrl     String?
+  fileName    String?
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Expense {
+  id              String   @id @default(cuid())
+  description     String
+  amount          Float
+  dueDate         DateTime
+  status          String   @default("PENDING") // PENDING, PAID
+  category        String   // Energia, Água, Internet, Limpeza, Copa, Outros
+  
+  // Anexos
+  billUrl         String?  // Caminho da conta / nota fiscal
+  billName        String?
+  receiptUrl      String?  // Caminho do comprovante de pagamento
+  receiptName     String?
+  
+  // Integração com estoque
+  isInventoryItem Boolean  @default(false)
+  productId       String?  // Se for item existente
+  quantity        Int?     // Quantidade adquirida
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+// ========================
+// JOB ALLOCATIONS (Escalas & Contratos Dinâmicos)
+// ========================
+model JobAllocation {
+  id          String   @id @default(cuid())
+  
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id])
+  
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id])
+  
+  task        String   // Tarefa a ser executada
+  duration    String?  // Ex: "4 horas", "15 dias"
+  
+  paymentValue Float
+  paymentFrequency String // "hora", "dia", "semana", "mes", "escala"
+  
+  status      String   @default("Ativa") // Ativa, Concluída, Cancelada
+  startDate   DateTime?
+  endDate     DateTime?
+  concludedAt DateTime?
+  cancellationReason String?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ========================
+// EQUIPMENT LOANS (Cautelas & Retiradas)
+// ========================
+model EmployeeEquipment {
+  id          String   @id @default(cuid())
+  
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id])
+  
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  
+  quantity    Int      @default(1)
+  
+  borrowedAt  DateTime @default(now())
+  returnedAt  DateTime?
+  
+  status      String   @default("EM USO") // EM USO, DEVOLVIDO, PERDIDO
+  observations String?
+
+  documentId  String?
+  document    SignedDocument? @relation(fields: [documentId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ========================
+// ATTACHMENTS (Anexos de Funcionários)
+// ========================
+model Attachment {
+  id          String   @id @default(cuid())
+  employeeId  String
+  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  fileName    String
+  fileUrl     String
+  type        String   // "CERTIFICATE" ou "DOCUMENT"
+  
+  createdAt   DateTime @default(now())
+}
+
+// ========================
+// JURÍDICO (Modelos e Assinaturas)
+// ========================
+model DocumentTemplate {
+  id        String   @id @default(cuid())
+  type      String   @unique // "RETIRADA", "ADMISSAO", "DEMISSAO", "OUTROS"
+  title     String
+  content   String   // Texto base com tags como {{nome_funcionario}}, {{cpf_funcionario}}, {{lista_itens}}, {{data}}
+  
+  documents SignedDocument[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model SignedDocument {
+  id             String            @id @default(cuid())
+  templateId     String
+  template       DocumentTemplate  @relation(fields: [templateId], references: [id])
+  
+  title          String
+  content        String            // Texto preenchido com dados reais
+  status         String            @default("PENDING") // PENDING, SIGNED
+  signedAt       DateTime?
+  
+  // Detalhes da Assinatura
+  signatureType  String?           // "DRAWING" ou "ELECTRONIC"
+  signatureImage String?           // Caminho da imagem da assinatura (.png) ou base64
+  signerCpf      String?           // CPF do assinante se confirmação eletrônica
+  signerName     String?           // Nome digitado
+  
+  // Vínculos Opcionais
+  employeeId     String?
+  employee       Employee?         @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  clientId       String?
+  client         Client?           @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  // Vínculo com Atribuição de Materiais
+  equipments     EmployeeEquipment[]
+
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+}
+
+// ========================
+// CLIENT BILLINGS & CONTRACTS (Faturamento de Clientes)
+// ========================
+model ClientContract {
+  id          String   @id @default(cuid())
+  clientId    String
+  client      Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  title       String   // Descrição do contrato
+  value       Float    // Valor fixo mensal
+  billingDay  Int      // Dia de vencimento (ex: 5, 10, 15)
+  startDate   DateTime
+  endDate     DateTime?
+  status      String   @default("ATIVO") // ATIVO, RESCINDIDO
+  recurrence  String   @default("MENSAL") // MENSAL, ANUAL, SEMANAL, NENHUMA
+  
+  billings    ClientBilling[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ClientBilling {
+  id              String          @id @default(cuid())
+  contractId      String
+  contract        ClientContract  @relation(fields: [contractId], references: [id], onDelete: Cascade)
+  dueDate         DateTime        // Vencimento da mensalidade
+  amount          Float           // Valor cobrado
+  status          String          @default("PENDENTE") // PENDENTE, PAGO, ATRASADO
+  
+  // Anexo de comprovante
+  proofFileName   String?
+  proofFileUrl    String?
+  paidAt          DateTime?
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+// ========================
+// RECEPTION MODULE (Recepção: Agendamentos e Recados)
+// ========================
+model ScheduleEvent {
+  id             String    @id @default(cuid())
+  title          String    // Assunto da Reunião
+  startAt        DateTime  // Data e hora de início
+  endAt          DateTime  // Data e hora de término
+  status         String    @default("PENDENTE") // PENDENTE, CONCLUIDO, CANCELADO
+  privacy        String    @default("PUBLICO")  // PUBLICO, PRIVADO
+  
+  // Criador e Destinatário
+  creatorId      String
+  creator        User      @relation("CreatedEvents", fields: [creatorId], references: [id])
+  
+  assignedUserId String?
+  assignedUser   User?     @relation("AssignedEvents", fields: [assignedUserId], references: [id])
+  
+  // Vínculos Opcionais (Agenda dinâmica e interativa)
+  clientId       String?
+  client         Client?   @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  
+  employeeId     String?
+  employee       Employee? @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model PhoneMessage {
+  id             String    @id @default(cuid())
+  recipientName  String    // Destinatário (Para quem é o recado)
+  
+  recipientUserId String?
+  recipientUser   User?    @relation("ReceivedPhoneMessages", fields: [recipientUserId], references: [id])
+  
+  senderName     String    // Quem ligou / deixou o recado
+  senderContact  String?   // Telefone ou e-mail de contato
+  message        String    // O recado anotado
+  status         String    @default("PENDENTE") // PENDENTE, RESOLVIDO
+  
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+// ========================
+// INTERNAL CHAT MODULE (Chat Interno)
+// ========================
+model ChatMessage {
+  id          String   @id @default(cuid())
+  content     String
+  
+  senderId    String
+  sender      User     @relation("SentMessages", fields: [senderId], references: [id], onDelete: Cascade)
+  
+  receiverId  String
+  receiver    User     @relation("ReceivedMessages", fields: [receiverId], references: [id], onDelete: Cascade)
+  
+  read        Boolean  @default(false)
+  readAt      DateTime?
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ========================
+// SYSTEM AUDIT LOG MODULE (Auditoria e Logs)
+// ========================
+model AuditLog {
+  id        String   @id @default(cuid())
+  userId    String?  // ID do usuário que fez a ação (nulo para sistema/anônimo)
+  userName  String   @default("Sistema") // Nome legível do usuário
+  action    String   // Nome da ação (EX: "CREATE_CLIENT", "DELETE_PRODUCT")
+  details   String   // Descrição em formato textual ou JSON das alterações
+  createdAt DateTime @default(now())
+}
+
+// ========================
+// RECRUITMENT MODULE (Entrevistas & Contratações)
+// ========================
+model Interview {
+  id            String   @id @default(cuid())
+  employeeId    String
+  employee      Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
+  
+  interviewer   String   // Nome de quem entrevistou
+  points        String   // Principais pontos / qualificações
+  summary       String   // Relatório do que foi conversado
+  status        String   // Contrato, Em Análise, Negado
+  interviewDate DateTime @default(now()) // Quando foi realizada a entrevista
+  
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}

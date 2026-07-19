@@ -1,0 +1,31 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.mainContent {
+  flex: 1;
+  margin-left: 220px; /* Largura da sidebar reduzida */
+  padding: 2rem;
+  background-color: var(--secondary-color);
+  box-sizing: border-box;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+@media (max-width: 1024px) {
+  .mainContent {
+    margin-left: 70px;
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+  }
+  .mainContent {
+    margin-left: 0;
+    padding: 1rem;
+  }
+}
