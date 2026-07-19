@@ -36,8 +36,8 @@ export default function LoginPage() {
   return (
     <div className={styles.container}>
       <div className={styles.loginBox}>
-        <div style={{ textAlign: "center", marginBottom: "5px", display: "flex", justifyContent: "center" }}>
-          <img src="/logo.png" alt="Elite Soluções" style={{ maxWidth: "200px", maxHeight: "200px", objectFit: "contain", transform: "scale(1.25)" }} />
+        <div style={{ textAlign: "center", marginBottom: "5px", display: "flex", justifyContent: "center", height: "110px", alignItems: "center", overflow: "visible" }}>
+          <img src="/logo.png" alt="Elite Soluções" style={{ maxWidth: "200px", maxHeight: "200px", objectFit: "contain", transform: "scale(1.2)" }} />
         </div>
         <p className={styles.subtitle}>
           Gestão Inteligente de Terceirização 
