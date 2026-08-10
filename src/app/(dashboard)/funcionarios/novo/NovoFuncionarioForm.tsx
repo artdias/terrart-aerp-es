@@ -5,6 +5,7 @@ import styles from "../../clientes/novo/novoCliente.module.css";
 import Link from "next/link";
 import { ArrowLeft, X, Paperclip } from "lucide-react";
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 
 interface ClientOption {
   id: string;
@@ -82,27 +83,42 @@ export default function NovoFuncionarioForm({ clientes }: { clientes: ClientOpti
     setDocuments(prev => prev.filter((_, i) => i !== index));
   };
 
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
   // Enviar os arquivos via onSubmit no Client Component para ter certeza de que o FormData contém apenas as seleções corretas (sem itens excluídos)
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
+    if (loading) return;
+    
+    setLoading(true);
+    try {
+      const form = e.currentTarget;
+      const formData = new FormData(form);
 
-    // Removemos os inputs nativos pois seus FileLists são imutáveis e podem conter itens deletados
-    formData.delete("certificados-nativos");
-    formData.delete("documentos-nativos");
+      // Removemos os inputs nativos pois seus FileLists são imutáveis e podem conter itens deletados
+      formData.delete("certificados-nativos");
+      formData.delete("documentos-nativos");
 
-    // Anexamos as listas limpas mantidas no State React
-    certificates.forEach((file) => {
-      formData.append("certificates", file);
-    });
+      // Anexamos as listas limpas mantidas no State React
+      certificates.forEach((file) => {
+        formData.append("certificates", file);
+      });
 
-    documents.forEach((file) => {
-      formData.append("documents", file);
-    });
+      documents.forEach((file) => {
+        formData.append("documents", file);
+      });
 
-    // Chama a Server Action diretamente
-    await createEmployee(formData);
+      // Chama a Server Action diretamente
+      await createEmployee(formData);
+      
+      // Volta para a lista
+      router.push("/funcionarios");
+    } catch (error) {
+      console.error("Erro ao salvar funcionário:", error);
+      alert("Ocorreu um erro ao salvar o funcionário. Tente novamente.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -329,7 +345,9 @@ export default function NovoFuncionarioForm({ clientes }: { clientes: ClientOpti
           </div>
 
           <div className={styles.footer}>
-            <button type="submit" className={styles.submitBtn}>Salvar Funcionário</button>
+            <button type="submit" className={styles.submitBtn} disabled={loading}>
+              {loading ? "Salvando..." : "Salvar Funcionário"}
+            </button>
           </div>
         </form>
       </div>
