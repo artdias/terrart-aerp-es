@@ -301,37 +301,43 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
 }
 
 export async function deleteEmployee(formData: FormData) {
-  const id = sanitizeInput(formData.get("employeeId") as string);
-  if (!id) {
-    throw new Error("ID de funcionário inválido.");
+  try {
+    const id = sanitizeInput(formData.get("employeeId") as string);
+    if (!id) {
+      return { success: false, error: "ID de funcionário inválido." };
+    }
+
+    // TRAVA DE SEGURANÇA: Verificar se o funcionário possui vínculos ativos
+    const relations = await prisma.employee.findUnique({
+      where: { id },
+      include: {
+        jobAllocations: { where: { status: { not: "Cancelada" } } },
+        equipments: { where: { status: "Em Uso" } },
+      }
+    });
+
+    if (relations) {
+      if (relations.jobAllocations.length > 0) {
+        return { success: false, error: "Não é possível excluir este funcionário pois ele possui escalas/alocações ativas vinculadas a ele. Você deve cancelá-las ou excluí-las primeiro." };
+      }
+      if (relations.equipments.length > 0) {
+        return { success: false, error: "Não é possível excluir este funcionário pois ele possui equipamentos/cautelas em uso. Faça a devolução primeiro." };
+      }
+    }
+
+    const employee = await prisma.employee.update({
+      where: { id },
+      data: { deleted: true }
+    });
+
+    const fullName = `${employee.firstName} ${employee.lastName || ""}`.trim();
+    await logAction("DELETE_EMPLOYEE", `Moveu o funcionário '${fullName}' (ID: ${id}) para a lixeira.`);
+
+    revalidatePath("/funcionarios");
+    revalidatePath("/lixeira");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Erro em deleteEmployee:", error);
+    return { success: false, error: "Ocorreu um erro interno ao tentar excluir o funcionário." };
   }
-
-  // TRAVA DE SEGURANÇA: Verificar se o funcionário possui vínculos ativos
-  const relations = await prisma.employee.findUnique({
-    where: { id },
-    include: {
-      jobAllocations: { where: { status: { not: "Cancelada" } } },
-      equipments: { where: { status: "Em Uso" } },
-    }
-  });
-
-  if (relations) {
-    if (relations.jobAllocations.length > 0) {
-      throw new Error("Não é possível excluir este funcionário pois ele possui escalas/alocações vinculadas a ele. Você deve cancelá-las ou excluí-las primeiro.");
-    }
-    if (relations.equipments.length > 0) {
-      throw new Error("Não é possível excluir este funcionário pois ele possui equipamentos/cautelas em uso. Faça a devolução primeiro.");
-    }
-  }
-
-  const employee = await prisma.employee.update({
-    where: { id },
-    data: { deleted: true }
-  });
-
-  const fullName = `${employee.firstName} ${employee.lastName || ""}`.trim();
-  await logAction("DELETE_EMPLOYEE", `Moveu o funcionário '${fullName}' (ID: ${id}) para a lixeira.`);
-
-  revalidatePath("/funcionarios");
-  revalidatePath("/lixeira");
 }

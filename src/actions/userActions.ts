@@ -73,41 +73,47 @@ export async function createUser(formData: FormData) {
 }
 
 export async function deleteUser(formData: FormData) {
-  const session = await getServerSession(authOptions);
-  if (!session?.user || (session.user as any).role !== "ADMIN") {
-    throw new Error("Apenas administradores podem gerenciar usuários.");
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user || (session.user as any).role !== "ADMIN") {
+      return { success: false, error: "Apenas administradores podem gerenciar usuários." };
+    }
+
+    const userId = sanitizeInput(formData.get("userId") as string);
+    if (!userId) {
+      return { success: false, error: "ID de usuário inválido." };
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      return { success: false, error: "Usuário não encontrado." };
+    }
+
+    // Impedir a exclusão do admin master padrão
+    if (user.email === "admin") {
+      return { success: false, error: "Não é possível remover o administrador master padrão." };
+    }
+
+    // Impedir que o admin logado exclua a si mesmo
+    if (user.id === (session.user as any).id) {
+      return { success: false, error: "Você não pode excluir a si mesmo." };
+    }
+
+    await logAction("DELETE_USER", `Excluiu o usuário ${user.email} (ID: ${userId}, Nome: ${user.name}).`);
+
+    await prisma.user.delete({
+      where: { id: userId }
+    });
+
+    revalidatePath("/usuarios");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Erro em deleteUser:", error);
+    return { success: false, error: "Ocorreu um erro interno ao tentar excluir o usuário." };
   }
-
-  const userId = sanitizeInput(formData.get("userId") as string);
-  if (!userId) {
-    throw new Error("ID de usuário inválido.");
-  }
-
-  const user = await prisma.user.findUnique({
-    where: { id: userId }
-  });
-
-  if (!user) {
-    throw new Error("Usuário não encontrado.");
-  }
-
-  // Impedir a exclusão do admin master padrão
-  if (user.email === "admin") {
-    throw new Error("Não é possível remover o administrador master padrão.");
-  }
-
-  // Impedir que o admin logado exclua a si mesmo
-  if (user.id === (session.user as any).id) {
-    throw new Error("Você não pode excluir a si mesmo.");
-  }
-
-  await logAction("DELETE_USER", `Excluiu o usuário ${user.email} (ID: ${userId}, Nome: ${user.name}).`);
-
-  await prisma.user.delete({
-    where: { id: userId }
-  });
-
-  revalidatePath("/usuarios");
 }
 
 export async function updateUser(formData: FormData) {

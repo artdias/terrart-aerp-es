@@ -131,20 +131,38 @@ export async function deallocateProductFromClient(formData: FormData) {
 }
 
 export async function deleteProduct(formData: FormData) {
-  const id = sanitizeInput(formData.get("productId") as string);
-  if (!id) {
-    throw new Error("ID de produto inválido.");
+  try {
+    const id = sanitizeInput(formData.get("productId") as string);
+    if (!id) {
+      return { success: false, error: "ID de produto inválido." };
+    }
+
+    // TRAVA DE SEGURANÇA: Verificar se o produto possui alocações
+    const product = await prisma.product.findUnique({
+      where: { id },
+      include: {
+        allocations: true,
+      }
+    });
+
+    if (product && product.allocations.length > 0) {
+      return { success: false, error: "Não é possível excluir este produto pois ele possui alocações ativas em clientes. Devolva os itens ao estoque central primeiro." };
+    }
+
+    const deletedProduct = await prisma.product.update({
+      where: { id },
+      data: { deleted: true }
+    });
+
+    await logAction("DELETE_PRODUCT", `Moveu o produto '${deletedProduct.name}' (ID: ${id}) para a lixeira.`);
+
+    revalidatePath("/estoque");
+    revalidatePath("/lixeira");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Erro em deleteProduct:", error);
+    return { success: false, error: "Ocorreu um erro interno ao tentar excluir o produto." };
   }
-
-  const product = await prisma.product.update({
-    where: { id },
-    data: { deleted: true }
-  });
-
-  await logAction("DELETE_PRODUCT", `Moveu o produto '${product.name}' (ID: ${id}) para a lixeira.`);
-
-  revalidatePath("/estoque");
-  revalidatePath("/lixeira");
 }
 
 export async function updateProduct(id: string, formData: FormData) {

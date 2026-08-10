@@ -67,38 +67,44 @@ export async function createClient(formData: FormData) {
 }
 
 export async function deleteClient(formData: FormData) {
-  const id = sanitizeInput(formData.get("clientId") as string);
-  if (!id) {
-    throw new Error("ID de cliente inválido.");
+  try {
+    const id = sanitizeInput(formData.get("clientId") as string);
+    if (!id) {
+      return { success: false, error: "ID de cliente inválido." };
+    }
+
+    // TRAVA DE SEGURANÇA: Verificar se o cliente possui vínculos ativos
+    const relations = await prisma.client.findUnique({
+      where: { id },
+      include: {
+        jobAllocations: { where: { status: { not: "Cancelada" } } },
+        inventory: true,
+      }
+    });
+
+    if (relations) {
+      if (relations.jobAllocations.length > 0) {
+        return { success: false, error: "Não é possível excluir este cliente pois ele possui escalas/alocações vinculadas a ele. Cancele-as primeiro." };
+      }
+      if (relations.inventory.length > 0) {
+        return { success: false, error: "Não é possível excluir este cliente pois ele possui itens de estoque vinculados a ele. Transfira os itens primeiro." };
+      }
+    }
+
+    const client = await prisma.client.update({
+      where: { id },
+      data: { deleted: true }
+    });
+
+    await logAction("DELETE_CLIENT", `Moveu o cliente '${client.companyName}' (ID: ${id}) para a lixeira.`);
+
+    revalidatePath("/clientes");
+    revalidatePath("/lixeira");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Erro em deleteClient:", error);
+    return { success: false, error: "Ocorreu um erro interno ao tentar excluir o cliente." };
   }
-
-  // TRAVA DE SEGURANÇA: Verificar se o cliente possui vínculos ativos
-  const relations = await prisma.client.findUnique({
-    where: { id },
-    include: {
-      jobAllocations: { where: { status: { not: "Cancelada" } } },
-      inventory: true,
-    }
-  });
-
-  if (relations) {
-    if (relations.jobAllocations.length > 0) {
-      throw new Error("Não é possível excluir este cliente pois ele possui escalas/alocações vinculadas a ele. Cancele-as primeiro.");
-    }
-    if (relations.inventory.length > 0) {
-      throw new Error("Não é possível excluir este cliente pois ele possui itens de estoque (Inventory) vinculados a ele. Transfira os itens primeiro.");
-    }
-  }
-
-  const client = await prisma.client.update({
-    where: { id },
-    data: { deleted: true }
-  });
-
-  await logAction("DELETE_CLIENT", `Moveu o cliente '${client.companyName}' (ID: ${id}) para a lixeira.`);
-
-  revalidatePath("/clientes");
-  revalidatePath("/lixeira");
 }
 
 export async function updateClient(clientId: string, formData: FormData) {
