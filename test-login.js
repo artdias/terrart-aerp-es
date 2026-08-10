@@ -7,7 +7,7 @@ const prisma = new PrismaClient({
 
 async function testLogin() {
   const email = "admin";
-  const password = "admin123";
+  const password = "admin1234";
 
   console.log(`Buscando usuario ${email}...`);
   const user = await prisma.user.findUnique({

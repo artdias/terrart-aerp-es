@@ -12,6 +12,7 @@ demora na transiçao de modulos
 
 logo no sistema 
 
+botao de cancelar alterar e confirmar a reuniao ou agendamenta gerando link para enviar vias wpp
 
 
 pensar no Dados de Contrato & Sistema login do funcionario 

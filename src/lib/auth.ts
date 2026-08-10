@@ -13,56 +13,76 @@ export const authOptions: NextAuthOptions = {
         rememberMe: { label: "Remember Me", type: "text" }
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
-
-        let user = await prisma.user.findUnique({
-          where: { email: credentials.email }
-        });
-
-        // Auto-criar o admin master se ele não existir e as credenciais forem admin/admin
-        if (!user && credentials.email === "admin" && credentials.password === "admin") {
-          const hashedPassword = await bcrypt.hash("admin", 10);
-          user = await prisma.user.create({
-            data: {
-              email: "admin",
-              name: "Administrador Geral",
-              password: hashedPassword,
-              role: "ADMIN",
-              allowClientes: true,
-              allowFuncionarios: true,
-              allowEscalas: true,
-              allowEstoque: true,
-              allowCautelas: true,
-              allowFinanceiro: true,
-              allowJuridico: true,
-              allowFaturamento: true,
-              allowRecepcao: true,
-              allowRelatorios: true
-            }
-          });
+        if (!credentials?.email || !credentials?.password) {
+          console.log("[Auth] Missing credentials");
+          return null;
         }
 
-        if (!user) return null;
+        try {
+          console.log(`[Auth] Attempting login for: ${credentials.email}`);
+          
+          let user = await prisma.user.findUnique({
+            where: { email: credentials.email }
+          });
 
-        const isValidPassword = await bcrypt.compare(credentials.password, user.password);
-        if (!isValidPassword) return null;
+          // Auto-criar o admin master se ele não existir e as credenciais forem admin/admin
+          if (!user && credentials.email === "admin" && credentials.password === "admin") {
+            console.log("[Auth] Creating default admin user...");
+            const hashedPassword = await bcrypt.hash("admin", 10);
+            user = await prisma.user.create({
+              data: {
+                email: "admin",
+                name: "Administrador Geral",
+                password: hashedPassword,
+                role: "ADMIN",
+                allowClientes: true,
+                allowFuncionarios: true,
+                allowEscalas: true,
+                allowEstoque: true,
+                allowCautelas: true,
+                allowFinanceiro: true,
+                allowJuridico: true,
+                allowFaturamento: true,
+                allowRecepcao: true,
+                allowRelatorios: true
+              }
+            });
+          }
 
-        return {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          allowClientes: user.allowClientes,
-          allowFuncionarios: user.allowFuncionarios,
-          allowEscalas: user.allowEscalas,
-          allowEstoque: user.allowEstoque,
-          allowCautelas: user.allowCautelas,
-          allowFinanceiro: user.allowFinanceiro,
-          allowJuridico: user.allowJuridico,
-          allowFaturamento: user.allowFaturamento,
-          allowRecepcao: user.allowRecepcao,
-          allowRelatorios: user.allowRelatorios
-        };
+          if (!user) {
+            console.log("[Auth] User not found in database.");
+            return null;
+          }
+
+          console.log("[Auth] User found, verifying password...");
+          const isValidPassword = await bcrypt.compare(credentials.password, user.password);
+          
+          if (!isValidPassword) {
+            console.log("[Auth] Invalid password.");
+            return null;
+          }
+
+          console.log("[Auth] Login successful!");
+          return {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            allowClientes: user.allowClientes,
+            allowFuncionarios: user.allowFuncionarios,
+            allowEscalas: user.allowEscalas,
+            allowEstoque: user.allowEstoque,
+            allowCautelas: user.allowCautelas,
+            allowFinanceiro: user.allowFinanceiro,
+            allowJuridico: user.allowJuridico,
+            allowFaturamento: user.allowFaturamento,
+            allowRecepcao: user.allowRecepcao,
+            allowRelatorios: user.allowRelatorios
+          };
+        } catch (error) {
+          console.error("[Auth] Exception during authorization:", error);
+          return null;
+        }
       }
     })
   ],
