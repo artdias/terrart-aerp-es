@@ -25,5 +25,6 @@ criar a aba de historico do financeiro para deixar como consulta do que foi feit
 lembrando que todas as movitaçoes sao salvas no log da auditoria seja ela qual for a açao
 
 
+novo
 
 
