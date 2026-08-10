@@ -1,16 +1,13 @@
-import NextAuth from "next-auth/next";
+import NextAuth from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { NextRequest } from "next/server";
 
-// Fix Vercel issue where NEXTAUTH_URL might be incorrectly set to localhost
-if (process.env.NODE_ENV === "production") {
-  if (process.env.NEXTAUTH_URL && process.env.NEXTAUTH_URL.includes("localhost")) {
-    delete process.env.NEXTAUTH_URL; // Allows NextAuth to use VERCEL_URL auto-detection
-  }
-}
-
 async function handler(req: NextRequest, ctx: any) {
-  // Clonar o objeto de configurações estáticas para evitar concorrência de memória
+  // Use Vercel's URL instead of localhost if in production
+  if (process.env.NODE_ENV === "production" && process.env.NEXTAUTH_URL?.includes("localhost")) {
+    process.env.NEXTAUTH_URL = `https://${req.headers.get("host") || process.env.VERCEL_URL}`;
+  }
+
   const dynamicOptions = { ...authOptions };
 
   try {
@@ -20,7 +17,6 @@ async function handler(req: NextRequest, ctx: any) {
       const params = new URLSearchParams(bodyText);
       const rememberMe = params.get("rememberMe") === "true";
 
-      // Se "Mantenha-me conectado" NÃO for selecionado, removemos o maxAge do cookie
       if (!rememberMe) {
         dynamicOptions.cookies = {
           sessionToken: {
@@ -30,14 +26,13 @@ async function handler(req: NextRequest, ctx: any) {
               sameSite: "lax",
               path: "/",
               secure: process.env.NODE_ENV === "production",
-              // Deixar maxAge indefinido/omitido torna o cookie temporário
             }
           }
         };
       }
     }
   } catch (err) {
-    console.error("Error processing rememberMe:", err);
+    // Ignore error
   }
 
   return NextAuth(req, ctx, dynamicOptions);
