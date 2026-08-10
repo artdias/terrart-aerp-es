@@ -5,6 +5,7 @@ import { createExpense } from "@/actions/expenseActions";
 import styles from "../../clientes/novo/novoCliente.module.css";
 import Link from "next/link";
 import { ArrowLeft, FileText, CheckCircle2, Box, PackagePlus } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface ProductOption {
   id: string;
@@ -21,6 +22,25 @@ export default function NovaDespesaForm({ produtos }: NovaDespesaFormProps) {
   const [isInventory, setIsInventory] = useState(false);
   const [productType, setProductType] = useState<"EXISTING" | "NEW">("EXISTING");
 
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (loading) return;
+    
+    setLoading(true);
+    try {
+      const formData = new FormData(e.currentTarget);
+      await createExpense(formData);
+      // O redirect já é feito na action, mas caso precise de algo aqui no client:
+    } catch (error) {
+      console.error("Erro ao salvar despesa:", error);
+      alert("Ocorreu um erro ao salvar a despesa. Verifique os dados e tente novamente.");
+      setLoading(false);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -33,7 +53,7 @@ export default function NovaDespesaForm({ produtos }: NovaDespesaFormProps) {
       </div>
 
       <div className={styles.card}>
-        <form action={createExpense} className={styles.form} encType="multipart/form-data">
+        <form onSubmit={handleSubmit} className={styles.form} encType="multipart/form-data">
           
           <h3 className={styles.sectionTitle}>Dados Gerais da Despesa</h3>
           <div className={styles.formRow}>
@@ -282,7 +302,9 @@ export default function NovaDespesaForm({ produtos }: NovaDespesaFormProps) {
           </div>
 
           <div className={styles.footer}>
-            <button type="submit" className={styles.submitBtn}>Lançar Despesa</button>
+            <button type="submit" className={styles.submitBtn} disabled={loading}>
+              {loading ? "Salvando..." : "Lançar Despesa"}
+            </button>
           </div>
         </form>
       </div>
