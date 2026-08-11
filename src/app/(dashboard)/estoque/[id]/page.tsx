@@ -5,7 +5,16 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { allocateProductToClient, deallocateProductFromClient } from "@/actions/inventoryActions";
 
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
+
 export default async function ProdutoDetalhePage({ params }: { params: { id: string } }) {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) redirect("/login");
+  if ((session.user as any).role !== "ADMIN" && !(session.user as any).permissions?.allowEstoque) {
+    redirect("/");
+  }
   // Buscar a lista de clientes para alimentar o dropdown de alocação
   const clients = await prisma.client.findMany({
     where: { deleted: false }, orderBy: { companyName: 'asc' }

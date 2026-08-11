@@ -2,8 +2,16 @@ import { createProduct } from "@/actions/inventoryActions";
 import styles from "../../clientes/novo/novoCliente.module.css";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
-export default function NovoProdutoPage() {
+export default async function NovoProdutoPage() {
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) redirect("/login");
+  if ((session.user as any).role !== "ADMIN" && !(session.user as any).permissions?.allowEstoque) {
+    redirect("/");
+  }
   return (
     <div className={styles.container}>
       <div className={styles.header}>
