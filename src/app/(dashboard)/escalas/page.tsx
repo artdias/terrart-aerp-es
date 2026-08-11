@@ -180,15 +180,24 @@ export default async function EscalasPage({
                   </td>
                   <td>
                     <div className={styles.strongText}>{aloc.task}</div>
-                    {(aloc as any).startDate && (aloc as any).endDate && (
-                      <div className={styles.cellWithIcon} style={{ fontSize: '0.8rem', color: '#666', marginTop: '4px' }}>
+                    <div style={{ display: 'inline-block', marginTop: '4px', padding: '2px 6px', background: '#e1f5fe', color: '#0288d1', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
+                      Regime: {(aloc as any).scaleMode || "Contínuo"}
+                    </div>
+                    {(aloc as any).startDate && (
+                      <div className={styles.cellWithIcon} style={{ fontSize: '0.8rem', color: '#666', marginTop: '6px' }}>
                         <CalendarClock size={14} /> 
-                        {new Date((aloc as any).startDate).toLocaleDateString('pt-BR')} até {new Date((aloc as any).endDate).toLocaleDateString('pt-BR')}
+                        {new Date((aloc as any).startDate).toLocaleDateString('pt-BR')} 
+                        {(aloc as any).endDate ? ` até ${new Date((aloc as any).endDate).toLocaleDateString('pt-BR')}` : ' em diante (Indeterminado)'}
                       </div>
+                    )}
+                    {!((aloc as any).startDate) && (
+                       <div className={styles.cellWithIcon} style={{ fontSize: '0.8rem', color: '#666', marginTop: '6px' }}>
+                         <CalendarClock size={14} /> Sem datas definidas (Contínuo/Livre)
+                       </div>
                     )}
                     {aloc.duration && (
                       <div style={{ fontSize: '0.75rem', color: '#888', marginTop: '2px', fontStyle: 'italic' }}>
-                        {aloc.duration}
+                        Nota: {aloc.duration}
                       </div>
                     )}
                   </td>

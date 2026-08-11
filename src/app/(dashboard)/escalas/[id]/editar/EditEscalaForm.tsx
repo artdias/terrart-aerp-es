@@ -29,6 +29,7 @@ interface AllocationType {
   duration: string | null;
   paymentValue: number;
   paymentFrequency: string;
+  scaleMode: string;
   status: string;
   startDate?: string | Date | null;
   endDate?: string | Date | null;
@@ -125,15 +126,27 @@ export default function EditEscalaForm({
             <input type="text" id="task" name="task" required maxLength={200} defaultValue={allocation.task} placeholder="Ex: Limpeza Pós-Obra, Vigilância 12x36" />
           </div>
 
+          <div className={styles.inputGroup} style={{ marginBottom: '1.5rem' }}>
+            <label htmlFor="scaleMode">Regime de Escala <span style={{ color: '#e74c3c' }}>*</span></label>
+            <select id="scaleMode" name="scaleMode" required defaultValue={allocation.scaleMode} style={{ padding: '0.95rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa', width: '100%' }}>
+              <option value="Contínuo">Contínuo (Horário Comercial)</option>
+              <option value="12x36">12x36 (Trabalha 12h, folga 36h)</option>
+              <option value="Apenas Noturno">Apenas Noturno</option>
+              <option value="Dias Alternados">Dias Alternados (Flexível)</option>
+              <option value="5x2 (Seg-Sex)">5x2 (Segunda a Sexta)</option>
+              <option value="Livre">Livre / Sob Demanda</option>
+            </select>
+          </div>
+
           <div className={styles.formRow}>
             <div className={styles.inputGroup}>
-              <label htmlFor="startDate">Data/Hora de Início <span style={{ color: '#e74c3c' }}>*</span></label>
-              <input type="datetime-local" id="startDate" name="startDate" required defaultValue={allocation.startDate ? new Date(allocation.startDate).toISOString().slice(0, 16) : ""} />
+              <label htmlFor="startDate">Data/Hora de Início <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: 'normal' }}>(Obrigatório para 12x36)</span></label>
+              <input type="datetime-local" id="startDate" name="startDate" defaultValue={allocation.startDate ? new Date(allocation.startDate).toISOString().slice(0, 16) : ""} />
             </div>
             
             <div className={styles.inputGroup}>
-              <label htmlFor="endDate">Data/Hora de Término <span style={{ color: '#e74c3c' }}>*</span></label>
-              <input type="datetime-local" id="endDate" name="endDate" required defaultValue={allocation.endDate ? new Date(allocation.endDate).toISOString().slice(0, 16) : ""} />
+              <label htmlFor="endDate">Data/Hora de Término <span style={{ fontSize: '0.85rem', color: '#666', fontWeight: 'normal' }}>(Opcional)</span></label>
+              <input type="datetime-local" id="endDate" name="endDate" defaultValue={allocation.endDate ? new Date(allocation.endDate).toISOString().slice(0, 16) : ""} />
             </div>
           </div>
 

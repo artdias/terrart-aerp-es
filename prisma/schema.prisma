@@ -246,6 +246,8 @@ model JobAllocation {
   paymentValue     Float
   paymentFrequency String // "hora", "dia", "semana", "mes", "escala"
 
+  scaleMode          String    @default("Contínuo") // "Contínuo", "12x36", "Noturno", "Dias Alternados", "5x2 (Seg-Sex)", "Livre"
+
   status             String    @default("Ativa") // Ativa, Concluída, Cancelada
   startDate          DateTime?
   endDate            DateTime?
