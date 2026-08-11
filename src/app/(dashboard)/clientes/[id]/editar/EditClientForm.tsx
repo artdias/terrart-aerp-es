@@ -4,7 +4,8 @@ import { updateClient } from "@/actions/clientActions";
 import styles from "../../novo/novoCliente.module.css";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 
 interface ClientData {
   id: string;
@@ -103,8 +104,8 @@ export default function EditClientForm({ client }: { client: ClientData }) {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = require("next/navigation").useRouter();
-  const errorRef = require("react").useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const errorRef = useRef<HTMLDivElement>(null);
 
   // Fazer bind da Server Action com o ID do cliente
   const updateClientWithId = updateClient.bind(null, client.id);

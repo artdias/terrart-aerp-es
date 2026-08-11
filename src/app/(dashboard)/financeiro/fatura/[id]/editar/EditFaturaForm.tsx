@@ -1,9 +1,11 @@
 "use client";
 
+import React, { useState } from "react";
 import { updateInvoice } from "@/actions/financeActions";
 import styles from "../../../../clientes/novo/novoCliente.module.css";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface ClientOption {
   id: string;
@@ -17,7 +19,32 @@ interface EditFaturaFormProps {
 
 export default function EditFaturaForm({ clientes, invoice }: EditFaturaFormProps) {
   const formattedDueDate = new Date(invoice.dueDate).toISOString().split('T')[0];
-  
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (loading) return;
+
+    setLoading(true);
+    try {
+      const formData = new FormData(e.currentTarget);
+      const result = await updateInvoice(invoice.id, formData);
+
+      if (result && result.error) {
+        alert(result.error);
+      } else {
+        router.push("/financeiro-clientes");
+        router.refresh();
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Ocorreu um erro ao atualizar a fatura.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -30,7 +57,7 @@ export default function EditFaturaForm({ clientes, invoice }: EditFaturaFormProp
       </div>
 
       <div className={styles.card}>
-        <form action={updateInvoice.bind(null, invoice.id)} className={styles.form} encType="multipart/form-data">
+        <form onSubmit={handleSubmit} className={styles.form} encType="multipart/form-data">
           
           <h3 className={styles.sectionTitle}>Destinatário e Status</h3>
           <div className={styles.formRow}>
@@ -106,7 +133,17 @@ export default function EditFaturaForm({ clientes, invoice }: EditFaturaFormProp
           </div>
 
           <div className={styles.footer}>
-            <button type="submit" className={styles.submitBtn} style={{ background: '#f39c12' }}>Salvar Edição</button>
+            <button 
+              type="submit" 
+              className={styles.submitBtn} 
+              disabled={loading}
+              style={{ 
+                background: loading ? '#95a5a6' : '#f39c12',
+                cursor: loading ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {loading ? "Salvando..." : "Salvar Edição"}
+            </button>
           </div>
         </form>
       </div>

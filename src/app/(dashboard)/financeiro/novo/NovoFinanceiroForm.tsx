@@ -4,6 +4,8 @@ import { createInvoice } from "@/actions/financeActions";
 import styles from "../../clientes/novo/novoCliente.module.css";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface ClientOption {
   id: string;
@@ -16,6 +18,32 @@ interface NovoFinanceiroFormProps {
 }
 
 export default function NovoFinanceiroForm({ clientes, defaultClientId }: NovoFinanceiroFormProps) {
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (loading) return;
+
+    setLoading(true);
+    try {
+      const formData = new FormData(e.currentTarget);
+      const result = await createInvoice(formData);
+
+      if (result && result.error) {
+        alert(result.error);
+      } else {
+        router.push("/financeiro");
+        router.refresh();
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Ocorreu um erro ao criar a fatura.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -28,7 +56,7 @@ export default function NovoFinanceiroForm({ clientes, defaultClientId }: NovoFi
       </div>
 
       <div className={styles.card}>
-        <form action={createInvoice} className={styles.form} encType="multipart/form-data">
+        <form onSubmit={handleSubmit} className={styles.form} encType="multipart/form-data">
           
           <h3 className={styles.sectionTitle}>Destinatário</h3>
           <div className={styles.inputGroup} style={{ marginBottom: '1.5rem' }}>
@@ -83,7 +111,17 @@ export default function NovoFinanceiroForm({ clientes, defaultClientId }: NovoFi
           </div>
 
           <div className={styles.footer}>
-            <button type="submit" className={styles.submitBtn}>Lançar Fatura</button>
+            <button 
+              type="submit" 
+              className={styles.submitBtn} 
+              disabled={loading}
+              style={{
+                background: loading ? '#95a5a6' : '#27ae60',
+                cursor: loading ? 'not-allowed' : 'pointer'
+              }}
+            >
+              {loading ? "Lançando..." : "Lançar Fatura"}
+            </button>
           </div>
         </form>
       </div>

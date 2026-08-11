@@ -29,122 +29,133 @@ function getNextDueDate(currentDueDate: Date, recurrence: string) {
 }
 
 export async function createClientContract(formData: FormData) {
-  const clientId = sanitizeInput(formData.get("clientId") as string);
-  const title = sanitizeInput(formData.get("title") as string);
-  const valueStr = sanitizeInput(formData.get("value") as string);
-  const billingDayStr = sanitizeInput(formData.get("billingDay") as string);
-  const startDateStr = sanitizeInput(formData.get("startDate") as string);
+  try {
+    const clientId = sanitizeInput(formData.get("clientId") as string);
+    const title = sanitizeInput(formData.get("title") as string);
+    const valueStr = sanitizeInput(formData.get("value") as string);
+    const billingDayStr = sanitizeInput(formData.get("billingDay") as string);
+    const startDateStr = sanitizeInput(formData.get("startDate") as string);
 
-  if (!clientId || !title || !valueStr || !billingDayStr || !startDateStr) {
-    throw new Error("Preencha todos os campos obrigatórios.");
-  }
-
-  const value = parseFloat(valueStr.replace(",", "."));
-  const billingDay = parseInt(billingDayStr, 10);
-  const startDate = new Date(startDateStr);
-
-  if (isNaN(value) || value <= 0) {
-    throw new Error("Informe um valor mensal válido.");
-  }
-
-  if (isNaN(billingDay) || billingDay < 1 || billingDay > 28) {
-    throw new Error("O dia de vencimento deve estar entre 1 e 28.");
-  }
-
-  const recurrence = sanitizeInput(formData.get("recurrence") as string) || "MENSAL";
-
-  const contract = await prisma.clientContract.create({
-    data: {
-      clientId,
-      title,
-      value,
-      billingDay,
-      startDate,
-      status: "ATIVO",
-      recurrence
+    if (!clientId || !title || !valueStr || !billingDayStr || !startDateStr) {
+      return { success: false, error: "Preencha todos os campos obrigatórios." };
     }
-  });
 
-  const firstDueDate = getFirstDueDate(startDate, billingDay);
-  
-  await prisma.clientBilling.create({
-    data: {
-      contractId: contract.id,
-      dueDate: firstDueDate,
-      amount: value,
-      status: "PENDENTE"
+    const value = parseFloat(valueStr.replace(",", "."));
+    const billingDay = parseInt(billingDayStr, 10);
+    const startDate = new Date(startDateStr);
+
+    if (isNaN(value) || value <= 0) {
+      return { success: false, error: "Informe um valor mensal válido." };
     }
-  });
 
-  revalidatePath("/financeiro-clientes");
-  redirect("/financeiro-clientes");
+    if (isNaN(billingDay) || billingDay < 1 || billingDay > 28) {
+      return { success: false, error: "O dia de vencimento deve estar entre 1 e 28." };
+    }
+
+    const recurrence = sanitizeInput(formData.get("recurrence") as string) || "MENSAL";
+
+    const contract = await prisma.clientContract.create({
+      data: {
+        clientId,
+        title,
+        value,
+        billingDay,
+        startDate,
+        status: "ATIVO",
+        recurrence
+      }
+    });
+
+    const firstDueDate = getFirstDueDate(startDate, billingDay);
+    
+    await prisma.clientBilling.create({
+      data: {
+        contractId: contract.id,
+        dueDate: firstDueDate,
+        amount: value,
+        status: "PENDENTE"
+      }
+    });
+
+    revalidatePath("/financeiro-clientes");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Erro em createClientContract:", error);
+    return { success: false, error: "Ocorreu um erro ao criar o contrato." };
+  }
 }
 
 export async function payClientBilling(formData: FormData) {
-  const billingId = sanitizeInput(formData.get("billingId") as string);
-  const attachment = formData.get("attachment") as File;
+  try {
+    const billingId = sanitizeInput(formData.get("billingId") as string);
+    const attachment = formData.get("attachment") as File;
 
-  if (!billingId) {
-    throw new Error("ID da mensalidade não fornecido.");
-  }
-
-  if (!attachment || attachment.size === 0 || !attachment.name) {
-    throw new Error("Por favor, selecione um comprovante de pagamento válido.");
-  }
-
-  const billing = await prisma.clientBilling.findUnique({
-    where: { id: billingId },
-    include: { contract: true }
-  });
-
-  if (!billing) {
-    throw new Error("Mensalidade não encontrada.");
-  }
-
-  // Upload físico do arquivo
-  const uploadsDir = path.join(process.cwd(), "public", "uploads");
-  await fs.mkdir(uploadsDir, { recursive: true });
-
-  const sanitizedFileName = sanitizeInput(attachment.name);
-  const filename = `${Date.now()}-${sanitizedFileName.replace(/\s+/g, "_")}`;
-  const filePath = path.join(uploadsDir, filename);
-
-  const buffer = Buffer.from(await attachment.arrayBuffer());
-  await fs.writeFile(filePath, buffer);
-
-  const fileUrl = `/uploads/${filename}`;
-
-  // Atualizar a fatura para PAGO
-  await prisma.clientBilling.update({
-    where: { id: billingId },
-    data: {
-      status: "PAGO",
-      proofFileName: attachment.name,
-      proofFileUrl: fileUrl,
-      paidAt: new Date()
+    if (!billingId) {
+      return { success: false, error: "ID da mensalidade não fornecido." };
     }
-  });
 
-  // Gerar a próxima fatura se houver recorrência
-  if (billing.contract && billing.contract.recurrence !== "NENHUMA") {
-    const nextDueDate = getNextDueDate(billing.dueDate, billing.contract.recurrence);
-    
-    // Verificar se já não existe uma fatura pendente com essa mesma data para evitar duplicação em cliques duplos
-    const existingNext = await prisma.clientBilling.findFirst({
-      where: { contractId: billing.contractId, dueDate: nextDueDate }
+    if (!attachment || attachment.size === 0 || !attachment.name) {
+      return { success: false, error: "Por favor, selecione um comprovante de pagamento válido." };
+    }
+
+    const billing = await prisma.clientBilling.findUnique({
+      where: { id: billingId },
+      include: { contract: true }
     });
 
-    if (!existingNext) {
-      await prisma.clientBilling.create({
-        data: {
-          contractId: billing.contractId,
-          dueDate: nextDueDate,
-          amount: billing.contract.value,
-          status: "PENDENTE"
-        }
-      });
+    if (!billing) {
+      return { success: false, error: "Mensalidade não encontrada." };
     }
-  }
 
-  revalidatePath("/financeiro-clientes");
+    // Upload físico do arquivo
+    const uploadsDir = path.join(process.cwd(), "public", "uploads");
+    await fs.mkdir(uploadsDir, { recursive: true });
+
+    const sanitizedFileName = sanitizeInput(attachment.name);
+    const filename = `${Date.now()}-${sanitizedFileName.replace(/\s+/g, "_")}`;
+    const filePath = path.join(uploadsDir, filename);
+
+    const buffer = Buffer.from(await attachment.arrayBuffer());
+    await fs.writeFile(filePath, buffer);
+
+    const fileUrl = `/uploads/${filename}`;
+
+    // Atualizar a fatura para PAGO
+    await prisma.clientBilling.update({
+      where: { id: billingId },
+      data: {
+        status: "PAGO",
+        proofFileName: attachment.name,
+        proofFileUrl: fileUrl,
+        paidAt: new Date()
+      }
+    });
+
+    // Gerar a próxima fatura se houver recorrência
+    if (billing.contract && billing.contract.recurrence !== "NENHUMA") {
+      const nextDueDate = getNextDueDate(billing.dueDate, billing.contract.recurrence);
+      
+      // Verificar se já não existe uma fatura pendente com essa mesma data para evitar duplicação em cliques duplos
+      const existingNext = await prisma.clientBilling.findFirst({
+        where: { contractId: billing.contractId, dueDate: nextDueDate }
+      });
+
+      if (!existingNext) {
+        await prisma.clientBilling.create({
+          data: {
+            contractId: billing.contractId,
+            dueDate: nextDueDate,
+            amount: billing.contract.value,
+            status: "PENDENTE"
+          }
+        });
+      }
+    }
+
+    revalidatePath("/financeiro-clientes");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Erro em payClientBilling:", error);
+    return { success: false, error: "Ocorreu um erro ao processar o pagamento." };
+  }
 }

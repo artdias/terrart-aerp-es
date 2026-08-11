@@ -9,7 +9,7 @@ interface PayInvoiceFormProps {
 
 export default function PayInvoiceForm({ invoiceId }: PayInvoiceFormProps) {
   return (
-    <form action={payInvoice} encType="multipart/form-data" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <form action={async (formData) => { await payInvoice(formData); }} encType="multipart/form-data" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <input type="hidden" name="invoiceId" value={invoiceId} />
       <label 
         htmlFor={`receipt-${invoiceId}`} 

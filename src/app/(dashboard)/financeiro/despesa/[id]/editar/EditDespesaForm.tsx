@@ -1,10 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { updateExpense } from "@/actions/expenseActions";
 import styles from "../../../../clientes/novo/novoCliente.module.css";
 import Link from "next/link";
 import { ArrowLeft, FileText, Paperclip } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface EditDespesaFormProps {
   expense: any;
@@ -12,6 +13,31 @@ interface EditDespesaFormProps {
 
 export default function EditDespesaForm({ expense }: EditDespesaFormProps) {
   const formattedDueDate = new Date(expense.dueDate).toISOString().split('T')[0];
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (loading) return;
+
+    setLoading(true);
+    try {
+      const formData = new FormData(e.currentTarget);
+      const result = await updateExpense(expense.id, formData);
+
+      if (result && result.error) {
+        alert(result.error);
+      } else {
+        router.push("/financeiro?tab=despesas");
+        router.refresh();
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Ocorreu um erro ao atualizar a despesa.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -25,7 +51,7 @@ export default function EditDespesaForm({ expense }: EditDespesaFormProps) {
       </div>
 
       <div className={styles.card}>
-        <form action={updateExpense.bind(null, expense.id)} className={styles.form} encType="multipart/form-data">
+        <form onSubmit={handleSubmit} className={styles.form} encType="multipart/form-data">
           
           <h3 className={styles.sectionTitle}>Dados Gerais da Despesa</h3>
           <div className={styles.formRow}>
@@ -137,7 +163,17 @@ export default function EditDespesaForm({ expense }: EditDespesaFormProps) {
           </div>
 
           <div className={styles.footer} style={{ marginTop: '2rem' }}>
-            <button type="submit" className={styles.submitBtn} style={{ background: '#f39c12' }}>Salvar Edição</button>
+            <button 
+              type="submit" 
+              className={styles.submitBtn} 
+              disabled={loading}
+              style={{ 
+                background: loading ? '#95a5a6' : '#f39c12',
+                cursor: loading ? 'not-allowed' : 'pointer',
+              }}
+            >
+              {loading ? "Salvando..." : "Salvar Edição"}
+            </button>
           </div>
         </form>
       </div>

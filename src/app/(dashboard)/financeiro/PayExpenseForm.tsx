@@ -9,7 +9,7 @@ interface PayExpenseFormProps {
 
 export default function PayExpenseForm({ expenseId }: PayExpenseFormProps) {
   return (
-    <form action={payExpense} encType="multipart/form-data" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <form action={async (formData) => { await payExpense(formData); }} encType="multipart/form-data" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
       <input type="hidden" name="expenseId" value={expenseId} />
       <label 
         htmlFor={`receipt-${expenseId}`} 

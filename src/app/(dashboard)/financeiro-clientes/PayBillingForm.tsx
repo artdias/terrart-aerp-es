@@ -18,9 +18,13 @@ export default function PayBillingForm({ billingId }: { billingId: string }) {
       formData.append("billingId", billingId);
       formData.append("attachment", file);
 
-      await payClientBilling(formData);
+      const result = await payClientBilling(formData);
+      
+      if (result && result.error) {
+        alert(result.error);
+      }
     } catch (err: any) {
-      alert(err.message || "Erro ao fazer upload do comprovante.");
+      alert("Erro interno ao fazer upload do comprovante.");
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) {

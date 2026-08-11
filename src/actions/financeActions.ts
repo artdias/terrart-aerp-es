@@ -8,135 +8,149 @@ import fs from "fs/promises";
 import path from "path";
 
 export async function createInvoice(formData: FormData) {
-  const clientId = sanitizeInput(formData.get("clientId") as string);
-  const description = sanitizeInput(formData.get("description") as string);
-  const amountStr = sanitizeInput(formData.get("amount") as string);
-  const dueDateStr = sanitizeInput(formData.get("dueDate") as string);
+  try {
+    const clientId = sanitizeInput(formData.get("clientId") as string);
+    const description = sanitizeInput(formData.get("description") as string);
+    const amountStr = sanitizeInput(formData.get("amount") as string);
+    const dueDateStr = sanitizeInput(formData.get("dueDate") as string);
 
-  if (!clientId || !amountStr || !dueDateStr) {
-    throw new Error("Cliente, Valor e Data de Vencimento são obrigatórios");
+    if (!clientId || !amountStr || !dueDateStr) {
+      return { success: false, error: "Cliente, Valor e Data de Vencimento são obrigatórios" };
+    }
+
+    const amount = parseFloat(amountStr.replace(",", "."));
+    const dueDate = new Date(dueDateStr);
+
+    const attachment = formData.get("attachment") as File;
+    let fileUrl: string | null = null;
+    let fileName: string | null = null;
+
+    if (attachment && attachment.size > 0 && attachment.name) {
+      const uploadsDir = path.join(process.cwd(), "public", "uploads");
+      await fs.mkdir(uploadsDir, { recursive: true });
+
+      const sanitizedFileName = sanitizeInput(attachment.name);
+      const filename = `${Date.now()}-${sanitizedFileName.replace(/\s+/g, "_")}`;
+      const filePath = path.join(uploadsDir, filename);
+
+      const buffer = Buffer.from(await attachment.arrayBuffer());
+      await fs.writeFile(filePath, buffer);
+
+      fileUrl = `/uploads/${filename}`;
+      fileName = sanitizedFileName;
+    }
+
+    await prisma.invoice.create({
+      data: {
+        clientId,
+        description,
+        amount,
+        dueDate,
+        status: "PENDING",
+        fileUrl,
+        fileName
+      }
+    });
+
+    revalidatePath("/financeiro");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Erro em createInvoice:", error);
+    return { success: false, error: "Erro interno ao criar fatura." };
   }
+}
 
-  // Converter valor numérico e data
-  const amount = parseFloat(amountStr.replace(",", "."));
-  const dueDate = new Date(dueDateStr);
+export async function updateInvoice(id: string, formData: FormData) {
+  try {
+    const clientId = sanitizeInput(formData.get("clientId") as string);
+    const description = sanitizeInput(formData.get("description") as string);
+    const amountStr = sanitizeInput(formData.get("amount") as string);
+    const dueDateStr = sanitizeInput(formData.get("dueDate") as string);
+    const status = sanitizeInput(formData.get("status") as string);
 
-  // Processar arquivo de anexo, se houver
-  const attachment = formData.get("attachment") as File;
-  let fileUrl: string | null = null;
-  let fileName: string | null = null;
+    if (!clientId || !amountStr || !dueDateStr) {
+      return { success: false, error: "Cliente, Valor e Data de Vencimento são obrigatórios" };
+    }
 
-  if (attachment && attachment.size > 0 && attachment.name) {
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    await fs.mkdir(uploadsDir, { recursive: true });
+    const amount = parseFloat(amountStr.replace(",", "."));
+    const dueDate = new Date(dueDateStr);
 
-    const sanitizedFileName = sanitizeInput(attachment.name);
-    const filename = `${Date.now()}-${sanitizedFileName.replace(/\s+/g, "_")}`;
-    const filePath = path.join(uploadsDir, filename);
-
-    const buffer = Buffer.from(await attachment.arrayBuffer());
-    await fs.writeFile(filePath, buffer);
-
-    fileUrl = `/uploads/${filename}`;
-    fileName = sanitizedFileName;
-  }
-
-  await prisma.invoice.create({
-    data: {
+    const dataToUpdate: any = {
       clientId,
       description,
       amount,
       dueDate,
-      status: "PENDING",
-      fileUrl,
-      fileName
+      status
+    };
+
+    const attachment = formData.get("attachment") as File;
+    if (attachment && attachment.size > 0 && attachment.name) {
+      const uploadsDir = path.join(process.cwd(), "public", "uploads");
+      await fs.mkdir(uploadsDir, { recursive: true });
+
+      const sanitizedFileName = sanitizeInput(attachment.name);
+      const filename = `${Date.now()}-${sanitizedFileName.replace(/\s+/g, "_")}`;
+      const filePath = path.join(uploadsDir, filename);
+
+      const buffer = Buffer.from(await attachment.arrayBuffer());
+      await fs.writeFile(filePath, buffer);
+
+      dataToUpdate.fileUrl = `/uploads/${filename}`;
+      dataToUpdate.fileName = sanitizedFileName;
     }
-  });
 
-  revalidatePath("/financeiro");
-  redirect("/financeiro");
-}
+    await prisma.invoice.update({
+      where: { id },
+      data: dataToUpdate
+    });
 
-export async function updateInvoice(id: string, formData: FormData) {
-  const clientId = sanitizeInput(formData.get("clientId") as string);
-  const description = sanitizeInput(formData.get("description") as string);
-  const amountStr = sanitizeInput(formData.get("amount") as string);
-  const dueDateStr = sanitizeInput(formData.get("dueDate") as string);
-  const status = sanitizeInput(formData.get("status") as string);
-
-  if (!clientId || !amountStr || !dueDateStr) {
-    throw new Error("Cliente, Valor e Data de Vencimento são obrigatórios");
+    revalidatePath("/financeiro");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Erro em updateInvoice:", error);
+    return { success: false, error: "Erro interno ao atualizar fatura." };
   }
-
-  const amount = parseFloat(amountStr.replace(",", "."));
-  const dueDate = new Date(dueDateStr);
-
-  const dataToUpdate: any = {
-    clientId,
-    description,
-    amount,
-    dueDate,
-    status
-  };
-
-  const attachment = formData.get("attachment") as File;
-  if (attachment && attachment.size > 0 && attachment.name) {
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    await fs.mkdir(uploadsDir, { recursive: true });
-
-    const sanitizedFileName = sanitizeInput(attachment.name);
-    const filename = `${Date.now()}-${sanitizedFileName.replace(/\s+/g, "_")}`;
-    const filePath = path.join(uploadsDir, filename);
-
-    const buffer = Buffer.from(await attachment.arrayBuffer());
-    await fs.writeFile(filePath, buffer);
-
-    dataToUpdate.fileUrl = `/uploads/${filename}`;
-    dataToUpdate.fileName = sanitizedFileName;
-  }
-
-  await prisma.invoice.update({
-    where: { id },
-    data: dataToUpdate
-  });
-
-  revalidatePath("/financeiro");
-  redirect("/financeiro");
 }
 
 export async function payInvoice(formData: FormData) {
-  const invoiceId = sanitizeInput(formData.get("invoiceId") as string);
-  
-  if (!invoiceId) {
-    throw new Error("ID da fatura não fornecido.");
-  }
-
-  const receiptFile = formData.get("receipt") as File;
-  let fileUrl: string | null = null;
-  let fileName: string | null = null;
-
-  if (receiptFile && receiptFile.size > 0 && receiptFile.name) {
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    await fs.mkdir(uploadsDir, { recursive: true });
-
-    const sanitizedFileName = sanitizeInput(receiptFile.name);
-    const filename = `${Date.now()}-receipt-${sanitizedFileName.replace(/\s+/g, "_")}`;
-    const filePath = path.join(uploadsDir, filename);
-
-    const buffer = Buffer.from(await receiptFile.arrayBuffer());
-    await fs.writeFile(filePath, buffer);
-
-    fileUrl = `/uploads/${filename}`;
-    fileName = sanitizedFileName;
-  }
-
-  await prisma.invoice.update({
-    where: { id: invoiceId },
-    data: {
-      status: "PAID",
-      ...(fileUrl ? { fileUrl, fileName } : {})
+  try {
+    const invoiceId = sanitizeInput(formData.get("invoiceId") as string);
+    
+    if (!invoiceId) {
+      return { success: false, error: "ID da fatura não fornecido." };
     }
-  });
 
-  revalidatePath("/financeiro");
+    const receiptFile = formData.get("receipt") as File;
+    let fileUrl: string | null = null;
+    let fileName: string | null = null;
+
+    if (receiptFile && receiptFile.size > 0 && receiptFile.name) {
+      const uploadsDir = path.join(process.cwd(), "public", "uploads");
+      await fs.mkdir(uploadsDir, { recursive: true });
+
+      const sanitizedFileName = sanitizeInput(receiptFile.name);
+      const filename = `${Date.now()}-receipt-${sanitizedFileName.replace(/\s+/g, "_")}`;
+      const filePath = path.join(uploadsDir, filename);
+
+      const buffer = Buffer.from(await receiptFile.arrayBuffer());
+      await fs.writeFile(filePath, buffer);
+
+      fileUrl = `/uploads/${filename}`;
+      fileName = sanitizedFileName;
+    }
+
+    await prisma.invoice.update({
+      where: { id: invoiceId },
+      data: {
+        status: "PAID",
+        ...(fileUrl ? { fileUrl, fileName } : {})
+      }
+    });
+
+    revalidatePath("/financeiro");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Erro em payInvoice:", error);
+    return { success: false, error: "Erro interno ao baixar fatura." };
+  }
 }

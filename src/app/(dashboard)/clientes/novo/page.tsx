@@ -4,7 +4,8 @@ import { createClient } from "@/actions/clientActions";
 import styles from "./novoCliente.module.css";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
-import { useState } from "react";
+import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 
 export default function NovoClientePage() {
   const [cnpj, setCnpj] = useState("");
@@ -84,8 +85,8 @@ export default function NovoClientePage() {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const router = require("next/navigation").useRouter();
-  const errorRef = require("react").useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const errorRef = useRef<HTMLDivElement>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
