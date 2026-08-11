@@ -5,6 +5,7 @@ import styles from "../../../clientes/novo/novoCliente.module.css";
 import Link from "next/link";
 import { ArrowLeft, X, Paperclip } from "lucide-react";
 import { useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 
 interface EmployeeType {
   id: string;
@@ -34,12 +35,19 @@ interface ClientOption {
   companyName: string;
 }
 
+interface CargoOption {
+  id: string;
+  name: string;
+}
+
 export default function EditFuncionarioForm({ 
   employee, 
-  clientes 
+  clientes,
+  cargos
 }: { 
   employee: EmployeeType; 
-  clientes: ClientOption[] 
+  clientes: ClientOption[];
+  cargos: CargoOption[];
 }) {
   const [cpf, setCpf] = useState(employee.cpf);
   const [rg, setRg] = useState(employee.rg || "");
@@ -109,23 +117,44 @@ export default function EditFuncionarioForm({
     setDocuments(prev => prev.filter((_, i) => i !== index));
   };
 
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const form = e.currentTarget;
-    const formData = new FormData(form);
+    if (loading) return;
+    
+    setLoading(true);
+    try {
+      const form = e.currentTarget;
+      const formData = new FormData(form);
 
-    formData.delete("certificados-nativos");
-    formData.delete("documentos-nativos");
+      formData.delete("certificados-nativos");
+      formData.delete("documentos-nativos");
 
-    certificates.forEach((file) => {
-      formData.append("certificates", file);
-    });
+      certificates.forEach((file) => {
+        formData.append("certificates", file);
+      });
 
-    documents.forEach((file) => {
-      formData.append("documents", file);
-    });
+      documents.forEach((file) => {
+        formData.append("documents", file);
+      });
 
-    await updateEmployee(employee.id, formData);
+      const result = await updateEmployee(employee.id, formData);
+      
+      if (result?.error) {
+        alert(result.error);
+        setLoading(false);
+        return;
+      }
+      
+      router.push("/funcionarios");
+      router.refresh();
+    } catch (error) {
+      console.error("Erro ao atualizar funcionário:", error);
+      alert("Ocorreu um erro ao atualizar o funcionário. Tente novamente.");
+      setLoading(false);
+    }
   };
 
   return (
@@ -240,7 +269,12 @@ export default function EditFuncionarioForm({
 
             <div className={styles.inputGroup}>
               <label htmlFor="roleTitle">Cargo / Função <span style={{ color: '#e74c3c' }}>*</span></label>
-              <input type="text" id="roleTitle" name="roleTitle" required defaultValue={employee.roleTitle || ""} placeholder="Ex: Porteiro, Zelador" />
+              <select id="roleTitle" name="roleTitle" required defaultValue={employee.roleTitle || ""} style={{ padding: '0.95rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa' }}>
+                <option value="">Selecione um cargo</option>
+                {cargos.map(cargo => (
+                  <option key={cargo.id} value={cargo.name}>{cargo.name}</option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -336,7 +370,9 @@ export default function EditFuncionarioForm({
           </div>
 
           <div className={styles.footer}>
-            <button type="submit" className={styles.submitBtn}>Salvar Alterações</button>
+            <button type="submit" className={styles.submitBtn} disabled={loading}>
+              {loading ? "Salvando..." : "Salvar Alterações"}
+            </button>
           </div>
         </form>
       </div>

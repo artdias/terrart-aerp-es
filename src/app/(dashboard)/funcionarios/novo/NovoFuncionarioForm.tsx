@@ -12,7 +12,12 @@ interface ClientOption {
   companyName: string;
 }
 
-export default function NovoFuncionarioForm({ clientes }: { clientes: ClientOption[] }) {
+interface CargoOption {
+  id: string;
+  name: string;
+}
+
+export default function NovoFuncionarioForm({ clientes, cargos }: { clientes: ClientOption[], cargos: CargoOption[] }) {
   const [cpf, setCpf] = useState("");
   const [rg, setRg] = useState("");
   const [cnh, setCnh] = useState("");
@@ -110,10 +115,17 @@ export default function NovoFuncionarioForm({ clientes }: { clientes: ClientOpti
       });
 
       // Chama a Server Action diretamente
-      await createEmployee(formData);
+      const result = await createEmployee(formData);
       
-      // Volta para a lista
+      if (result?.error) {
+        alert(result.error);
+        setLoading(false);
+        return;
+      }
+      
+      // Volta para a lista se sucesso
       router.push("/funcionarios");
+      router.refresh();
     } catch (error) {
       console.error("Erro ao salvar funcionário:", error);
       alert("Ocorreu um erro ao salvar o funcionário. Tente novamente.");
@@ -233,7 +245,12 @@ export default function NovoFuncionarioForm({ clientes }: { clientes: ClientOpti
 
             <div className={styles.inputGroup}>
               <label htmlFor="roleTitle">Cargo / Função <span style={{ color: '#e74c3c' }}>*</span></label>
-              <input type="text" id="roleTitle" name="roleTitle" required placeholder="Ex: Porteiro, Zelador" />
+              <select id="roleTitle" name="roleTitle" required style={{ padding: '0.95rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa' }}>
+                <option value="">Selecione um cargo</option>
+                {cargos.map(cargo => (
+                  <option key={cargo.id} value={cargo.name}>{cargo.name}</option>
+                ))}
+              </select>
             </div>
           </div>
 

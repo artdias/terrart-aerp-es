@@ -37,10 +37,18 @@ export default function NovaEscalaForm({
     setError("");
     setLoading(true);
     try {
-      await createAllocation(formData);
+      const result = await createAllocation(formData);
+      if (result?.error) {
+        setError(result.error);
+        setTimeout(() => {
+          errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+        return;
+      }
       router.push("/escalas");
+      router.refresh();
     } catch (err: any) {
-      setError(err.message || "Ocorreu um erro ao tentar salvar a alocação.");
+      setError("Ocorreu um erro ao tentar salvar a alocação.");
       setTimeout(() => {
         errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);

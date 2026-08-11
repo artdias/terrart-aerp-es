@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { sanitizeInput } from "@/lib/sanitize";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { logAction } from "@/lib/audit";

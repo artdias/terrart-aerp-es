@@ -166,36 +166,42 @@ export async function deleteProduct(formData: FormData) {
 }
 
 export async function updateProduct(id: string, formData: FormData) {
-  const name = sanitizeInput(formData.get("name") as string);
-  const description = sanitizeInput(formData.get("description") as string);
-  const quantity = parseInt(formData.get("quantity") as string, 10);
-  const minQuantity = parseInt(formData.get("minQuantity") as string, 10);
-  const unit = sanitizeInput(formData.get("unit") as string);
-  
-  const category = sanitizeInput(formData.get("category") as string);
-  const size = sanitizeInput(formData.get("size") as string);
-  const modelType = sanitizeInput(formData.get("modelType") as string);
+  try {
+    const name = sanitizeInput(formData.get("name") as string);
+    const description = sanitizeInput(formData.get("description") as string);
+    const quantity = parseInt(formData.get("quantity") as string, 10);
+    const minQuantity = parseInt(formData.get("minQuantity") as string, 10);
+    const unit = sanitizeInput(formData.get("unit") as string);
+    
+    const category = sanitizeInput(formData.get("category") as string);
+    const size = sanitizeInput(formData.get("size") as string);
+    const modelType = sanitizeInput(formData.get("modelType") as string);
 
-  if (!name || isNaN(quantity)) {
-    throw new Error("Nome e Quantidade são obrigatórios");
-  }
-
-  await prisma.product.update({
-    where: { id },
-    data: {
-      name,
-      description,
-      quantity: quantity || 0,
-      minQuantity: minQuantity || 0,
-      unit: unit || "un",
-      category,
-      size,
-      modelType
+    if (!name || isNaN(quantity)) {
+      return { success: false, error: "Nome e Quantidade são obrigatórios" };
     }
-  });
 
-  await logAction("UPDATE_PRODUCT", `Atualizou o produto '${name}' (ID: ${id}).`);
+    await prisma.product.update({
+      where: { id },
+      data: {
+        name,
+        description,
+        quantity: quantity || 0,
+        minQuantity: minQuantity || 0,
+        unit: unit || "un",
+        category,
+        size,
+        modelType
+      }
+    });
 
-  revalidatePath("/estoque");
-  revalidatePath(`/estoque/${id}`);
+    await logAction("UPDATE_PRODUCT", `Atualizou o produto '${name}' (ID: ${id}).`);
+
+    revalidatePath("/estoque");
+    revalidatePath(`/estoque/${id}`);
+    return { success: true };
+  } catch (error: any) {
+    console.error("Erro em updateProduct:", error);
+    return { success: false, error: "Ocorreu um erro interno ao tentar atualizar o produto." };
+  }
 }

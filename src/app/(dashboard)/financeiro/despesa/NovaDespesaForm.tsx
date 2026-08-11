@@ -32,8 +32,16 @@ export default function NovaDespesaForm({ produtos }: NovaDespesaFormProps) {
     setLoading(true);
     try {
       const formData = new FormData(e.currentTarget);
-      await createExpense(formData);
-      // O redirect já é feito na action, mas caso precise de algo aqui no client:
+      const result = await createExpense(formData);
+      
+      if (result?.error) {
+        alert(result.error);
+        setLoading(false);
+        return;
+      }
+      
+      router.push("/financeiro?tab=despesas");
+      router.refresh();
     } catch (error) {
       console.error("Erro ao salvar despesa:", error);
       alert("Ocorreu um erro ao salvar a despesa. Verifique os dados e tente novamente.");

@@ -56,10 +56,18 @@ export default function EditEscalaForm({
     const formData = new FormData(form);
 
     try {
-      await updateAllocation(allocation.id, formData);
+      const result = await updateAllocation(allocation.id, formData);
+      if (result?.error) {
+        setError(result.error);
+        setTimeout(() => {
+          errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+        return;
+      }
       router.push("/escalas");
+      router.refresh();
     } catch (err: any) {
-      setError(err.message || "Ocorreu um erro ao atualizar a alocação.");
+      setError("Ocorreu um erro ao atualizar a alocação.");
       setTimeout(() => {
         errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);

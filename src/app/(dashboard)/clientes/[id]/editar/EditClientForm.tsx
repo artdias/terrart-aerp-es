@@ -101,8 +101,41 @@ export default function EditClientForm({ client }: { client: ClientData }) {
     setManagerContact(formatted.substring(0, 15));
   };
 
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+  const router = require("next/navigation").useRouter();
+  const errorRef = require("react").useRef<HTMLDivElement>(null);
+
   // Fazer bind da Server Action com o ID do cliente
   const updateClientWithId = updateClient.bind(null, client.id);
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setError("");
+    setLoading(true);
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+
+    try {
+      const result = await updateClientWithId(formData);
+      if (result?.error) {
+        setError(result.error);
+        setTimeout(() => {
+          errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+        return;
+      }
+      router.push("/clientes");
+      router.refresh();
+    } catch (err: any) {
+      setError("Ocorreu um erro ao tentar atualizar o cliente.");
+      setTimeout(() => {
+        errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className={styles.container}>
@@ -116,7 +149,13 @@ export default function EditClientForm({ client }: { client: ClientData }) {
       </div>
 
       <div className={styles.card}>
-        <form action={updateClientWithId} className={styles.form}>
+        <form onSubmit={handleSubmit} className={styles.form}>
+          {error && (
+            <div ref={errorRef} style={{ background: '#fdedec', color: '#c0392b', padding: '16px', borderRadius: '8px', marginBottom: '24px', border: '1px solid #e74c3c', display: 'flex', alignItems: 'center', gap: '8px', fontWeight: 500 }}>
+              <span style={{ fontSize: '1.2rem' }}>⚠️</span>
+              {error}
+            </div>
+          )}
           
           <h3 className={styles.sectionTitle}>Dados Principais</h3>
           <div className={styles.formRow}>

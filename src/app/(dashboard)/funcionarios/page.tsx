@@ -62,10 +62,16 @@ export default async function FuncionariosPage({
           <h1 className={styles.title}>Funcionários</h1>
           <p className={styles.subtitle}>Gerencie o cadastro de terceirizados e suas alocações.</p>
         </div>
-        <Link href="/funcionarios/novo" className={styles.addButton}>
-          <Plus size={20} />
-          <span>Novo Funcionário</span>
-        </Link>
+        <div style={{ display: 'flex', gap: '12px' }}>
+          <Link href="/funcionarios/cargos" className={styles.actionBtn} style={{ background: '#f39c12', color: 'white', textDecoration: 'none', padding: '10px 16px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <Briefcase size={20} />
+            <span>Gerenciar Cargos</span>
+          </Link>
+          <Link href="/funcionarios/novo" className={styles.addButton}>
+            <Plus size={20} />
+            <span>Novo Funcionário</span>
+          </Link>
+        </div>
       </div>
 
       {/* Barra de Filtros Reativa */}

@@ -56,10 +56,18 @@ export default function NovaCautelaForm({
     setError("");
     setLoading(true);
     try {
-      await assignEquipment(formData);
+      const result = await assignEquipment(formData);
+      if (result?.error) {
+        setError(result.error);
+        setTimeout(() => {
+          errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+        return;
+      }
       router.push("/cautelas");
+      router.refresh();
     } catch (err: any) {
-      setError(err.message || "Ocorreu um erro ao tentar salvar a entrega.");
+      setError("Ocorreu um erro ao tentar salvar a entrega.");
       setTimeout(() => {
         errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);

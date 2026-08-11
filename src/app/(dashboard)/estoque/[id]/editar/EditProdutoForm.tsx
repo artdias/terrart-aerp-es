@@ -33,10 +33,18 @@ export default function EditProdutoForm({ produto }: { produto: ProductType }) {
     const formData = new FormData(form);
 
     try {
-      await updateProduct(produto.id, formData);
+      const result = await updateProduct(produto.id, formData);
+      if (result?.error) {
+        setError(result.error);
+        setTimeout(() => {
+          errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 100);
+        return;
+      }
       router.push("/estoque");
+      router.refresh();
     } catch (err: any) {
-      setError(err.message || "Ocorreu um erro ao atualizar o produto.");
+      setError("Ocorreu um erro ao atualizar o produto.");
       setTimeout(() => {
         errorRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);

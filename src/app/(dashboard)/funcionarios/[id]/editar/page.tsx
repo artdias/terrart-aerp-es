@@ -20,5 +20,10 @@ export default async function EditarFuncionarioPage({ params }: { params: { id: 
     select: { id: true, companyName: true }
   });
 
-  return <EditFuncionarioForm employee={func} clientes={clientes} />;
+  const cargos = await prisma.jobRole.findMany({
+    orderBy: { name: 'asc' },
+    select: { id: true, name: true }
+  });
+
+  return <EditFuncionarioForm employee={func} clientes={clientes} cargos={cargos} />;
 }

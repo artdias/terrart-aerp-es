@@ -7,5 +7,10 @@ export default async function NovoFuncionarioPage() {
     select: { id: true, companyName: true }
   });
 
-  return <NovoFuncionarioForm clientes={clientes} />;
+  const cargos = await prisma.jobRole.findMany({
+    orderBy: { name: 'asc' },
+    select: { id: true, name: true }
+  });
+
+  return <NovoFuncionarioForm clientes={clientes} cargos={cargos} />;
 }
