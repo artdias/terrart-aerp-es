@@ -321,14 +321,14 @@ export async function deleteEmployee(formData: FormData) {
     const relations = await prisma.employee.findUnique({
       where: { id },
       include: {
-        jobAllocations: { where: { status: "Ativa" }, include: { client: true, workplace: true } },
+        jobAllocations: { where: { status: "Ativa" }, include: { client: true } },
         equipments: { where: { status: "EM USO" }, include: { product: true } },
       }
     });
 
     if (relations) {
       if (relations.jobAllocations.length > 0) {
-        const rotinas = relations.jobAllocations.map(a => `${a.task} (Cliente: ${a.client.companyName}${a.workplace ? `, Posto: ${a.workplace.name}` : ""})`).join(" | ");
+        const rotinas = relations.jobAllocations.map(a => `${a.task} (Cliente: ${a.client.companyName})`).join(" | ");
         return { success: false, error: `Não é possível excluir pois possui alocações ativas: ${rotinas}. Você deve cancelá-las ou concluí-las primeiro.` };
       }
       if (relations.equipments.length > 0) {
