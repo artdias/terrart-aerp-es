@@ -322,16 +322,18 @@ export async function deleteEmployee(formData: FormData) {
       where: { id },
       include: {
         jobAllocations: { where: { status: "Ativa" } },
-        equipments: { where: { status: "EM USO" } },
+        equipments: { where: { status: "EM USO" }, include: { product: true } },
       }
     });
 
     if (relations) {
       if (relations.jobAllocations.length > 0) {
-        return { success: false, error: "Não é possível excluir este funcionário pois ele possui escalas/alocações ativas vinculadas a ele. Você deve cancelá-las ou concluí-las primeiro." };
+        const rotinas = relations.jobAllocations.map(a => a.task).join(", ");
+        return { success: false, error: `Não é possível excluir pois possui alocações ativas: ${rotinas}. Você deve cancelá-las ou concluí-las primeiro.` };
       }
       if (relations.equipments.length > 0) {
-        return { success: false, error: "Não é possível excluir este funcionário pois ele possui equipamentos/cautelas em uso. Faça a devolução primeiro." };
+        const materiais = relations.equipments.map(e => e.product.name).join(", ");
+        return { success: false, error: `Não é possível excluir pois possui materiais em uso (cautela): ${materiais}. Faça a devolução primeiro.` };
       }
     }
 
