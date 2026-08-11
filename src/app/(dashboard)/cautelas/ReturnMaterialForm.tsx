@@ -1,16 +1,42 @@
 "use client";
 
 import { returnEquipment } from "@/actions/equipmentActions";
-import React from "react";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface ReturnMaterialFormProps {
   equipmentId: string;
 }
 
 export default function ReturnMaterialForm({ equipmentId }: ReturnMaterialFormProps) {
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (loading) return;
+    
+    setLoading(true);
+    try {
+      const formData = new FormData(e.currentTarget);
+      const result = await returnEquipment(formData);
+      
+      if (result && result.error) {
+        alert(result.error);
+      } else {
+        router.refresh();
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Ocorreu um erro inesperado ao processar a baixa.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <form 
-      action={returnEquipment} 
+      onSubmit={handleSubmit} 
       style={{ 
         display: 'flex', 
         flexDirection: 'column', 
@@ -61,22 +87,23 @@ export default function ReturnMaterialForm({ equipmentId }: ReturnMaterialFormPr
 
       <button 
         type="submit" 
+        disabled={loading}
         style={{ 
-          background: '#27ae60', 
+          background: loading ? '#95a5a6' : '#27ae60', 
           color: 'white', 
           border: 'none', 
           padding: '6px 10px', 
           borderRadius: '4px', 
-          cursor: 'pointer', 
+          cursor: loading ? 'not-allowed' : 'pointer', 
           fontWeight: 600,
           fontSize: '0.8rem',
           textAlign: 'center',
           transition: 'background 0.2s'
         }}
-        onMouseOver={(e) => (e.currentTarget.style.background = '#219653')}
-        onMouseOut={(e) => (e.currentTarget.style.background = '#27ae60')}
+        onMouseOver={(e) => { if (!loading) e.currentTarget.style.background = '#219653' }}
+        onMouseOut={(e) => { if (!loading) e.currentTarget.style.background = '#27ae60' }}
       >
-        Dar Baixa
+        {loading ? "Processando..." : "Dar Baixa"}
       </button>
     </form>
   );
