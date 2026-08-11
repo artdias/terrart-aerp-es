@@ -142,7 +142,7 @@ export default async function DashboardHome() {
   });
 
   const employeesList = await prisma.employee.findMany({
-    where: { deleted: false },
+    where: { deleted: false, status: "Ativo" },
     select: { id: true, firstName: true, lastName: true },
     orderBy: { firstName: "asc" }
   });

@@ -16,7 +16,8 @@ export default async function NovoAgendamentoPage() {
     where: { deleted: false }, orderBy: { companyName: 'asc' }
   });
 
-  const employees = await prisma.employee.findMany({ where: { deleted: false }, 
+  const employees = await prisma.employee.findMany({ 
+    where: { deleted: false, status: "Ativo" }, 
     include: { user: true },
     orderBy: { firstName: "asc" }
   });

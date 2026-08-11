@@ -12,7 +12,7 @@ export default async function EditarEscalaPage({ params }: { params: { id: strin
   }
 
   const funcionarios = await prisma.employee.findMany({
-    where: { deleted: false },
+    where: { deleted: false, status: "Ativo" },
     include: { user: true },
     orderBy: { createdAt: 'desc' }
   });

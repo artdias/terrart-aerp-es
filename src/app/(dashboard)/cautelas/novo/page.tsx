@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 
 export default async function NovaCautelaPage() {
   const funcionarios = await prisma.employee.findMany({
-    where: { deleted: false },
+    where: { deleted: false, status: "Ativo" },
     include: { user: true },
     orderBy: { createdAt: 'desc' }
   });
