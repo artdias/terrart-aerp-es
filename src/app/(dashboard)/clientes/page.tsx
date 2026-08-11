@@ -3,7 +3,7 @@ import styles from "./clientes.module.css";
 import { Plus, Building2, MapPin, FileText } from "lucide-react";
 import Link from "next/link";
 import SearchInput from "@/components/SearchInput";
-import FilterSelect from "@/components/FilterSelect";
+import SortableHeader from "@/components/SortableHeader";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -68,24 +68,6 @@ export default async function ClientesPage({
         border: '1px solid #eee'
       }}>
         <SearchInput placeholder="Pesquise por nome, CNPJ ou endereço..." />
-        
-        <FilterSelect 
-          name="sortBy"
-          defaultValue={sortBy}
-          options={[
-            { value: "companyName", label: "Ordenar por Razão Social" },
-            { value: "createdAt", label: "Ordenar por Data de Cadastro" }
-          ]}
-        />
-
-        <FilterSelect 
-          name="order"
-          defaultValue={order}
-          options={[
-            { value: "asc", label: "Ordem Crescente" },
-            { value: "desc", label: "Ordem Decrescente" }
-          ]}
-        />
 
         {search || sortBy !== "createdAt" || order !== "desc" ? (
           <Link href="/clientes" style={{ fontSize: '0.85rem', color: '#c0392b', fontWeight: 600, textDecoration: 'none' }}>
@@ -98,9 +80,9 @@ export default async function ClientesPage({
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Empresa</th>
-              <th>CNPJ</th>
-              <th>Endereço</th>
+              <th><SortableHeader label="Empresa" value="companyName" /></th>
+              <th><SortableHeader label="CNPJ" value="cnpj" /></th>
+              <th><SortableHeader label="Endereço" value="address" /></th>
               <th>Ações</th>
             </tr>
           </thead>

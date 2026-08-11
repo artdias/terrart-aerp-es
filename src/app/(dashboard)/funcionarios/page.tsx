@@ -3,6 +3,7 @@ import { Plus, Users, Briefcase } from "lucide-react";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import SearchInput from "@/components/SearchInput";
+import SortableHeader from "@/components/SortableHeader";
 import FilterSelect from "@/components/FilterSelect";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -101,26 +102,6 @@ export default async function FuncionariosPage({
           ]}
         />
 
-        <FilterSelect 
-          name="sortBy"
-          defaultValue={sortBy}
-          options={[
-            { value: "firstName", label: "Ordenar por Nome" },
-            { value: "roleTitle", label: "Ordenar por Cargo" },
-            { value: "status", label: "Ordenar por Status" },
-            { value: "createdAt", label: "Ordenar por Data de Cadastro" }
-          ]}
-        />
-
-        <FilterSelect 
-          name="order"
-          defaultValue={order}
-          options={[
-            { value: "asc", label: "Ordem Crescente" },
-            { value: "desc", label: "Ordem Decrescente" }
-          ]}
-        />
-
         {search || status || sortBy !== "createdAt" || order !== "desc" ? (
           <Link href="/funcionarios" style={{ fontSize: '0.85rem', color: '#c0392b', fontWeight: 600, textDecoration: 'none' }}>
             Limpar Filtros
@@ -132,11 +113,11 @@ export default async function FuncionariosPage({
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Nome / CPF</th>
-              <th>Cargo</th>
+              <th><SortableHeader label="Nome / CPF" value="firstName" /></th>
+              <th><SortableHeader label="Cargo" value="roleTitle" /></th>
               <th>Alocação (Posto)</th>
-              <th>Status</th>
-              <th>Data de Cadastro</th>
+              <th><SortableHeader label="Status" value="status" /></th>
+              <th><SortableHeader label="Data de Cadastro" value="createdAt" /></th>
               <th>Ações</th>
             </tr>
           </thead>

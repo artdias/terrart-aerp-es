@@ -3,6 +3,7 @@ import { Plus, Briefcase, CalendarClock, DollarSign, CheckCircle2 } from "lucide
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import SearchInput from "@/components/SearchInput";
+import SortableHeader from "@/components/SortableHeader";
 import FilterSelect from "@/components/FilterSelect";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -136,24 +137,6 @@ export default async function EscalasPage({
           ]}
         />
 
-        <FilterSelect 
-          name="sortBy"
-          defaultValue={sortBy}
-          options={[
-            { value: "createdAt", label: "Ordenar por Data de Cadastro" },
-            { value: "paymentValue", label: "Ordenar por Remuneração" }
-          ]}
-        />
-
-        <FilterSelect 
-          name="order"
-          defaultValue={order}
-          options={[
-            { value: "asc", label: "Ordem Crescente" },
-            { value: "desc", label: "Ordem Decrescente" }
-          ]}
-        />
-
         {search || status || sortBy !== "createdAt" || order !== "desc" ? (
           <Link href="/escalas" style={{ fontSize: '0.85rem', color: '#c0392b', fontWeight: 600, textDecoration: 'none' }}>
             Limpar Filtros
@@ -168,7 +151,7 @@ export default async function EscalasPage({
               <th>Funcionário</th>
               <th>Cliente (Local)</th>
               <th>Tarefa / Tempo</th>
-              <th>Remuneração</th>
+              <th><SortableHeader label="Remuneração" value="paymentValue" /></th>
               <th>Status</th>
               <th>Ações</th>
             </tr>

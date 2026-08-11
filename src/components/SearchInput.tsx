@@ -15,48 +15,68 @@ export default function SearchInput({ placeholder, name = "search", style }: Sea
   const [value, setValue] = useState(searchParams.get(name) || "");
   const [isPending, startTransition] = useTransition();
 
+  // Atualiza o state local se o parâmetro na URL mudar externamente (ex: botão de limpar filtros)
   useEffect(() => {
-    const delayDebounce = setTimeout(() => {
-      const currentVal = searchParams.get(name) || "";
-      if (value === currentVal) return; // Evita navegações redundantes
+    const currentVal = searchParams.get(name) || "";
+    setValue(currentVal);
+  }, [searchParams, name]);
 
-      const params = new URLSearchParams(searchParams.toString());
-      if (value) {
-        params.set(name, value);
-      } else {
-        params.delete(name);
-      }
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const params = new URLSearchParams(searchParams.toString());
+    
+    if (value.trim()) {
+      params.set(name, value.trim());
+    } else {
+      params.delete(name);
+    }
 
-      startTransition(() => {
-        router.replace(`?${params.toString()}`, { scroll: false });
-      });
-    }, 200); // Debounce de 200ms para evitar requisições em excesso ao banco
-
-    return () => clearTimeout(delayDebounce);
-  }, [value, name, router, searchParams]);
-
-  // Sincronizar o valor local caso os filtros sejam limpos externamente
-  const externalVal = searchParams.get(name) || "";
-  if (externalVal !== value && value !== "" && externalVal === "") {
-    setValue("");
-  }
+    startTransition(() => {
+      router.push(`?${params.toString()}`, { scroll: false });
+    });
+  };
 
   return (
-    <input
-      type="text"
-      placeholder={placeholder}
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-      style={{
-        padding: "0.6rem 1rem",
-        borderRadius: "6px",
-        border: isPending ? "1px solid #3498db" : "1px solid #ddd",
-        minWidth: "240px",
-        fontSize: "0.85rem",
-        outline: "none",
-        transition: "border-color 0.15s ease",
-        ...style
-      }}
-    />
+    <form 
+      onSubmit={handleSearch} 
+      style={{ display: "flex", alignItems: "center", gap: "8px", margin: 0, padding: 0 }}
+    >
+      <input
+        type="text"
+        placeholder={placeholder}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        style={{
+          padding: "0.6rem 1rem",
+          borderRadius: "6px",
+          border: isPending ? "1px solid #3498db" : "1px solid #ddd",
+          minWidth: "240px",
+          fontSize: "0.85rem",
+          outline: "none",
+          transition: "border-color 0.15s ease",
+          ...style
+        }}
+      />
+      <button
+        type="submit"
+        disabled={isPending}
+        style={{
+          padding: "0.6rem 1rem",
+          borderRadius: "6px",
+          border: "none",
+          background: "#3498db",
+          color: "white",
+          fontWeight: 600,
+          cursor: isPending ? "not-allowed" : "pointer",
+          opacity: isPending ? 0.7 : 1,
+          transition: "opacity 0.15s ease",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center"
+        }}
+      >
+        Buscar
+      </button>
+    </form>
   );
 }

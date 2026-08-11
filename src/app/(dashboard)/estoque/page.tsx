@@ -3,6 +3,7 @@ import { Plus, Package, AlertTriangle, Box } from "lucide-react";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import SearchInput from "@/components/SearchInput";
+import SortableHeader from "@/components/SortableHeader";
 import FilterSelect from "@/components/FilterSelect";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -100,26 +101,6 @@ export default async function EstoquePage({
           ]}
         />
 
-        <FilterSelect 
-          name="sortBy"
-          defaultValue={sortBy}
-          options={[
-            { value: "name", label: "Ordenar por Nome" },
-            { value: "quantity", label: "Ordenar por Quantidade" },
-            { value: "minQuantity", label: "Ordenar por Estoque Mínimo" },
-            { value: "createdAt", label: "Ordenar por Data de Cadastro" }
-          ]}
-        />
-
-        <FilterSelect 
-          name="order"
-          defaultValue={order}
-          options={[
-            { value: "asc", label: "Ordem Crescente" },
-            { value: "desc", label: "Ordem Decrescente" }
-          ]}
-        />
-
         {search || category || sortBy !== "name" || order !== "asc" ? (
           <Link href="/estoque" style={{ fontSize: '0.85rem', color: '#c0392b', fontWeight: 600, textDecoration: 'none' }}>
             Limpar Filtros
@@ -131,11 +112,11 @@ export default async function EstoquePage({
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Produto</th>
+              <th><SortableHeader label="Produto" value="name" /></th>
               <th>Unidade</th>
-              <th>Estoque Central</th>
+              <th><SortableHeader label="Estoque Central" value="quantity" /></th>
               <th>Localização / Distribuição</th>
-              <th>Status</th>
+              <th><SortableHeader label="Status" value="minQuantity" /></th>
               <th>Ações</th>
             </tr>
           </thead>
