@@ -84,6 +84,7 @@ export async function deleteClient(formData: FormData) {
       include: {
         jobAllocations: { where: { status: { not: "Cancelada" } } },
         inventory: true,
+        invoices: { where: { status: { in: ["PENDING", "OVERDUE"] } } },
       }
     });
 
@@ -93,6 +94,9 @@ export async function deleteClient(formData: FormData) {
       }
       if (relations.inventory.length > 0) {
         return { success: false, error: "Não é possível excluir este cliente pois ele possui itens de estoque vinculados a ele. Transfira os itens primeiro." };
+      }
+      if (relations.invoices.length > 0) {
+        return { success: false, error: "Não é possível excluir este cliente pois ele possui faturas pendentes. Dê baixa ou cancele-as primeiro." };
       }
     }
 

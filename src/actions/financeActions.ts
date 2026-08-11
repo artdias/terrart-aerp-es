@@ -154,3 +154,32 @@ export async function payInvoice(formData: FormData) {
     return { success: false, error: "Erro interno ao baixar fatura." };
   }
 }
+
+export async function cancelInvoice(formData: FormData) {
+  try {
+    const invoiceId = sanitizeInput(formData.get("invoiceId") as string);
+    const reason = sanitizeInput(formData.get("reason") as string);
+    
+    if (!invoiceId) {
+      return { success: false, error: "ID da fatura não fornecido." };
+    }
+
+    if (!reason) {
+      return { success: false, error: "O motivo do cancelamento é obrigatório." };
+    }
+
+    await prisma.invoice.update({
+      where: { id: invoiceId },
+      data: {
+        status: "CANCELED",
+        cancellationReason: reason
+      }
+    });
+
+    revalidatePath("/financeiro");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Erro em cancelInvoice:", error);
+    return { success: false, error: "Erro interno ao cancelar fatura." };
+  }
+}

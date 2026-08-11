@@ -4,6 +4,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import PayExpenseForm from "./PayExpenseForm";
 import PayInvoiceForm from "./PayInvoiceForm";
+import CancelInvoiceForm from "./CancelInvoiceForm";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -195,13 +196,20 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
                               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#27ae60', fontWeight: 600, background: '#eafaf1', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>
                                 <CheckCircle2 size={14} /> Pago
                               </div>
+                            ) : fatura.status === "CANCELED" ? (
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#e74c3c', fontWeight: 600, background: '#fdedec', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>
+                                <AlertCircle size={14} /> Cancelada
+                              </div>
                             ) : (
                               <span style={{ color: '#d35400', fontWeight: 600, background: '#fdebd0', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>Pendente</span>
                             )}
                           </td>
-                          <td style={{ display: 'flex', gap: '8px' }}>
-                            {fatura.status !== "PAID" && (
-                              <PayInvoiceForm invoiceId={fatura.id} />
+                          <td style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                            {fatura.status !== "PAID" && fatura.status !== "CANCELED" && (
+                              <>
+                                <PayInvoiceForm invoiceId={fatura.id} />
+                                <CancelInvoiceForm invoiceId={fatura.id} />
+                              </>
                             )}
                             <Link 
                               href={`/financeiro/fatura/${fatura.id}/editar`}
