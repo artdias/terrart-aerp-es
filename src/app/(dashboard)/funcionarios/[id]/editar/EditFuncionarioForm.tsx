@@ -132,13 +132,22 @@ export default function EditFuncionarioForm({
       formData.delete("certificados-nativos");
       formData.delete("documentos-nativos");
 
-      certificates.forEach((file) => {
-        formData.append("certificates", file);
+      const toBase64 = (f: File) => new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(f);
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = error => reject(error);
       });
 
-      documents.forEach((file) => {
-        formData.append("documents", file);
-      });
+      for (const file of certificates) {
+        const base64 = await toBase64(file);
+        formData.append("certificatesData", JSON.stringify({ name: file.name, data: base64 }));
+      }
+
+      for (const file of documents) {
+        const base64 = await toBase64(file);
+        formData.append("documentsData", JSON.stringify({ name: file.name, data: base64 }));
+      }
 
       const result = await updateEmployee(employee.id, formData);
       
