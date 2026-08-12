@@ -139,6 +139,19 @@ export default async function FinanceiroClientesPage({
     return { ...b, computedStatus: currentStatus };
   });
 
+  // Agrupar por Cliente
+  const groupedBillings = processedBillings.reduce((acc, b) => {
+    const client = b.contract.client;
+    if (!acc[client.id]) {
+      acc[client.id] = {
+        client,
+        billings: []
+      };
+    }
+    acc[client.id].billings.push(b);
+    return acc;
+  }, {} as Record<string, { client: any, billings: typeof processedBillings }>);
+
   // 4. Calcular Estatísticas de Receita usando o status computado
   const totalContratado = activeContracts
     .filter((c) => c.status === "ATIVO")
@@ -301,85 +314,93 @@ export default async function FinanceiroClientesPage({
             ) : null}
           </div>
 
-          {/* Listagem de Mensalidades */}
-          <div className={styles.card}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th>Cliente</th>
-                  <th>Contrato</th>
-                  <th>Vencimento</th>
-                  <th>Valor</th>
-                  <th>Status</th>
-                  <th>Comprovante</th>
-                  <th>Ações</th>
-                </tr>
-              </thead>
-              <tbody>
-                {processedBillings.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} className={styles.emptyState}>
-                      Nenhuma mensalidade correspondente encontrada.
-                    </td>
-                  </tr>
-                ) : (
-                  processedBillings.map((b) => (
-                    <tr key={b.id}>
-                      <td>
-                        <div className={styles.strongText}>{b.contract.client.companyName}</div>
-                        <div style={{ fontSize: "0.75rem", color: "#888" }}>CNPJ: {b.contract.client.cnpj}</div>
-                      </td>
-                      <td>{b.contract.title}</td>
-                      <td>
-                        <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                          <Calendar size={14} style={{ color: "#777" }} />
-                          {new Date(b.dueDate).toLocaleDateString("pt-BR")}
-                        </div>
-                      </td>
-                      <td className={styles.strongText}>
-                        {b.amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
-                      </td>
-                      <td>
-                        <span style={{
-                          padding: "4px 8px",
-                          borderRadius: "4px",
-                          fontSize: "0.75rem",
-                          fontWeight: 600,
-                          background: b.computedStatus === "PAGO" ? "#e8f8f0" : b.computedStatus === "ATRASADO" ? "#fdedec" : "#fef9e7",
-                          color: b.computedStatus === "PAGO" ? "#27ae60" : b.computedStatus === "ATRASADO" ? "#c0392b" : "#f39c12",
-                          border: `1px solid ${b.computedStatus === "PAGO" ? "#27ae60" : b.computedStatus === "ATRASADO" ? "#c0392b" : "#f39c12"}`
-                        }}>
-                          {b.computedStatus === "PAGO" ? "PAGO" : b.computedStatus === "ATRASADO" ? "ATRASADO" : "PENDENTE"}
-                        </span>
-                      </td>
-                      <td>
-                        {b.proofFileUrl ? (
-                          <a
-                            href={b.proofFileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ display: "inline-flex", alignItems: "center", gap: "4px", color: "#2980b9", textDecoration: "none", fontWeight: 600, fontSize: "0.8rem" }}
-                          >
-                            <FileDown size={14} /> Ver Comprovante
-                          </a>
-                        ) : (
-                          <span style={{ color: "#aaa", fontStyle: "italic", fontSize: "0.8rem" }}>Sem anexo</span>
-                        )}
-                      </td>
-                      <td>
-                        {b.computedStatus !== "PAGO" ? (
-                          <PayBillingForm billingId={b.id} />
-                        ) : (
-                          <span style={{ color: "#27ae60", fontSize: "0.8rem", fontWeight: 600 }}>
-                            Recebido em: <br/> {b.paidAt ? new Date(b.paidAt).toLocaleDateString("pt-BR") : "--"}
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+          {/* Listagem de Mensalidades Agrupadas por Cliente */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {Object.keys(groupedBillings).length === 0 ? (
+               <div className={styles.card} style={{ textAlign: 'center', padding: '2rem', color: '#888' }}>
+                 Nenhuma mensalidade correspondente encontrada.
+               </div>
+            ) : (
+               Object.values(groupedBillings).map(group => (
+                  <details key={group.client.id} className={styles.card} style={{ padding: '0', overflow: 'hidden' }}>
+                    <summary style={{ padding: '1rem', cursor: 'pointer', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#f8f9fa', borderBottom: '1px solid #eee', fontWeight: 600 }}>
+                      <div>
+                        <div style={{ fontSize: '1.1rem', color: '#003366' }}>{group.client.companyName}</div>
+                        <div style={{ fontSize: '0.8rem', color: '#777', fontWeight: 400 }}>CNPJ: {group.client.cnpj} | {group.billings.length} fatura(s) listada(s)</div>
+                      </div>
+                      <div style={{ fontSize: '0.9rem', color: '#2980b9' }}>
+                        Clique para expandir
+                      </div>
+                    </summary>
+                    <div style={{ padding: '1rem', overflowX: 'auto' }}>
+                      <table className={styles.table}>
+                        <thead>
+                          <tr>
+                            <th>Contrato</th>
+                            <th>Vencimento</th>
+                            <th>Valor</th>
+                            <th>Status</th>
+                            <th>Comprovante</th>
+                            <th>Ações</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                           {group.billings.map(b => (
+                             <tr key={b.id}>
+                                <td>{b.contract.title}</td>
+                                <td>
+                                  <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                                    <Calendar size={14} style={{ color: "#777" }} />
+                                    {new Date(b.dueDate).toLocaleDateString("pt-BR")}
+                                  </div>
+                                </td>
+                                <td className={styles.strongText}>
+                                  {b.amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
+                                </td>
+                                <td>
+                                  <span style={{
+                                    padding: "4px 8px",
+                                    borderRadius: "4px",
+                                    fontSize: "0.75rem",
+                                    fontWeight: 600,
+                                    background: b.computedStatus === "PAGO" ? "#e8f8f0" : b.computedStatus === "ATRASADO" ? "#fdedec" : "#fef9e7",
+                                    color: b.computedStatus === "PAGO" ? "#27ae60" : b.computedStatus === "ATRASADO" ? "#c0392b" : "#f39c12",
+                                    border: `1px solid ${b.computedStatus === "PAGO" ? "#27ae60" : b.computedStatus === "ATRASADO" ? "#c0392b" : "#f39c12"}`
+                                  }}>
+                                    {b.computedStatus === "PAGO" ? "PAGO" : b.computedStatus === "ATRASADO" ? "ATRASADO" : "PENDENTE"}
+                                  </span>
+                                </td>
+                                <td>
+                                  {b.proofFileUrl ? (
+                                    <a
+                                      href={b.proofFileUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      style={{ display: "inline-flex", alignItems: "center", gap: "4px", color: "#2980b9", textDecoration: "none", fontWeight: 600, fontSize: "0.8rem" }}
+                                    >
+                                      <FileDown size={14} /> Ver Comprovante
+                                    </a>
+                                  ) : (
+                                    <span style={{ color: "#aaa", fontStyle: "italic", fontSize: "0.8rem" }}>Sem anexo</span>
+                                  )}
+                                </td>
+                                <td>
+                                  {b.computedStatus !== "PAGO" ? (
+                                    <PayBillingForm billingId={b.id} />
+                                  ) : (
+                                    <span style={{ color: "#27ae60", fontSize: "0.8rem", fontWeight: 600 }}>
+                                      Recebido em: <br/> {b.paidAt ? new Date(b.paidAt).toLocaleDateString("pt-BR") : "--"}
+                                    </span>
+                                  )}
+                                </td>
+                             </tr>
+                           ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </details>
+               ))
+            )}
           </div>
         </>
       ) : (
