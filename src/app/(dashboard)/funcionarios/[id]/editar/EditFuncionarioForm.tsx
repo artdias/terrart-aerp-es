@@ -157,7 +157,7 @@ export default function EditFuncionarioForm({
         return;
       }
       
-      router.push("/funcionarios");
+      router.push(`/funcionarios/${employee.id}`);
       router.refresh();
     } catch (error) {
       console.error("Erro ao atualizar funcionário:", error);

@@ -133,8 +133,7 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
                       <a 
                         key={a.id} 
                         href={a.fileUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
+                        download={a.fileName}
                         style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '0.85rem', textDecoration: 'none', color: '#0f172a' }}
                       >
                         <Paperclip size={16} style={{ color: '#64748b' }} />
@@ -156,8 +155,7 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
                       <a 
                         key={a.id} 
                         href={a.fileUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer"
+                        download={a.fileName}
                         style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '6px', fontSize: '0.85rem', textDecoration: 'none', color: '#0f172a' }}
                       >
                         <Paperclip size={16} style={{ color: '#64748b' }} />
