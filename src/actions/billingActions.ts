@@ -159,3 +159,67 @@ export async function payClientBilling(formData: FormData) {
     return { success: false, error: "Ocorreu um erro ao processar o pagamento." };
   }
 }
+
+export async function deleteContract(formData: FormData) {
+  try {
+    const contractId = sanitizeInput(formData.get("contractId") as string);
+    if (!contractId) {
+      return { success: false, error: "ID do contrato inválido." };
+    }
+
+    await prisma.clientContract.delete({
+      where: { id: contractId }
+    });
+
+    revalidatePath("/financeiro-clientes");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Erro em deleteContract:", error);
+    return { success: false, error: "Erro ao excluir o contrato." };
+  }
+}
+
+export async function updateClientContract(contractId: string, formData: FormData) {
+  try {
+    const title = sanitizeInput(formData.get("title") as string);
+    const valueStr = sanitizeInput(formData.get("value") as string);
+    const billingDayStr = sanitizeInput(formData.get("billingDay") as string);
+    const startDateStr = sanitizeInput(formData.get("startDate") as string);
+    const status = sanitizeInput(formData.get("status") as string);
+    const recurrence = sanitizeInput(formData.get("recurrence") as string) || "MENSAL";
+
+    if (!title || !valueStr || !billingDayStr || !startDateStr) {
+      return { success: false, error: "Preencha todos os campos obrigatórios." };
+    }
+
+    const value = parseFloat(valueStr.replace(",", "."));
+    const billingDay = parseInt(billingDayStr, 10);
+    const startDate = new Date(startDateStr);
+
+    if (isNaN(value) || value <= 0) {
+      return { success: false, error: "Informe um valor mensal válido." };
+    }
+
+    if (isNaN(billingDay) || billingDay < 1 || billingDay > 28) {
+      return { success: false, error: "O dia de vencimento deve estar entre 1 e 28." };
+    }
+
+    await prisma.clientContract.update({
+      where: { id: contractId },
+      data: {
+        title,
+        value,
+        billingDay,
+        startDate,
+        status,
+        recurrence
+      }
+    });
+
+    revalidatePath("/financeiro-clientes");
+    return { success: true };
+  } catch (error: any) {
+    console.error("Erro em updateClientContract:", error);
+    return { success: false, error: "Erro ao atualizar o contrato." };
+  }
+}

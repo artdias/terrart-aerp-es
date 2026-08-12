@@ -6,6 +6,7 @@ import styles from "../clientes/clientes.module.css";
 import SearchInput from "@/components/SearchInput";
 import FilterSelect from "@/components/FilterSelect";
 import PayBillingForm from "./PayBillingForm";
+import DeleteContractForm from "./DeleteContractForm";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -393,6 +394,7 @@ export default async function FinanceiroClientesPage({
                 <th>Vencimento</th>
                 <th>Data de Início</th>
                 <th>Status</th>
+                <th>Ações</th>
               </tr>
             </thead>
             <tbody>
@@ -427,6 +429,16 @@ export default async function FinanceiroClientesPage({
                       }}>
                         {c.status}
                       </span>
+                    </td>
+                    <td style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                      <Link 
+                        href={`/financeiro-clientes/contrato/${c.id}/editar`}
+                        className={styles.actionBtn}
+                        style={{ background: '#f39c12', color: 'white', textDecoration: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600 }}
+                      >
+                        Editar
+                      </Link>
+                      <DeleteContractForm contractId={c.id} />
                     </td>
                   </tr>
                 ))
