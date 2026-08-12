@@ -8,6 +8,7 @@ export default async function EditarFuncionarioPage({ params }: { params: { id: 
     include: {
       user: true,
       workplace: true,
+      attachments: true,
     }
   });
 

@@ -1,9 +1,9 @@
 "use client";
 
-import { updateEmployee } from "@/actions/employeeActions";
+import { updateEmployee, deleteAttachment } from "@/actions/employeeActions";
 import styles from "../../../clientes/novo/novoCliente.module.css";
 import Link from "next/link";
-import { ArrowLeft, X, Paperclip } from "lucide-react";
+import { ArrowLeft, X, Paperclip, Trash2 } from "lucide-react";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
@@ -28,6 +28,12 @@ interface EmployeeType {
     name: string;
     email: string;
   } | null;
+  attachments?: {
+    id: string;
+    fileName: string;
+    type: string;
+    fileUrl: string;
+  }[];
 }
 
 interface ClientOption {
@@ -54,6 +60,7 @@ export default function EditFuncionarioForm({
   const [cnh, setCnh] = useState(employee.cnh || "");
   const [certificates, setCertificates] = useState<File[]>([]);
   const [documents, setDocuments] = useState<File[]>([]);
+  const [existingAttachments, setExistingAttachments] = useState(employee.attachments || []);
   
   const certInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
@@ -115,6 +122,18 @@ export default function EditFuncionarioForm({
 
   const removeDocument = (index: number) => {
     setDocuments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handleDeleteExistingAttachment = async (id: string) => {
+    if (confirm("Tem certeza que deseja excluir este anexo?")) {
+      const res = await deleteAttachment(id);
+      if (res.success) {
+        setExistingAttachments(prev => prev.filter(a => a.id !== id));
+        router.refresh();
+      } else {
+        alert(res.error);
+      }
+    }
   };
 
   const [loading, setLoading] = useState(false);
@@ -309,16 +328,31 @@ export default function EditFuncionarioForm({
             </div>
           </div>
 
-          <h3 className={styles.sectionTitle}>Adicionar Novos Anexos</h3>
+          <h3 className={styles.sectionTitle}>Anexos e Documentos</h3>
           <div className={styles.formRow} style={{ marginBottom: '2rem', alignItems: 'flex-start' }}>
             <div className={styles.inputGroup} style={{ flex: 1 }}>
-              <label>Adicionar Certificados</label>
+              <label>Certificados</label>
+
+              {/* Anexos Existentes */}
+              {existingAttachments.filter(a => a.type === "CERTIFICATE").length > 0 && (
+                <div style={{ marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {existingAttachments.filter(a => a.type === "CERTIFICATE").map((file) => (
+                    <div key={file.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: '#e0f2fe', borderRadius: '6px', fontSize: '0.85rem' }}>
+                      <a href={file.fileUrl} download={file.fileName} style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '80%', color: '#0369a1', textDecoration: 'none' }}>{file.fileName}</a>
+                      <button type="button" onClick={() => handleDeleteExistingAttachment(file.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626' }} title="Excluir anexo">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <div 
                 onClick={() => certInputRef.current?.click()} 
                 style={{ padding: '1.2rem', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1', textAlign: 'center', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}
               >
                 <Paperclip size={20} style={{ color: '#64748b' }} />
-                <span style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 500 }}>Selecionar arquivos...</span>
+                <span style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 500 }}>Adicionar novos certificados...</span>
               </div>
               <input 
                 type="file" 
@@ -345,13 +379,28 @@ export default function EditFuncionarioForm({
             </div>
 
             <div className={styles.inputGroup} style={{ flex: 1 }}>
-              <label>Adicionar Documentos Pessoais</label>
+              <label>Documentos Pessoais</label>
+
+              {/* Anexos Existentes */}
+              {existingAttachments.filter(a => a.type === "DOCUMENT").length > 0 && (
+                <div style={{ marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {existingAttachments.filter(a => a.type === "DOCUMENT").map((file) => (
+                    <div key={file.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: '#e0f2fe', borderRadius: '6px', fontSize: '0.85rem' }}>
+                      <a href={file.fileUrl} download={file.fileName} style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '80%', color: '#0369a1', textDecoration: 'none' }}>{file.fileName}</a>
+                      <button type="button" onClick={() => handleDeleteExistingAttachment(file.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626' }} title="Excluir anexo">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               <div 
                 onClick={() => docInputRef.current?.click()} 
                 style={{ padding: '1.2rem', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1', textAlign: 'center', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}
               >
                 <Paperclip size={20} style={{ color: '#64748b' }} />
-                <span style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 500 }}>Selecionar arquivos...</span>
+                <span style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 500 }}>Adicionar novos documentos...</span>
               </div>
               <input 
                 type="file" 

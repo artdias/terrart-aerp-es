@@ -288,6 +288,21 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
   }
 }
 
+// -----------------------------------------------------------------------------------------------------------------
+// Ações de Anexos
+// -----------------------------------------------------------------------------------------------------------------
+export async function deleteAttachment(attachmentId: string) {
+  try {
+    await prisma.attachment.delete({
+      where: { id: attachmentId }
+    });
+    return { success: true };
+  } catch (error) {
+    console.error("Erro ao deletar anexo:", error);
+    return { success: false, error: "Erro ao deletar anexo." };
+  }
+}
+
 export async function deleteEmployee(formData: FormData) {
   try {
     const id = sanitizeInput(formData.get("employeeId") as string);
