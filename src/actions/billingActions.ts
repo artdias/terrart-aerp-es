@@ -107,18 +107,11 @@ export async function payClientBilling(formData: FormData) {
       return { success: false, error: "Mensalidade não encontrada." };
     }
 
-    // Upload físico do arquivo
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    await fs.mkdir(uploadsDir, { recursive: true });
-
     const sanitizedFileName = sanitizeInput(attachment.name);
-    const filename = `${Date.now()}-${sanitizedFileName.replace(/\s+/g, "_")}`;
-    const filePath = path.join(uploadsDir, filename);
-
     const buffer = Buffer.from(await attachment.arrayBuffer());
-    await fs.writeFile(filePath, buffer);
-
-    const fileUrl = `/uploads/${filename}`;
+    const base64 = buffer.toString("base64");
+    const mimeType = attachment.type || "application/octet-stream";
+    const fileUrl = `data:${mimeType};base64,${base64}`;
 
     // Atualizar a fatura para PAGO
     await prisma.clientBilling.update({

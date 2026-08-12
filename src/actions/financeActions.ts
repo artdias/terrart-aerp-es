@@ -26,17 +26,12 @@ export async function createInvoice(formData: FormData) {
     let fileName: string | null = null;
 
     if (attachment && attachment.size > 0 && attachment.name) {
-      const uploadsDir = path.join(process.cwd(), "public", "uploads");
-      await fs.mkdir(uploadsDir, { recursive: true });
-
       const sanitizedFileName = sanitizeInput(attachment.name);
-      const filename = `${Date.now()}-${sanitizedFileName.replace(/\s+/g, "_")}`;
-      const filePath = path.join(uploadsDir, filename);
-
       const buffer = Buffer.from(await attachment.arrayBuffer());
-      await fs.writeFile(filePath, buffer);
+      const base64 = buffer.toString("base64");
+      const mimeType = attachment.type || "application/octet-stream";
 
-      fileUrl = `/uploads/${filename}`;
+      fileUrl = `data:${mimeType};base64,${base64}`;
       fileName = sanitizedFileName;
     }
 
@@ -85,17 +80,12 @@ export async function updateInvoice(id: string, formData: FormData) {
 
     const attachment = formData.get("attachment") as File;
     if (attachment && attachment.size > 0 && attachment.name) {
-      const uploadsDir = path.join(process.cwd(), "public", "uploads");
-      await fs.mkdir(uploadsDir, { recursive: true });
-
       const sanitizedFileName = sanitizeInput(attachment.name);
-      const filename = `${Date.now()}-${sanitizedFileName.replace(/\s+/g, "_")}`;
-      const filePath = path.join(uploadsDir, filename);
-
       const buffer = Buffer.from(await attachment.arrayBuffer());
-      await fs.writeFile(filePath, buffer);
+      const base64 = buffer.toString("base64");
+      const mimeType = attachment.type || "application/octet-stream";
 
-      dataToUpdate.fileUrl = `/uploads/${filename}`;
+      dataToUpdate.fileUrl = `data:${mimeType};base64,${base64}`;
       dataToUpdate.fileName = sanitizedFileName;
     }
 
@@ -125,17 +115,12 @@ export async function payInvoice(formData: FormData) {
     let fileName: string | null = null;
 
     if (receiptFile && receiptFile.size > 0 && receiptFile.name) {
-      const uploadsDir = path.join(process.cwd(), "public", "uploads");
-      await fs.mkdir(uploadsDir, { recursive: true });
-
       const sanitizedFileName = sanitizeInput(receiptFile.name);
-      const filename = `${Date.now()}-receipt-${sanitizedFileName.replace(/\s+/g, "_")}`;
-      const filePath = path.join(uploadsDir, filename);
-
       const buffer = Buffer.from(await receiptFile.arrayBuffer());
-      await fs.writeFile(filePath, buffer);
+      const base64 = buffer.toString("base64");
+      const mimeType = receiptFile.type || "application/octet-stream";
 
-      fileUrl = `/uploads/${filename}`;
+      fileUrl = `data:${mimeType};base64,${base64}`;
       fileName = sanitizedFileName;
     }
 

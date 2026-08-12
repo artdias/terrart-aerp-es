@@ -99,24 +99,20 @@ export async function createEmployee(formData: FormData) {
     const certificates = formData.getAll("certificates") as File[];
     const documents = formData.getAll("documents") as File[];
 
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    await fs.mkdir(uploadsDir, { recursive: true });
-
     // Salvar Certificados
     for (const file of certificates) {
       if (file && file.size > 0 && file.name) {
         const sanitizedFileName = sanitizeInput(file.name);
-        const filename = `${Date.now()}-${sanitizedFileName.replace(/\s+/g, "_")}`;
-        const filePath = path.join(uploadsDir, filename);
-        
         const buffer = Buffer.from(await file.arrayBuffer());
-        await fs.writeFile(filePath, buffer);
+        const base64 = buffer.toString("base64");
+        const mimeType = file.type || "application/octet-stream";
+        const fileUrl = `data:${mimeType};base64,${base64}`;
 
         await prisma.attachment.create({
           data: {
             employeeId: employee.id,
             fileName: sanitizedFileName,
-            fileUrl: `/uploads/${filename}`,
+            fileUrl,
             type: "CERTIFICATE"
           }
         });
@@ -127,17 +123,16 @@ export async function createEmployee(formData: FormData) {
     for (const file of documents) {
       if (file && file.size > 0 && file.name) {
         const sanitizedFileName = sanitizeInput(file.name);
-        const filename = `${Date.now()}-${sanitizedFileName.replace(/\s+/g, "_")}`;
-        const filePath = path.join(uploadsDir, filename);
-        
         const buffer = Buffer.from(await file.arrayBuffer());
-        await fs.writeFile(filePath, buffer);
+        const base64 = buffer.toString("base64");
+        const mimeType = file.type || "application/octet-stream";
+        const fileUrl = `data:${mimeType};base64,${base64}`;
 
         await prisma.attachment.create({
           data: {
             employeeId: employee.id,
             fileName: sanitizedFileName,
-            fileUrl: `/uploads/${filename}`,
+            fileUrl,
             type: "DOCUMENT"
           }
         });
@@ -256,24 +251,20 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
     const certificates = formData.getAll("certificates") as File[];
     const documents = formData.getAll("documents") as File[];
 
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    await fs.mkdir(uploadsDir, { recursive: true });
-
     // Salvar novos Certificados
     for (const file of certificates) {
       if (file && file.size > 0 && file.name) {
         const sanitizedFileName = sanitizeInput(file.name);
-        const filename = `${Date.now()}-${sanitizedFileName.replace(/\s+/g, "_")}`;
-        const filePath = path.join(uploadsDir, filename);
-        
         const buffer = Buffer.from(await file.arrayBuffer());
-        await fs.writeFile(filePath, buffer);
+        const base64 = buffer.toString("base64");
+        const mimeType = file.type || "application/octet-stream";
+        const fileUrl = `data:${mimeType};base64,${base64}`;
 
         await prisma.attachment.create({
           data: {
             employeeId,
             fileName: sanitizedFileName,
-            fileUrl: `/uploads/${filename}`,
+            fileUrl,
             type: "CERTIFICATE"
           }
         });
@@ -284,17 +275,16 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
     for (const file of documents) {
       if (file && file.size > 0 && file.name) {
         const sanitizedFileName = sanitizeInput(file.name);
-        const filename = `${Date.now()}-${sanitizedFileName.replace(/\s+/g, "_")}`;
-        const filePath = path.join(uploadsDir, filename);
-        
         const buffer = Buffer.from(await file.arrayBuffer());
-        await fs.writeFile(filePath, buffer);
+        const base64 = buffer.toString("base64");
+        const mimeType = file.type || "application/octet-stream";
+        const fileUrl = `data:${mimeType};base64,${base64}`;
 
         await prisma.attachment.create({
           data: {
             employeeId,
             fileName: sanitizedFileName,
-            fileUrl: `/uploads/${filename}`,
+            fileUrl,
             type: "DOCUMENT"
           }
         });
