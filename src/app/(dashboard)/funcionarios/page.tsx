@@ -115,7 +115,6 @@ export default async function FuncionariosPage({
             <tr>
               <th><SortableHeader label="Nome / CPF" value="firstName" /></th>
               <th><SortableHeader label="Cargo" value="roleTitle" /></th>
-              <th>Alocação (Posto)</th>
               <th><SortableHeader label="Status" value="status" /></th>
               <th><SortableHeader label="Data de Cadastro" value="createdAt" /></th>
               <th>Ações</th>
@@ -124,7 +123,7 @@ export default async function FuncionariosPage({
           <tbody>
             {funcionarios.length === 0 ? (
               <tr>
-                <td colSpan={6} className={styles.emptyState}>
+                <td colSpan={5} className={styles.emptyState}>
                   Nenhum funcionário correspondente encontrado.
                 </td>
               </tr>
@@ -145,19 +144,6 @@ export default async function FuncionariosPage({
                       <Briefcase size={16} className={styles.icon} />
                       {func.roleTitle}
                     </div>
-                  </td>
-                  <td>
-                    {func.workplace ? (
-                      <div className={styles.cellWithIcon}>
-                        <Briefcase size={16} className={styles.icon} />
-                        <div>
-                          <div className={styles.strongText}>{func.workplace.client.companyName}</div>
-                          <div style={{ fontSize: '0.8rem', color: '#666' }}>Posto: {func.workplace.name}</div>
-                        </div>
-                      </div>
-                    ) : (
-                      <span style={{ color: '#999', fontStyle: 'italic' }}>Não alocado</span>
-                    )}
                   </td>
                   <td>
                     {func.status === "Ativo" ? (

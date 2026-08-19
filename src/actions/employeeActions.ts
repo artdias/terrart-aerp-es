@@ -15,7 +15,8 @@ export async function createEmployee(formData: FormData) {
     const lastName = sanitizeInput(formData.get("lastName") as string);
     const email = sanitizeInput(formData.get("email") as string);
     const cpf = sanitizeInput(formData.get("cpf") as string);
-    const roleTitle = sanitizeInput(formData.get("roleTitle") as string);
+    const roleTitles = formData.getAll("roleTitle").map(r => sanitizeInput(r as string)).filter(Boolean);
+    const roleTitle = roleTitles.join(", ");
     const clientId = sanitizeInput(formData.get("clientId") as string);
 
     const cnh = sanitizeInput(formData.get("cnh") as string);
@@ -148,7 +149,8 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
     const lastName = sanitizeInput(formData.get("lastName") as string);
     const email = sanitizeInput(formData.get("email") as string);
     const cpf = sanitizeInput(formData.get("cpf") as string);
-    const roleTitle = sanitizeInput(formData.get("roleTitle") as string);
+    const roleTitles = formData.getAll("roleTitle").map(r => sanitizeInput(r as string)).filter(Boolean);
+    const roleTitle = roleTitles.join(", ");
     const clientId = sanitizeInput(formData.get("clientId") as string);
 
     const cnh = sanitizeInput(formData.get("cnh") as string);

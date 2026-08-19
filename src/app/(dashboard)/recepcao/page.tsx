@@ -105,6 +105,18 @@ export default async function RecepcaoDashboard({
   });
 
   const allUsers = await prisma.user.findMany({
+    where: {
+      OR: [
+        { role: { not: "EMPLOYEE" } },
+        { 
+          role: "EMPLOYEE",
+          employeeProfile: {
+            deleted: false,
+            status: "Ativo"
+          }
+        }
+      ]
+    },
     select: { id: true, name: true, role: true },
     orderBy: { name: "asc" }
   });
@@ -343,7 +355,7 @@ export default async function RecepcaoDashboard({
 
       {/* Conteúdo Aba Recados */}
       {tab === "recados" && (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: "24px" }}>
+        <div className="dashboard-grid">
           
           {/* Listagem de Recados */}
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>

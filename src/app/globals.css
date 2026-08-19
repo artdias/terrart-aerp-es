@@ -74,3 +74,18 @@ table {
   transform: translateY(-2px);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.04);
 }
+
+@media (max-width: 768px) {
+  /* Forçar divs com grid inline a ficarem com 1 coluna em telas pequenas */
+  div[style*="display: grid"],
+  div[style*="display:grid"],
+  div[style*="display: 'grid'"],
+  div[style*="display:'grid'"] {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* Ajustes gerais em formulários e inputs para não vazarem */
+  input, select, textarea {
+    max-width: 100%;
+  }
+}

@@ -252,13 +252,21 @@ export default function NovoFuncionarioForm({ clientes, cargos }: { clientes: Cl
             </div>
 
             <div className={styles.inputGroup}>
-              <label htmlFor="roleTitle">Cargo / Função <span style={{ color: '#e74c3c' }}>*</span></label>
-              <select id="roleTitle" name="roleTitle" required style={{ padding: '0.95rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa' }}>
-                <option value="">Selecione um cargo</option>
+              <label>Cargo / Função <span style={{ color: '#e74c3c' }}>*</span></label>
+              <div style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa', maxHeight: '150px', overflowY: 'auto' }}>
+                {cargos.length === 0 && <span style={{ color: '#666', fontSize: '0.9rem' }}>Nenhum cargo cadastrado.</span>}
                 {cargos.map(cargo => (
-                  <option key={cargo.id} value={cargo.name}>{cargo.name}</option>
+                  <label key={cargo.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', cursor: 'pointer', fontSize: '0.95rem' }}>
+                    <input 
+                      type="checkbox" 
+                      name="roleTitle" 
+                      value={cargo.name} 
+                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                    />
+                    {cargo.name}
+                  </label>
                 ))}
-              </select>
+              </div>
             </div>
           </div>
 

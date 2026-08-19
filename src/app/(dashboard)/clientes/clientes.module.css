@@ -122,3 +122,22 @@
   color: white;
   border-color: var(--primary-color);
 }
+
+@media (max-width: 768px) {
+  .header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .header > div {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .addButton {
+    width: 100%;
+    justify-content: center;
+  }
+}
