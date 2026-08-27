@@ -55,7 +55,7 @@ export default function FechamentoClient({
           initialData.map((data, idx) => {
             const empName = data.employee.user?.name || data.employee.firstName || "Sem Nome";
             const unpocessedOccurrences = data.occurrences.filter((o: any) => o.status !== "PROCESSADO").length;
-            const unprocessedCoverages = data.coveragesAsSub.filter((c: any) => c.status !== "PROCESSADO").length;
+            const unprocessedCoverages = data.coveragesAsSub.filter((c: any) => !c.financialAdjustments || c.financialAdjustments.length === 0).length;
             
             const hasPending = unpocessedOccurrences > 0 || unprocessedCoverages > 0;
 

@@ -57,7 +57,8 @@ export async function getClosingData(month: string) {
       assignment: { competencyMonth: month }
     },
     include: {
-      assignment: { include: { shift: true } }
+      assignment: { include: { shift: true } },
+      financialAdjustments: true
     }
   });
 
@@ -115,12 +116,14 @@ export async function processFinancialAdjustments(employeeId: string, month: str
   const coverages = await prisma.coverage.findMany({
     where: {
       substituteEmployeeId: employeeId,
-      assignment: { competencyMonth: month },
-      status: { not: "PROCESSADO" }
-    }
+      assignment: { competencyMonth: month }
+    },
+    include: { financialAdjustments: true }
   });
 
   for (const cov of coverages) {
+    if (cov.financialAdjustments.length > 0) continue; // Já processado
+
     const start = cov.startTime.getTime();
     const end = cov.endTime.getTime();
     const minutes = Math.floor((end - start) / 60000);
@@ -133,11 +136,6 @@ export async function processFinancialAdjustments(employeeId: string, month: str
         minutesAmount: minutes,
         status: "EM_ANALISE"
       }
-    });
-
-    await prisma.coverage.update({
-      where: { id: cov.id },
-      data: { status: "PROCESSADO" }
     });
   }
 
