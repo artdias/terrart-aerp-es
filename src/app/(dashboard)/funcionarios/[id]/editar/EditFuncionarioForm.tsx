@@ -21,6 +21,7 @@ interface EmployeeType {
   roleTitle: string;
   status: string;
   photoUrl: string | null;
+  salary: number | null;
   workplaceId: string | null;
   workplace?: {
     clientId: string;
