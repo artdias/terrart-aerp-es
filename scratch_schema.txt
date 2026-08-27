@@ -1,0 +1,245 @@
+
+// ==========================================
+// MOTOR DE ESCALAS - CADASTROS BASE
+// ==========================================
+
+model ShiftPattern {
+  id              String   @id @default(cuid())
+  name            String   // Ex: "12x36", "Seg a Sex"
+  cycleLength     Int      // Tamanho do ciclo (Ex: 2 para 12x36, 7 para semanal)
+  cycleConfig     Json     // Ex: [{"dayIndex": 0, "type": "WORK"}, {"dayIndex": 1, "type": "OFF"}] zero-based
+  
+  scheduleConfigs EmployeeScheduleConfig[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model Shift {
+  id              String   @id @default(cuid())
+  name            String   // Ex: "Diurno", "Noturno"
+  startTime       String   // Ex: "07:00"
+  endTime         String   // Ex: "19:00"
+  crossesMidnight Boolean  @default(false)
+  
+  requirements    WorkplaceRequirement[]
+  assignments     ShiftAssignment[]
+  scheduleConfigs EmployeeScheduleConfig[]
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model EmployeeScheduleConfig {
+  id                  String       @id @default(cuid())
+  employeeId          String       @unique
+  employee            Employee     @relation(fields: [employeeId], references: [id])
+  
+  shiftPatternId      String
+  shiftPattern        ShiftPattern @relation(fields: [shiftPatternId], references: [id])
+  defaultShiftId      String?
+  defaultShift        Shift?       @relation(fields: [defaultShiftId], references: [id])
+  
+  cycleAnchorDate     DateTime 
+  cycleAnchorPosition Int      // Zero-based internamente (0 a cycleLength - 1)
+  
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model WorkplaceRequirement {
+  id                String    @id @default(cuid())
+  workplaceId       String
+  workplace         Workplace @relation(fields: [workplaceId], references: [id])
+  shiftId           String
+  shift             Shift     @relation(fields: [shiftId], references: [id])
+  
+  requiredEmployees Int
+  daysOfWeek        Json      // Configuração para demanda específica
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([workplaceId, shiftId])
+}
+
+// ==========================================
+// MOTOR DE ESCALAS - PLANEJAMENTO E EXECUÇÃO
+// ==========================================
+
+model Schedule {
+  id              String         @id @default(cuid())
+  competencyMonth String         // "YYYY-MM"
+  status          ScheduleStatus @default(RASCUNHO)
+  name            String?        // Ex: "Escala Julho/2026 - Matriz"
+  
+  workplaceId     String?        // Opcional, caso a escala seja por posto
+  workplace       Workplace?     @relation(fields: [workplaceId], references: [id])
+  
+  assignments     ShiftAssignment[]
+  audits          ScheduleAudit[]
+  
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  @@index([competencyMonth])
+  @@index([workplaceId])
+}
+
+model ScheduleAudit {
+  id              String   @id @default(cuid())
+  scheduleId      String
+  schedule        Schedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  
+  userId          String   // Quem alterou
+  action          String   // CREATE, UPDATE, DELETE
+  entity          String   // Ex: ShiftAssignment, Occurrence
+  entityId        String   
+  previousData    Json?
+  newData         Json?
+  reason          String?
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([scheduleId])
+  @@index([entity, entityId])
+}
+
+model ShiftAssignment {
+  id              String                @id @default(cuid())
+  scheduleId      String?
+  schedule        Schedule?             @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+  
+  employeeId      String
+  employee        Employee              @relation(fields: [employeeId], references: [id])
+  workplaceId     String
+  workplace       Workplace             @relation(fields: [workplaceId], references: [id])
+  shiftId         String
+  shift           Shift                 @relation(fields: [shiftId], references: [id])
+
+  date            DateTime              @db.Date
+  plannedStart    DateTime 
+  plannedEnd      DateTime 
+  
+  competencyMonth String                // "YYYY-MM"
+  status          ShiftAssignmentStatus @default(PLANEJADO)
+
+  workPeriods     WorkPeriod[]
+  occurrences     Occurrence[]
+  coverages       Coverage[]
+
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  @@index([employeeId, date])
+  @@index([workplaceId, date])
+  @@index([scheduleId])
+  @@index([competencyMonth])
+}
+
+model WorkPeriod {
+  id              String          @id @default(cuid())
+  assignmentId    String
+  assignment      ShiftAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  
+  employeeId      String          // Pode ser o titular ou o substituto (cobertura)
+  employee        Employee        @relation(fields: [employeeId], references: [id])
+
+  actualStart     DateTime
+  actualEnd       DateTime?
+  type            WorkPeriodType  @default(NORMAL)
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([assignmentId])
+  @@index([employeeId])
+}
+
+// ==========================================
+// MOTOR DE OCORRÊNCIAS E FINANCEIRO
+// ==========================================
+
+model Occurrence {
+  id              String          @id @default(cuid())
+  assignmentId    String
+  assignment      ShiftAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  employeeId      String
+  employee        Employee        @relation(fields: [employeeId], references: [id])
+
+  type            OccurrenceType
+  startTime       DateTime?  // Se for atraso ou saída antecipada
+  endTime         DateTime?  // Se for atraso ou saída antecipada
+  description     String?
+  
+  status          ApprovalStatus  @default(PENDENTE)
+
+  financialAdjustments FinancialAdjustment[]
+
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  @@index([assignmentId])
+  @@index([employeeId])
+  @@index([status])
+}
+
+model Coverage {
+  id                   String          @id @default(cuid())
+  assignmentId         String
+  assignment           ShiftAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  
+  originalEmployeeId   String
+  originalEmployee     Employee        @relation("OriginalEmployee", fields: [originalEmployeeId], references: [id])
+  substituteEmployeeId String
+  substituteEmployee   Employee        @relation("SubstituteEmployee", fields: [substituteEmployeeId], references: [id])
+
+  startTime            DateTime
+  endTime              DateTime
+  
+  status               CoverageStatus  @default(PENDENTE)
+
+  financialAdjustments FinancialAdjustment[]
+
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  @@index([assignmentId])
+  @@index([originalEmployeeId])
+  @@index([substituteEmployeeId])
+}
+
+model FinancialAdjustment {
+  id              String                  @id @default(cuid())
+  employeeId      String
+  employee        Employee                @relation(fields: [employeeId], references: [id])
+
+  occurrenceId    String?
+  occurrence      Occurrence?             @relation(fields: [occurrenceId], references: [id], onDelete: SetNull)
+  coverageId      String?
+  coverage        Coverage?               @relation(fields: [coverageId], references: [id], onDelete: SetNull)
+
+  type            FinancialAdjustmentType
+  minutesAmount   Int                     // Alterado de hoursAmount (Float) para minutesAmount (Int)
+  status          ApprovalStatus          @default(PENDENTE_ANALISE)
+
+  createdAt       DateTime                @default(now())
+  updatedAt       DateTime                @updatedAt
+
+  @@index([employeeId])
+  @@index([status])
+}
+
+model MonthlyClosing {
+  id              String               @id @default(cuid())
+  employeeId      String
+  employee        Employee             @relation(fields: [employeeId], references: [id])
+  
+  competencyMonth String               // Ex: "2026-07"
+  status          MonthlyClosingStatus @default(ABERTO)
+
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@unique([employeeId, competencyMonth])
+  @@index([competencyMonth])
+}
