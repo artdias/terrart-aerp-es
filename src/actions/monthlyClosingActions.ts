@@ -100,7 +100,7 @@ export async function processFinancialAdjustments(employeeId: string, month: str
           occurrenceId: occ.id,
           type: "DESCONTO",
           minutesAmount: minutes,
-          status: "PENDENTE_ANALISE"
+          status: "EM_ANALISE"
         }
       });
 
@@ -131,7 +131,7 @@ export async function processFinancialAdjustments(employeeId: string, month: str
         coverageId: cov.id,
         type: "PAGAMENTO_EXTRA",
         minutesAmount: minutes,
-        status: "PENDENTE_ANALISE"
+        status: "EM_ANALISE"
       }
     });
 
