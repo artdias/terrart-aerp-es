@@ -61,10 +61,10 @@ export default async function EscalasPage({
     }
   });
 
-  // Filtragem Din├ómica por Aba (Tab)
+  // Filtragem Dinâmica por Aba (Tab)
   const filteredAlocacoes = alocacoes.filter(aloc => {
     const computedStatus = getAllocationStatus(aloc as any);
-    const isHistorico = computedStatus === "Conclu├¡da" || computedStatus === "Cancelada" || computedStatus === "Incompleto";
+    const isHistorico = computedStatus === "Concluída" || computedStatus === "Cancelada" || computedStatus === "Incompleto";
     
     if (tab === "historico") {
       return isHistorico;
@@ -77,12 +77,12 @@ export default async function EscalasPage({
     <div className={styles.container}>
       <div className={styles.header}>
         <div>
-          <h1 className={styles.title}>Escalas e Aloca├º├Áes</h1>
-          <p className={styles.subtitle}>Gerencie onde os funcion├írios est├úo alocados, suas tarefas e os contratos.</p>
+          <h1 className={styles.title}>Escalas e Alocações</h1>
+          <p className={styles.subtitle}>Gerencie onde os funcionários estão alocados, suas tarefas e os contratos.</p>
         </div>
         <Link href="/escalas/novo" className={styles.addButton}>
           <Plus size={20} />
-          <span>Nova Aloca├º├úo</span>
+          <span>Nova Alocação</span>
         </Link>
       </div>
 
@@ -107,7 +107,7 @@ export default async function EscalasPage({
             textDecoration: 'none', marginBottom: '-2px', transition: 'all 0.2s'
           }}
         >
-          Hist├│rico (Conclu├¡das e Canceladas)
+          Histórico (Concluídas e Canceladas)
         </Link>
       </div>
 
@@ -132,7 +132,7 @@ export default async function EscalasPage({
           options={[
             { value: "", label: "Todos os Status" },
             { value: "Ativa", label: "Ativa" },
-            { value: "Conclu├¡da", label: "Conclu├¡da" },
+            { value: "Concluída", label: "Concluída" },
             { value: "Cancelada", label: "Cancelada" }
           ]}
         />
@@ -148,19 +148,19 @@ export default async function EscalasPage({
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Funcion├írio</th>
+              <th>Funcionário</th>
               <th>Cliente (Local)</th>
               <th>Tarefa / Tempo</th>
-              <th><SortableHeader label="Remunera├º├úo" value="paymentValue" /></th>
+              <th><SortableHeader label="Remuneração" value="paymentValue" /></th>
               <th>Status</th>
-              <th>A├º├Áes</th>
+              <th>Ações</th>
             </tr>
           </thead>
           <tbody>
             {filteredAlocacoes.length === 0 ? (
               <tr>
                 <td colSpan={6} className={styles.emptyState}>
-                  Nenhuma aloca├º├úo correspondente encontrada nesta aba.
+                  Nenhuma alocação correspondente encontrada nesta aba.
                 </td>
               </tr>
             ) : (
@@ -181,18 +181,18 @@ export default async function EscalasPage({
                   <td>
                     <div className={styles.strongText}>{aloc.task}</div>
                     <div style={{ display: 'inline-block', marginTop: '4px', padding: '2px 6px', background: '#e1f5fe', color: '#0288d1', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 600 }}>
-                      Regime: {(aloc as any).scaleMode || "Cont├¡nuo"}
+                      Regime: {(aloc as any).scaleMode || "Contínuo"}
                     </div>
                     {(aloc as any).startDate && (
                       <div className={styles.cellWithIcon} style={{ fontSize: '0.8rem', color: '#666', marginTop: '6px' }}>
                         <CalendarClock size={14} /> 
                         {new Date((aloc as any).startDate).toLocaleDateString('pt-BR')} 
-                        {(aloc as any).endDate ? ` at├® ${new Date((aloc as any).endDate).toLocaleDateString('pt-BR')}` : ' em diante (Indeterminado)'}
+                        {(aloc as any).endDate ? ` até ${new Date((aloc as any).endDate).toLocaleDateString('pt-BR')}` : ' em diante (Indeterminado)'}
                       </div>
                     )}
                     {!((aloc as any).startDate) && (
                        <div className={styles.cellWithIcon} style={{ fontSize: '0.8rem', color: '#666', marginTop: '6px' }}>
-                         <CalendarClock size={14} /> Sem datas definidas (Cont├¡nuo/Livre)
+                         <CalendarClock size={14} /> Sem datas definidas (Contínuo/Livre)
                        </div>
                     )}
                     {aloc.duration && (
@@ -225,9 +225,9 @@ export default async function EscalasPage({
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#f39c12', fontWeight: 600, background: '#fef5e7', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>
                         Incompleto
                       </div>
-                    ) : computedStatus === "Conclu├¡da" ? (
+                    ) : computedStatus === "Concluída" ? (
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#2980b9', fontWeight: 600, background: '#eaf2f8', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>
-                        <CheckCircle2 size={14} /> Conclu├¡da
+                        <CheckCircle2 size={14} /> Concluída
                       </div>
                     ) : (
                       <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#7f8c8d', fontWeight: 600, background: '#f2f4f4', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>
@@ -237,7 +237,7 @@ export default async function EscalasPage({
                   </td>
                   <td>
                     <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                      {computedStatus !== "Conclu├¡da" && computedStatus !== "Cancelada" && computedStatus !== "Incompleto" && (
+                      {computedStatus !== "Concluída" && computedStatus !== "Cancelada" && computedStatus !== "Incompleto" && (
                         <ConcludeOrCancelModal allocationId={aloc.id} variant="tableBtn" />
                       )}
                       <Link 
