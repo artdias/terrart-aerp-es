@@ -131,8 +131,14 @@ export default async function FuncionariosPage({
               funcionarios.map(func => (
                 <tr key={func.id}>
                   <td>
-                    <div className={styles.cellWithIcon}>
-                      <Users size={16} className={styles.icon} />
+                    <div className={styles.cellWithIcon} style={{ gap: '12px' }}>
+                      {func.photoUrl ? (
+                        <img src={func.photoUrl} alt="" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', border: '2px solid #eee' }} />
+                      ) : (
+                        <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#94a3b8' }}>
+                          <Users size={18} />
+                        </div>
+                      )}
                       <div>
                         <div className={styles.strongText}>{func.user?.name || "Sem Nome"}</div>
                         <div style={{ fontSize: '0.8rem', color: '#666' }}>CPF: {func.cpf}</div>

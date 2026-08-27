@@ -46,6 +46,7 @@ export async function createUser(formData: FormData) {
   const allowFaturamento = formData.get("allowFaturamento") === "on";
   const allowRecepcao = formData.get("allowRecepcao") === "on";
   const allowRelatorios = formData.get("allowRelatorios") === "on";
+  const allowRh = formData.get("allowRh") === "on";
 
   await prisma.user.create({
     data: {
@@ -62,7 +63,8 @@ export async function createUser(formData: FormData) {
       allowJuridico,
       allowFaturamento,
       allowRecepcao,
-      allowRelatorios
+      allowRelatorios,
+      allowRh
     }
   });
 
@@ -161,7 +163,8 @@ export async function updateUser(formData: FormData) {
     allowJuridico: formData.get("allowJuridico") === "on",
     allowFaturamento: formData.get("allowFaturamento") === "on",
     allowRecepcao: formData.get("allowRecepcao") === "on",
-    allowRelatorios: formData.get("allowRelatorios") === "on"
+    allowRelatorios: formData.get("allowRelatorios") === "on",
+    allowRh: formData.get("allowRh") === "on"
   };
 
   if (password && password.trim() !== "") {

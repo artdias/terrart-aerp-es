@@ -29,6 +29,7 @@ model User {
   allowFaturamento  Boolean @default(false)
   allowRecepcao     Boolean @default(false)
   allowRelatorios   Boolean @default(false)
+  allowRh           Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -130,6 +131,8 @@ model Employee {
 
   roleTitle String
   salary    Float?
+  photoUrl  String?
+
 
   // Onde o funcionário está alocado atualmente
   workplaceId String?

@@ -229,6 +229,18 @@ export default async function EditarUsuarioPage({
               />
               <label htmlFor="allowRelatorios" style={{ fontSize: "0.9rem", color: "#333", cursor: "pointer", fontWeight: 600 }}>Relatórios</label>
             </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <input 
+                type="checkbox" 
+                id="allowRh" 
+                name="allowRh" 
+                defaultChecked={userToEdit.allowRh}
+                disabled={isMasterAdmin}
+                style={{ width: "18px", height: "18px", cursor: "pointer" }} 
+              />
+              <label htmlFor="allowRh" style={{ fontSize: "0.9rem", color: "#333", cursor: "pointer", fontWeight: 600 }}>Recursos Humanos (RH)</label>
+            </div>
           </div>
 
           <div className={styles.footer}>

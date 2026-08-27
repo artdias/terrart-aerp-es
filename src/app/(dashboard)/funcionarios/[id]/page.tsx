@@ -112,6 +112,12 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
                 <strong style={{ color: '#666', fontSize: '0.85rem' }}>Escolaridade:</strong>
                 <p style={{ margin: '4px 0 0', fontWeight: 600, color: '#1a1a1a' }}>{func.educationLevel || "Não informado"}</p>
               </div>
+              <div>
+                <strong style={{ color: '#666', fontSize: '0.85rem' }}>Salário Base / Pretensão:</strong>
+                <p style={{ margin: '4px 0 0', fontWeight: 600, color: '#1a1a1a' }}>
+                  {func.salary !== null ? `R$ ${func.salary.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "Não cadastrado"}
+                </p>
+              </div>
             </div>
           </div>
 
@@ -291,8 +297,17 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
         {/* Lado Direito - Sidebar de Status / Alocação Atual */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
         
-        {/* Card Status Atual */}
+        {/* Card Status Atual e Foto */}
         <div className={styles.card} style={{ padding: '20px', textAlign: 'center' }}>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+            {func.photoUrl ? (
+              <img src={func.photoUrl} alt={`Foto de ${func.firstName}`} style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #eee' }} />
+            ) : (
+              <div style={{ width: '120px', height: '120px', borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', border: '3px solid #eee' }}>
+                <Users size={48} />
+              </div>
+            )}
+          </div>
           <strong style={{ color: '#666', fontSize: '0.85rem' }}>STATUS DO CONTRATO</strong>
           <div style={{ margin: '12px 0' }}>
             {func.status === "Ativo" || func.status === "Contrato" ? (

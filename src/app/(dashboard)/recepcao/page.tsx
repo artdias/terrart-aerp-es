@@ -229,13 +229,11 @@ export default async function RecepcaoDashboard({
             ) : null}
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.5rem" }}>
-            {meetings.length === 0 ? (
-              <div style={{ gridColumn: "1/-1", background: "white", padding: "2rem", borderRadius: "10px", border: "1px solid #eee", textAlign: "center", color: "#999", fontStyle: "italic" }}>
-                Nenhum agendamento de reunião correspondente nesta aba.
-              </div>
-            ) : (
-              meetings.map((m) => (
+          {(() => {
+            const activeMeetings = meetings.filter(m => m.status === 'PENDENTE');
+            const pastMeetings = meetings.filter(m => m.status !== 'PENDENTE').sort((a, b) => new Date(b.startAt).getTime() - new Date(a.startAt).getTime());
+
+            const renderMeetingCard = (m: any) => (
                 <div key={m.id} style={{
                   background: "white",
                   padding: "1.5rem",
@@ -245,7 +243,8 @@ export default async function RecepcaoDashboard({
                   display: "flex",
                   flexDirection: "column",
                   justifyContent: "space-between",
-                  gap: "1rem"
+                  gap: "1rem",
+                  opacity: m.status !== 'PENDENTE' ? 0.75 : 1
                 }}>
                   <div>
                     {/* Cabeçalho do Agendamento */}
@@ -326,6 +325,9 @@ export default async function RecepcaoDashboard({
 
                     {m.status === "PENDENTE" && (
                       <div style={{ display: "flex", gap: "6px" }}>
+                        <Link href={`/recepcao/editar-agendamento/${m.id}`} style={{ padding: "4px 8px", background: "#3498db", color: "white", border: "none", borderRadius: "4px", fontSize: "0.75rem", fontWeight: 600, textDecoration: "none" }}>
+                          Editar
+                        </Link>
                         {/* Finalizar */}
                         <form action={updateEventStatus}>
                           <input type="hidden" name="eventId" value={m.id} />
@@ -347,9 +349,33 @@ export default async function RecepcaoDashboard({
                   </div>
 
                 </div>
-              ))
-            )}
-          </div>
+            );
+
+            return (
+              <>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.5rem" }}>
+                  {activeMeetings.length === 0 ? (
+                    <div style={{ gridColumn: "1/-1", background: "white", padding: "2rem", borderRadius: "10px", border: "1px solid #eee", textAlign: "center", color: "#999", fontStyle: "italic" }}>
+                      Nenhum agendamento pendente correspondente nesta aba.
+                    </div>
+                  ) : (
+                    activeMeetings.map(renderMeetingCard)
+                  )}
+                </div>
+
+                {pastMeetings.length > 0 && (
+                  <details style={{ marginTop: '2.5rem', background: '#f9f9f9', padding: '1rem', borderRadius: '8px', border: '1px solid #eee' }}>
+                    <summary style={{ fontSize: '1.05rem', color: '#555', fontWeight: 600, cursor: 'pointer', outline: 'none' }}>
+                      Ver Histórico de Agendamentos ({pastMeetings.length})
+                    </summary>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))", gap: "1.5rem", marginTop: '1.5rem' }}>
+                      {pastMeetings.map(renderMeetingCard)}
+                    </div>
+                  </details>
+                )}
+              </>
+            );
+          })()}
         </>
       )}
 

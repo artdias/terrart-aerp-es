@@ -70,6 +70,53 @@ export async function updateEventStatus(formData: FormData) {
   revalidatePath("/recepcao");
 }
 
+export async function editScheduleEvent(formData: FormData) {
+  const session = await getServerSession(authOptions);
+  const creatorId = (session?.user as any)?.id;
+
+  if (!creatorId) {
+    throw new Error("Usuário não autenticado.");
+  }
+
+  const id = sanitizeInput(formData.get("id") as string);
+  const title = sanitizeInput(formData.get("title") as string);
+  const startAtStr = formData.get("startAt") as string;
+  const endAtStr = formData.get("endAt") as string;
+  const participantIds = formData.getAll("participantIds") as string[];
+  const clientId = formData.get("clientId") as string || null;
+  const employeeId = formData.get("employeeId") as string || null;
+  const privacy = sanitizeInput(formData.get("privacy") as string) || "PUBLICO";
+
+  if (!id || !title || !startAtStr || !endAtStr || participantIds.length === 0) {
+    throw new Error("ID, Título, Data de Início, Data de Término e Participantes são obrigatórios.");
+  }
+
+  const startAt = new Date(startAtStr);
+  const endAt = new Date(endAtStr);
+
+  if (endAt <= startAt) {
+    throw new Error("A data de término deve ser posterior à data de início.");
+  }
+
+  await prisma.scheduleEvent.update({
+    where: { id },
+    data: {
+      title,
+      startAt,
+      endAt,
+      privacy,
+      participants: {
+        set: participantIds.map((pid) => ({ id: pid }))
+      },
+      clientId: clientId || null,
+      employeeId: employeeId || null,
+    }
+  });
+
+  revalidatePath("/recepcao");
+  redirect("/recepcao");
+}
+
 export async function createPhoneMessage(formData: FormData) {
   const recipientUserId = sanitizeInput(formData.get("recipientUserId") as string);
   const recipientNameStr = sanitizeInput(formData.get("recipientName") as string);

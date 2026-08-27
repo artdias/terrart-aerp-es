@@ -20,6 +20,7 @@ interface EmployeeType {
   educationLevel: string | null;
   roleTitle: string;
   status: string;
+  photoUrl: string | null;
   workplaceId: string | null;
   workplace?: {
     clientId: string;
@@ -61,9 +62,30 @@ export default function EditFuncionarioForm({
   const [certificates, setCertificates] = useState<File[]>([]);
   const [documents, setDocuments] = useState<File[]>([]);
   const [existingAttachments, setExistingAttachments] = useState(employee.attachments || []);
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(employee.photoUrl || null);
   
   const certInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
+  const photoInputRef = useRef<HTMLInputElement>(null);
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setPhoto(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removePhoto = () => {
+    setPhoto(null);
+    setPhotoPreview(null);
+    if (photoInputRef.current) photoInputRef.current.value = "";
+  };
 
   const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/\D/g, "");
@@ -150,6 +172,7 @@ export default function EditFuncionarioForm({
 
       formData.delete("certificados-nativos");
       formData.delete("documentos-nativos");
+      formData.delete("photo-nativa");
 
       const toBase64 = (f: File) => new Promise<string>((resolve, reject) => {
         const reader = new FileReader();
@@ -157,6 +180,14 @@ export default function EditFuncionarioForm({
         reader.onload = () => resolve(reader.result as string);
         reader.onerror = error => reject(error);
       });
+
+      if (photo) {
+        const base64 = await toBase64(photo);
+        formData.append("photoData", JSON.stringify({ name: photo.name, data: base64 }));
+      } else if (!photoPreview) {
+        // Se removeu a foto, enviar flag para deletar
+        formData.append("photoData", JSON.stringify({ data: null }));
+      }
 
       for (const file of certificates) {
         const base64 = await toBase64(file);
@@ -200,6 +231,42 @@ export default function EditFuncionarioForm({
         <form onSubmit={handleSubmit} className={styles.form}>
           
           <h3 className={styles.sectionTitle}>Dados Pessoais</h3>
+
+          {/* FOTO DE PERFIL */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <div 
+              style={{ 
+                width: '120px', height: '120px', borderRadius: '50%', backgroundColor: '#f1f5f9', 
+                border: '2px dashed #cbd5e1', display: 'flex', justifyContent: 'center', alignItems: 'center',
+                overflow: 'hidden', cursor: 'pointer', position: 'relative'
+              }}
+              onClick={() => photoInputRef.current?.click()}
+            >
+              {photoPreview ? (
+                <img src={photoPreview} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <span style={{ fontSize: '0.8rem', color: '#64748b', textAlign: 'center', padding: '10px' }}>Adicionar Foto</span>
+              )}
+            </div>
+            {photoPreview && (
+              <button 
+                type="button" 
+                onClick={removePhoto} 
+                style={{ marginTop: '8px', background: 'none', border: 'none', color: '#ef4444', fontSize: '0.85rem', cursor: 'pointer' }}
+              >
+                Remover foto
+              </button>
+            )}
+            <input 
+              type="file" 
+              ref={photoInputRef} 
+              name="photo-nativa" 
+              style={{ display: 'none' }} 
+              accept="image/*" 
+              onChange={handlePhotoChange} 
+            />
+          </div>
+
           <div className={styles.formRow}>
             <div className={styles.inputGroup}>
               <label htmlFor="firstName">Nome <span style={{ color: '#e74c3c' }}>*</span></label>
@@ -312,6 +379,13 @@ export default function EditFuncionarioForm({
                   </label>
                 ))}
               </div>
+            </div>
+          </div>
+
+          <div className={styles.formRow}>
+            <div className={styles.inputGroup}>
+              <label htmlFor="salary">Salário Base / Pretensão (R$)</label>
+              <input type="number" step="0.01" id="salary" name="salary" defaultValue={employee.salary || ""} placeholder="0.00" />
             </div>
           </div>
 

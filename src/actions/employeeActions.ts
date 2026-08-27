@@ -26,6 +26,9 @@ export async function createEmployee(formData: FormData) {
     const educationLevel = sanitizeInput(formData.get("educationLevel") as string);
     const gender = sanitizeInput(formData.get("gender") as string);
     const status = sanitizeInput(formData.get("status") as string);
+    
+    const salaryStr = sanitizeInput(formData.get("salary") as string);
+    const salary = salaryStr ? parseFloat(salaryStr) : null;
 
     if (!firstName || !email || !cpf || !roleTitle) {
       return { success: false, error: "Preencha todos os campos obrigatórios" };
@@ -78,6 +81,17 @@ export async function createEmployee(formData: FormData) {
     }
 
     // 3. Criar perfil de Funcionário
+    const photoDataStr = formData.get("photoData") as string;
+    let photoUrl: string | undefined = undefined;
+    if (photoDataStr) {
+      try {
+        const file = JSON.parse(photoDataStr);
+        photoUrl = file.data;
+      } catch (e) {
+        console.error("Erro ao fazer parse do photoData:", e);
+      }
+    }
+
     const employee = await prisma.employee.create({
       data: {
         userId: user.id,
@@ -92,7 +106,9 @@ export async function createEmployee(formData: FormData) {
         gender,
         status: status || "Ativo",
         roleTitle,
-        workplaceId
+        workplaceId,
+        photoUrl,
+        salary
       }
     });
 
@@ -160,6 +176,9 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
     const educationLevel = sanitizeInput(formData.get("educationLevel") as string);
     const gender = sanitizeInput(formData.get("gender") as string);
     const status = sanitizeInput(formData.get("status") as string);
+    
+    const salaryStr = sanitizeInput(formData.get("salary") as string);
+    const salary = salaryStr ? parseFloat(salaryStr) : null;
 
     if (!firstName || !email || !cpf || !roleTitle) {
       return { success: false, error: "Preencha todos os campos obrigatórios" };
@@ -225,22 +244,40 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
     }
 
     // 4. Atualizar perfil de Funcionário
+    const photoDataStr = formData.get("photoData") as string;
+    let photoUrl: string | undefined = undefined;
+    if (photoDataStr) {
+      try {
+        const file = JSON.parse(photoDataStr);
+        photoUrl = file.data;
+      } catch (e) {
+        console.error("Erro ao fazer parse do photoData:", e);
+      }
+    }
+
+    const updateData: any = {
+      firstName,
+      lastName,
+      cpf,
+      cnh,
+      cnhExpiration,
+      rg,
+      birthDate,
+      educationLevel,
+      gender,
+      status: status || "Ativo",
+      roleTitle,
+      workplaceId,
+      salary
+    };
+
+    if (photoUrl) {
+      updateData.photoUrl = photoUrl;
+    }
+
     await prisma.employee.update({
       where: { id: employeeId },
-      data: {
-        firstName,
-        lastName,
-        cpf,
-        cnh,
-        cnhExpiration,
-        rg,
-        birthDate,
-        educationLevel,
-        gender,
-        status: status || "Ativo",
-        roleTitle,
-        workplaceId
-      }
+      data: updateData
     });
 
     // 5. Processar novos arquivos se enviados

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
-import { Users, Briefcase, Box, DollarSign, LogOut, Home, CalendarClock, ShieldCheck, Scale, HandCoins, ConciergeBell, Settings, MessageSquare, ShieldAlert, Trash2, FileSpreadsheet } from "lucide-react";
+import { Users, Briefcase, Box, DollarSign, LogOut, Home, CalendarClock, ShieldCheck, Scale, HandCoins, ConciergeBell, Settings, MessageSquare, ShieldAlert, Trash2, FileSpreadsheet, UserCheck } from "lucide-react";
 import styles from "./Sidebar.module.css";
 
 export function Sidebar() {
@@ -14,6 +14,7 @@ export function Sidebar() {
     { name: "Início", path: "/", icon: Home },
     { name: "Clientes", path: "/clientes", icon: Briefcase },
     { name: "Funcionários", path: "/funcionarios", icon: Users },
+    { name: "Recursos Humanos", path: "/rh", icon: UserCheck },
     { name: "Escalas", path: "/escalas", icon: CalendarClock },
     { name: "Estoque", path: "/estoque", icon: Box },
     { name: "Atribuições", path: "/cautelas", icon: ShieldCheck },
@@ -45,6 +46,7 @@ export function Sidebar() {
     if (item.path === "/juridico") return p.allowJuridico;
     if (item.path === "/financeiro-clientes") return p.allowFaturamento;
     if (item.path === "/recepcao") return p.allowRecepcao;
+    if (item.path === "/rh") return p.allowRh;
     return false;
   });
 

@@ -44,7 +44,8 @@ export const authOptions: NextAuthOptions = {
                 allowJuridico: true,
                 allowFaturamento: true,
                 allowRecepcao: true,
-                allowRelatorios: true
+                allowRelatorios: true,
+                allowRh: true
               }
             });
           }
@@ -77,7 +78,8 @@ export const authOptions: NextAuthOptions = {
             allowJuridico: user.allowJuridico,
             allowFaturamento: user.allowFaturamento,
             allowRecepcao: user.allowRecepcao,
-            allowRelatorios: user.allowRelatorios
+            allowRelatorios: user.allowRelatorios,
+            allowRh: user.allowRh
           };
         } catch (error) {
           console.error("[Auth] Exception during authorization:", error);
@@ -100,6 +102,7 @@ export const authOptions: NextAuthOptions = {
         token.allowFaturamento = (user as any).allowFaturamento;
         token.allowRecepcao = (user as any).allowRecepcao;
         token.allowRelatorios = (user as any).allowRelatorios;
+        token.allowRh = (user as any).allowRh;
       }
       return token;
     },
@@ -117,7 +120,8 @@ export const authOptions: NextAuthOptions = {
           allowJuridico: token.allowJuridico,
           allowFaturamento: token.allowFaturamento,
           allowRecepcao: token.allowRecepcao,
-          allowRelatorios: token.allowRelatorios
+          allowRelatorios: token.allowRelatorios,
+          allowRh: token.allowRh
         };
       }
       return session;
