@@ -63,6 +63,15 @@ export default async function EscalasHubPage() {
 
       <h2 className={styles.sectionTitle} style={{ marginTop: '2rem' }}>Cadastros Base</h2>
       <div className={styles.grid}>
+        {/* Postos / Demanda */}
+        <Link href="/escalas/postos" className={styles.card}>
+          <div className={styles.iconWrapper} style={{ backgroundColor: '#fef2f2', color: '#ef4444' }}>
+            <Briefcase size={28} />
+          </div>
+          <h3>Demandas por Posto</h3>
+          <p>Configure a necessidade de cobertura de turnos para cada cliente.</p>
+        </Link>
+
         {/* Turnos */}
         <Link href="/escalas/configuracoes/turnos" className={styles.card}>
           <div className={styles.iconWrapper} style={{ backgroundColor: '#f3f4f6', color: '#4b5563' }}>
