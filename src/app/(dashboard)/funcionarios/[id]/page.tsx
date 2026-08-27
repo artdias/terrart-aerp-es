@@ -1,10 +1,11 @@
 import styles from "../../clientes/novo/novoCliente.module.css";
 import detailStyles from "../funcionarios.module.css"; // We'll add some styles to style this page beautifully or write inline
 import Link from "next/link";
-import { ArrowLeft, Edit2, Users, Briefcase, FileText, CalendarClock, Shield, Paperclip, Printer } from "lucide-react";
+import { ArrowLeft, Edit2, Users, Briefcase, FileText, CalendarClock, Shield, Paperclip, Printer, Clock } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import InterviewModal from "@/components/InterviewModal";
+import ScheduleConfigForm from "@/components/ScheduleConfigForm/ScheduleConfigForm";
 
 export default async function FuncionarioDetalhePage({ params }: { params: { id: string } }) {
   const func = await prisma.employee.findUnique({
@@ -25,9 +26,15 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
       },
       interviews: {
         orderBy: { interviewDate: 'desc' }
+      },
+      scheduleConfig: {
+        include: { shiftPattern: true, defaultShift: true }
       }
     }
   });
+
+  const patterns = await prisma.shiftPattern.findMany({ orderBy: { name: 'asc' } });
+  const shifts = await prisma.shift.findMany({ orderBy: { startTime: 'asc' } });
 
   if (!func) {
     return notFound();
@@ -118,6 +125,21 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
                   {func.salary !== null ? `R$ ${func.salary.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "Não cadastrado"}
                 </p>
               </div>
+            </div>
+          </div>
+
+          {/* Card: Configuração de Escala (Novo Motor) */}
+          <div className={styles.card} style={{ padding: '20px' }}>
+            <h3 className={styles.sectionTitle} style={{ marginTop: 0, borderBottom: '1px solid #eee', paddingBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Clock size={18} style={{ color: '#002244' }} /> Configuração da Escala (Motor Inteligente)
+            </h3>
+            <div style={{ marginTop: '16px' }}>
+              <ScheduleConfigForm 
+                employeeId={func.id} 
+                currentConfig={func.scheduleConfig} 
+                patterns={patterns} 
+                shifts={shifts} 
+              />
             </div>
           </div>
 
