@@ -1,4 +1,4 @@
-import styles from "../clientes/clientes.module.css";
+import styles from "../../clientes/clientes.module.css";
 import { Plus, Briefcase, CalendarClock, DollarSign, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
