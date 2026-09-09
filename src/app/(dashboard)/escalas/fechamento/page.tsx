@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { getClosingData } from "@/actions/monthlyClosingActions";
+import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import styles from "../EscalasHub.module.css";
@@ -27,8 +27,25 @@ export default async function FechamentoPage({ searchParams }: { searchParams: {
   const today = new Date();
   const currentMonth = today.getFullYear() + "-" + String(today.getMonth() + 1).padStart(2, '0');
   const queryMonth = searchParams?.month || currentMonth;
+  const queryWorkplace = searchParams?.workplaceId || "";
 
-  const data = await getClosingData(queryMonth);
+  // Busca as Escalas criadas neste mês de competência
+  const schedules = await prisma.schedule.findMany({
+    where: { 
+      competencyMonth: queryMonth,
+      ...(queryWorkplace && queryWorkplace !== "ALL" ? { workplaceId: queryWorkplace } : {})
+    },
+    include: {
+      workplace: { include: { client: true } }
+    },
+    orderBy: { createdAt: 'desc' }
+  });
+
+  const workplaces = await prisma.workplace.findMany({
+    where: { client: { deleted: false } },
+    include: { client: true },
+    orderBy: { name: 'asc' }
+  });
 
   return (
     <div className={styles.container} style={{ maxWidth: '1400px' }}>
@@ -37,14 +54,16 @@ export default async function FechamentoPage({ searchParams }: { searchParams: {
           <ArrowLeft size={24} />
         </Link>
         <div>
-          <h1 className={styles.title}>Fechamento Mensal</h1>
-          <p className={styles.subtitle}>Consolidação de eventos (faltas, atrasos e coberturas) e processamento para a folha.</p>
+          <h1 className={styles.title}>Fechamento de Escalas</h1>
+          <p className={styles.subtitle}>Encerre as escalas e bloqueie alterações. Cálculos financeiros estarão no módulo Financeiro.</p>
         </div>
       </header>
 
       <FechamentoClient 
         currentMonth={queryMonth} 
-        initialData={data} 
+        schedules={schedules} 
+        workplaces={workplaces}
+        currentWorkplace={queryWorkplace}
       />
     </div>
   );

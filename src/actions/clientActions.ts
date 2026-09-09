@@ -43,7 +43,7 @@ export async function createClient(formData: FormData) {
       }
     }
 
-    await prisma.client.create({
+    const newClient = await prisma.client.create({
       data: {
         companyName,
         cnpj,
@@ -59,7 +59,13 @@ export async function createClient(formData: FormData) {
         email2,
         observations,
         managerName,
-        managerContact
+        managerContact,
+        workplaces: {
+          create: {
+            name: "Posto Padrão",
+            address: address
+          }
+        }
       },
     });
 

@@ -10,7 +10,9 @@ export default function DashboardLayout({
 }) {
   return (
     <div className={styles.layout}>
-      <Sidebar />
+      <div className="hide-on-print">
+        <Sidebar />
+      </div>
       <main className={styles.mainContent}>
         <div style={{ maxWidth: "1200px", margin: "0 auto", width: "100%", display: "flex", flexDirection: "column", gap: "2rem" }}>
           {children}

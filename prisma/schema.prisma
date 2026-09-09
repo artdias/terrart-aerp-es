@@ -625,6 +625,7 @@ model Schedule {
   competencyMonth String // "YYYY-MM"
   status          ScheduleStatus @default(RASCUNHO)
   name            String? // Ex: "Escala Julho/2026 - Matriz"
+  closingNotes    String? @db.Text
 
   workplaceId String? // Opcional, caso a escala seja por posto
   workplace   Workplace? @relation(fields: [workplaceId], references: [id])
@@ -676,6 +677,7 @@ model ShiftAssignment {
 
   competencyMonth String // "YYYY-MM"
   status          ShiftAssignmentStatus @default(PLANEJADO)
+  roleOverride    String? // Função exercida neste dia específico (ex: Portaria, Segurança)
 
   workPeriods WorkPeriod[]
   occurrences Occurrence[]
@@ -749,6 +751,8 @@ model Coverage {
 
   startTime DateTime
   endTime   DateTime
+
+  reason    String?
 
   status CoverageStatus @default(PENDENTE)
 

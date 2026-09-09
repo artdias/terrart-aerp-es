@@ -57,12 +57,7 @@ export default async function PostosPage() {
                   <Link 
                     key={wp.id} 
                     href={`/escalas/postos/${wp.id}`} 
-                    style={{ 
-                      display: 'block', padding: '16px', borderRadius: '8px', border: '1px solid #e5e7eb', 
-                      textDecoration: 'none', color: 'inherit', transition: 'all 0.2s'
-                    }}
-                    onMouseOver={(e) => (e.currentTarget.style.borderColor = '#93c5fd')}
-                    onMouseOut={(e) => (e.currentTarget.style.borderColor = '#e5e7eb')}
+                    className={styles.postoCard}
                   >
                     <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
                       <div style={{ backgroundColor: '#eff6ff', color: '#3b82f6', padding: '8px', borderRadius: '6px' }}>

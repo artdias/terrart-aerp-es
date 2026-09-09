@@ -7,8 +7,10 @@ import { ArrowLeft } from "lucide-react";
 import styles from "../EscalasHub.module.css";
 import PlanejamentoClient from "./PlanejamentoClient";
 
+import { prisma } from "@/lib/prisma";
+
 export const metadata = {
-  title: "Gerador de Escalas | AERP",
+  title: "Planejamento de Escalas | AERP",
 };
 
 export default async function PlanejamentoPage() {
@@ -25,6 +27,13 @@ export default async function PlanejamentoPage() {
   }
 
   const schedules = await getSchedules();
+  
+  // Fetch workplaces to allow user to select which company to plan for
+  const workplaces = await prisma.workplace.findMany({
+    where: { client: { deleted: false } },
+    include: { client: true },
+    orderBy: { name: 'asc' }
+  });
 
   return (
     <div className={styles.container}>
@@ -33,12 +42,12 @@ export default async function PlanejamentoPage() {
           <ArrowLeft size={24} />
         </Link>
         <div>
-          <h1 className={styles.title}>Gerador de Escalas</h1>
-          <p className={styles.subtitle}>Crie a grade mensal projetando matematicamente o ciclo de cada funcionário.</p>
+          <h1 className={styles.title}>Planejamento de Escalas (Calendário)</h1>
+          <p className={styles.subtitle}>Crie a grade mensal por Empresa. Preencha automaticamente ou monte de forma manual e dinâmica.</p>
         </div>
       </header>
 
-      <PlanejamentoClient initialSchedules={schedules} />
+      <PlanejamentoClient initialSchedules={schedules} workplaces={workplaces} />
     </div>
   );
 }

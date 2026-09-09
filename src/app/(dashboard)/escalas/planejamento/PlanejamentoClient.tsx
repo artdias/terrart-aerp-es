@@ -1,11 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Play, Trash2, Calendar, FileText } from "lucide-react";
-import { createSchedule, deleteSchedule, generateScheduleDraft } from "@/actions/scheduleGeneratorActions";
+import { Plus, Trash2, Calendar, FileText } from "lucide-react";
+import { createSchedule, deleteSchedule } from "@/actions/scheduleGeneratorActions";
 import Link from "next/link";
 
-export default function PlanejamentoClient({ initialSchedules }: { initialSchedules: any[] }) {
+export default function PlanejamentoClient({ initialSchedules, workplaces }: { initialSchedules: any[], workplaces?: any[] }) {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState("");
 
@@ -22,20 +22,6 @@ export default function PlanejamentoClient({ initialSchedules }: { initialSchedu
       setError(err.message || "Erro ao criar.");
     } finally {
       setIsPending(false);
-    }
-  }
-
-  async function handleGenerate(id: string) {
-    if (confirm("Gerar a escala vai preencher automaticamente os dias do mês baseado nos Padrões de Ciclo dos funcionários ativos. Continuar?")) {
-      setIsPending(true);
-      try {
-        await generateScheduleDraft(id);
-        alert("Escala gerada com sucesso!");
-      } catch (err: any) {
-        alert(err.message || "Erro ao gerar escala.");
-      } finally {
-        setIsPending(false);
-      }
     }
   }
 
@@ -65,10 +51,24 @@ export default function PlanejamentoClient({ initialSchedules }: { initialSchedu
       
       {/* FORM CRIAR NOVO MES */}
       <div style={{ backgroundColor: 'white', borderRadius: '12px', padding: '24px', border: '1px solid #e5e7eb' }}>
-        <h2 style={{ fontSize: '1.1rem', fontWeight: 600, margin: '0 0 16px 0' }}>Abrir Nova Escala Mensal</h2>
-        <form onSubmit={handleCreate} style={{ display: 'flex', gap: '16px', alignItems: 'flex-end' }}>
+        <h2 style={{ fontSize: '1.1rem', fontWeight: 600, margin: '0 0 16px 0' }}>Abrir Nova Grade por Empresa</h2>
+        <form onSubmit={handleCreate} style={{ display: 'flex', gap: '16px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
           
-          <div style={{ flex: 1 }}>
+          <div style={{ flex: 1, minWidth: '200px' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Empresa / Posto</label>
+            <select 
+              name="workplaceId" 
+              required 
+              style={{ width: '100%', padding: '10px', border: '1px solid #d1d5db', borderRadius: '6px' }}
+            >
+              <option value="">Selecione...</option>
+              {workplaces?.map((wp: any) => (
+                <option key={wp.id} value={wp.id}>{wp.client.companyName} - {wp.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div style={{ flex: 1, minWidth: '150px' }}>
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, marginBottom: '4px' }}>Mês de Competência</label>
             <input 
               name="competencyMonth" 
@@ -96,7 +96,7 @@ export default function PlanejamentoClient({ initialSchedules }: { initialSchedu
               display: 'flex', alignItems: 'center', gap: '8px'
             }}
           >
-            <Plus size={18} /> Criar Rascunho
+            <Plus size={18} /> Criar Escala
           </button>
         </form>
         {error && <p style={{ color: '#ef4444', fontSize: '0.9rem', marginTop: '12px' }}>{error}</p>}
@@ -116,41 +116,32 @@ export default function PlanejamentoClient({ initialSchedules }: { initialSchedu
                 <div>
                   <h3 style={{ fontSize: '1.2rem', margin: '0 0 4px 0', fontWeight: 600 }}>{sch.name}</h3>
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>Competência: {sch.competencyMonth}</span>
-                    <span style={{ 
-                      fontSize: '0.75rem', fontWeight: 700, padding: '4px 8px', borderRadius: '4px',
-                      backgroundColor: sColor.bg, color: sColor.color
-                    }}>
-                      {sch.status}
+                    <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>
+                      Empresa/Posto: {sch.workplace ? `${sch.workplace.client.companyName} - ${sch.workplace.name}` : 'Global'}
                     </span>
+                    <span style={{ fontSize: '0.9rem', color: '#6b7280' }}>Competência: {sch.competencyMonth}</span>
+                    {sch.status === "ENCERRADA" && (
+                      <span style={{ 
+                        fontSize: '0.75rem', fontWeight: 700, padding: '4px 8px', borderRadius: '4px',
+                        backgroundColor: sColor.bg, color: sColor.color
+                      }}>
+                        ENCERRADA
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
 
               <div style={{ display: 'flex', gap: '8px' }}>
-                {sch.status === "RASCUNHO" ? (
-                  <button 
-                    onClick={() => handleGenerate(sch.id)}
-                    disabled={isPending}
-                    style={{ 
-                      padding: '8px 16px', backgroundColor: '#10b981', color: 'white', 
-                      border: 'none', borderRadius: '6px', fontWeight: 600, cursor: isPending ? 'not-allowed' : 'pointer',
-                      display: 'flex', alignItems: 'center', gap: '8px'
-                    }}
-                  >
-                    <Play size={18} /> Rodar Motor (Gerar)
-                  </button>
-                ) : (
-                  <Link
-                    href={`/escalas/planejamento/${sch.id}`}
-                    style={{ 
-                      padding: '8px 16px', backgroundColor: '#f1f5f9', color: '#334155', textDecoration: 'none',
-                      border: '1px solid #cbd5e1', borderRadius: '6px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px'
-                    }}
-                  >
-                    <FileText size={18} /> Visualizar Grade
-                  </Link>
-                )}
+                <Link
+                  href={`/escalas/planejamento/${sch.id}`}
+                  style={{ 
+                    padding: '8px 16px', backgroundColor: '#f1f5f9', color: '#334155', textDecoration: 'none',
+                    border: '1px solid #cbd5e1', borderRadius: '6px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px'
+                  }}
+                >
+                  <FileText size={18} /> Abrir Grade
+                </Link>
                 
                 <button 
                   onClick={() => handleDelete(sch.id)}

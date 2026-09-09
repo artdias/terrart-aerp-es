@@ -71,14 +71,38 @@ export async function registerCoverage(formData: FormData) {
   const assignmentId = formData.get("assignmentId") as string;
   const originalEmployeeId = formData.get("originalEmployeeId") as string;
   const substituteEmployeeId = formData.get("substituteEmployeeId") as string;
+  const customStartTime = formData.get("startTime") as string;
+  const customEndTime = formData.get("endTime") as string;
+  const reason = formData.get("reason") as string;
   
   if (!assignmentId || !originalEmployeeId || !substituteEmployeeId) {
     throw new Error("Dados de substituição inválidos.");
   }
 
   // Pegamos os detalhes do plantão original para copiar os horários
-  const assignment = await prisma.shiftAssignment.findUnique({ where: { id: assignmentId } });
+  const assignment = await prisma.shiftAssignment.findUnique({ where: { id: assignmentId }, include: { shift: true } });
   if (!assignment) throw new Error("Plantão não encontrado.");
+
+  let coverageStart = assignment.plannedStart;
+  let coverageEnd = assignment.plannedEnd;
+
+  if (customStartTime && customEndTime) {
+    const year = assignment.date.getUTCFullYear();
+    const month = assignment.date.getUTCMonth();
+    const day = assignment.date.getUTCDate();
+
+    coverageStart = new Date(Date.UTC(year, month, day, 12, 0, 0));
+    const [sh, sm] = customStartTime.split(":").map(Number);
+    coverageStart.setUTCHours(sh + 3, sm, 0, 0);
+
+    coverageEnd = new Date(Date.UTC(year, month, day, 12, 0, 0));
+    const [eh, em] = customEndTime.split(":").map(Number);
+    coverageEnd.setUTCHours(eh + 3, em, 0, 0);
+
+    if (assignment.shift.crossesMidnight || (sh > eh)) {
+      coverageEnd.setDate(coverageEnd.getDate() + 1);
+    }
+  }
 
   await prisma.$transaction(async (tx) => {
     // 1. Cria a cobertura
@@ -87,13 +111,14 @@ export async function registerCoverage(formData: FormData) {
         assignmentId,
         originalEmployeeId,
         substituteEmployeeId,
-        startTime: assignment.plannedStart,
-        endTime: assignment.plannedEnd,
+        startTime: coverageStart,
+        endTime: coverageEnd,
+        reason: reason || null,
         status: "PENDENTE"
       }
     });
 
-    // 2. Atualiza o assignment para COBERTO
+    // 2. Atualiza o assignment para COBERTO (ou REALIZADO_PARCIAL se a cobertura não for do turno inteiro, mas por simplificação COBERTO)
     await tx.shiftAssignment.update({
       where: { id: assignmentId },
       data: { status: "COBERTO" }
@@ -105,8 +130,8 @@ export async function registerCoverage(formData: FormData) {
         assignmentId,
         employeeId: substituteEmployeeId,
         type: "COBERTURA",
-        actualStart: assignment.plannedStart,
-        actualEnd: assignment.plannedEnd
+        actualStart: coverageStart,
+        actualEnd: coverageEnd
       }
     });
   });
@@ -139,9 +164,34 @@ export async function confirmNormalPresence(assignmentId: string, employeeId: st
 }
 
 // Retorna funcionários ativos para o combo de substitutos
-export async function getActiveEmployeesForSubstitute() {
+// Retorna funcionários ativos para o combo de substitutos, que NÃO estejam já escalados para o dia
+export async function getActiveEmployeesForSubstitute(dateStr: string) {
+  const startOfDay = new Date(`${dateStr}T00:00:00Z`);
+  const endOfDay = new Date(`${dateStr}T23:59:59Z`);
+
   return prisma.employee.findMany({
-    where: { status: "Ativo", deleted: false },
+    where: { 
+      status: "Ativo", 
+      deleted: false,
+      // Não pode ter plantão nesse mesmo dia
+      assignments: {
+        none: {
+          date: {
+            gte: startOfDay,
+            lte: endOfDay
+          }
+        }
+      },
+      // E também não pode já estar cobrindo alguém nesse mesmo dia
+      coveragesAsSubstitute: {
+        none: {
+          startTime: {
+            gte: startOfDay,
+            lte: endOfDay
+          }
+        }
+      }
+    },
     include: { user: true },
     orderBy: { firstName: 'asc' }
   });

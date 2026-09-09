@@ -5,31 +5,37 @@ import { revalidatePath } from "next/cache";
 
 export async function getSchedules() {
   return prisma.schedule.findMany({
+    include: { workplace: { include: { client: true } } },
     orderBy: { competencyMonth: 'desc' }
   });
 }
 
 export async function createSchedule(formData: FormData) {
   const competencyMonth = formData.get("competencyMonth") as string;
+  const workplaceId = formData.get("workplaceId") as string;
   const name = formData.get("name") as string;
 
   if (!competencyMonth) throw new Error("Mês de competência é obrigatório.");
+  if (!workplaceId) throw new Error("Posto/Empresa é obrigatório.");
 
   const existing = await prisma.schedule.findFirst({
-    where: { competencyMonth }
+    where: { competencyMonth, workplaceId }
   });
 
   if (existing) {
-    throw new Error("Já existe uma escala para este mês. Você pode editá-la.");
+    throw new Error("Já existe uma escala para este mês nesta Empresa.");
   }
 
   const schedule = await prisma.schedule.create({
     data: {
       competencyMonth,
+      workplaceId,
       name: name || `Escala ${competencyMonth}`,
-      status: "RASCUNHO"
+      status: "RASCUNHO" // Will be updated to GERADA in generateScheduleDraft
     }
   });
+
+  await generateScheduleDraft(schedule.id);
 
   revalidatePath("/escalas/planejamento");
   return schedule;
@@ -45,9 +51,9 @@ export async function deleteSchedule(id: string) {
  */
 export async function generateScheduleDraft(scheduleId: string) {
   const schedule = await prisma.schedule.findUnique({ where: { id: scheduleId } });
-  if (!schedule) throw new Error("Escala não encontrada.");
+  if (!schedule) throw new Error("Escala nÃ£o encontrada.");
 
-  // Se já houver Assignments para esse schedule, deletamos para recriar (pois é rascunho)
+  // Se jÃ¡ houver Assignments para esse schedule, deletamos para recriar (pois Ã© rascunho)
   if (schedule.status === "GERADA" || schedule.status === "EM_REVISAO" || schedule.status === "PUBLICADA" || schedule.status === "ENCERRADA") {
      // Apenas recriamos se estiver em rascunho
   } else {
@@ -56,17 +62,17 @@ export async function generateScheduleDraft(scheduleId: string) {
      });
   }
 
-  // 1. Definir o primeiro e último dia do mês
+  // 1. Definir o primeiro e Ãºltimo dia do mÃªs
   const [year, month] = schedule.competencyMonth.split("-").map(Number);
   const startDate = new Date(Date.UTC(year, month - 1, 1, 12, 0, 0)); // meio dia UTC para evitar bugs de fuso
   const endDate = new Date(Date.UTC(year, month, 0, 12, 0, 0));
 
-  // 2. Buscar funcionários configurados
+  // 2. Buscar funcionÃ¡rios configurados para este posto (ou todos se global)
   const employees = await prisma.employee.findMany({
     where: {
       status: "Ativo",
       deleted: false,
-      workplaceId: { not: null },
+      workplaceId: schedule.workplaceId ? schedule.workplaceId : { not: null },
       scheduleConfig: { isNot: null }
     },
     include: {
@@ -87,11 +93,11 @@ export async function generateScheduleDraft(scheduleId: string) {
 
   const newAssignments = [];
 
-  // 3. Iterar por cada dia do mês
+  // 3. Iterar por cada dia do mÃªs
   for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
     const currentMs = d.getTime();
 
-    // 4. Iterar por cada funcionário
+    // 4. Iterar por cada funcionÃ¡rio
     for (const emp of employees) {
       const config = emp.scheduleConfig!;
       const pattern = config.shiftPattern;
@@ -101,12 +107,12 @@ export async function generateScheduleDraft(scheduleId: string) {
       const anchorDate = new Date(config.cycleAnchorDate);
       anchorDate.setUTCHours(12, 0, 0, 0); // padronizar
       
-      // Diferença em dias
+      // DiferenÃ§a em dias
       const diffTime = currentMs - anchorDate.getTime();
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
       
-      // Calcular a posição atual no ciclo
-      // Matemágica: ((diffDays % cycleLen) + cycleLen) % cycleLen + cycleAnchorPosition
+      // Calcular a posiÃ§Ã£o atual no ciclo
+      // MatemÃ¡gica: ((diffDays % cycleLen) + cycleLen) % cycleLen + cycleAnchorPosition
       let rawPos = (diffDays % cycleLen);
       if (rawPos < 0) rawPos += cycleLen; 
       
@@ -117,7 +123,7 @@ export async function generateScheduleDraft(scheduleId: string) {
         // Encontrar qual turno ele vai fazer
         let shiftId = config.defaultShiftId;
         
-        // Se não tiver turno padrão no perfil, pega a primeira demanda do posto
+        // Se nÃ£o tiver turno padrÃ£o no perfil, pega a primeira demanda do posto
         if (!shiftId && emp.workplace?.shiftRequirements.length) {
           shiftId = emp.workplace.shiftRequirements[0].shiftId;
         }
@@ -157,7 +163,7 @@ export async function generateScheduleDraft(scheduleId: string) {
 
   // Insert no banco
   if (newAssignments.length > 0) {
-    // Prisma não aceita string num Enum default de createMany as vezes, precisa castar, mas como ta no schema string, vai rodar.
+    // Prisma nÃ£o aceita string num Enum default de createMany as vezes, precisa castar, mas como ta no schema string, vai rodar.
     await prisma.shiftAssignment.createMany({
       data: newAssignments as any
     });
@@ -169,4 +175,25 @@ export async function generateScheduleDraft(scheduleId: string) {
   });
 
   revalidatePath("/escalas/planejamento");
+}
+
+export async function closeSchedule(scheduleId: string) {
+  const schedule = await prisma.schedule.findUnique({ where: { id: scheduleId } });
+  if (!schedule) throw new Error("Escala não encontrada.");
+  await prisma.schedule.update({ where: { id: scheduleId }, data: { status: "ENCERRADA" } });
+  revalidatePath("/escalas/planejamento");
+  return schedule;
+}
+
+export async function reopenSchedule(scheduleId: string) {
+  const schedule = await prisma.schedule.findUnique({ where: { id: scheduleId } });
+  if (!schedule) throw new Error("Escala n�o encontrada.");
+  await prisma.schedule.update({ where: { id: scheduleId }, data: { status: "EM_REVISAO" } });
+  revalidatePath("/escalas/planejamento");
+  return schedule;
+}
+
+export async function updateScheduleNotes(scheduleId: string, closingNotes: string) {
+  await prisma.schedule.update({ where: { id: scheduleId }, data: { closingNotes } });
+  revalidatePath("/escalas/fechamento");
 }

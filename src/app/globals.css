@@ -89,3 +89,22 @@ table {
     max-width: 100%;
   }
 }
+@media print { .hide-on-print { display: none !important; } }
+@media print { main { margin-left: 0 !important; padding: 0 !important; width: 100% !important; } }
+@media print { * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; } }
+
+.print-only { display: none; } @media print { .print-only { display: block !important; } .hide-on-print { display: none !important; } .page-break { page-break-before: always; break-before: page; } }
+
+@media print {  }
+
+@media print { .dashboard-grid, .container { padding: 0 !important; } }
+
+@media print {  }
+
+@media print { .print-compact-grid > div > div { min-height: 80px !important; padding: 4px !important; gap: 2px !important; } .print-compact-grid { font-size: 0.8rem; } }
+
+@media print { .print-compact-grid { zoom: 0.75; } }
+
+@media print { @page { size: portrait; margin: 0; } .print-rotated-wrapper { width: 100vw; height: 99vh; position: relative; overflow: hidden; page-break-after: always; } .print-rotated-content { width: 98vh; height: 98vw; position: absolute; top: 0; left: 100vw; transform: rotate(90deg); transform-origin: top left; padding: 10mm; box-sizing: border-box; } }
+
+@media print { .print-compact-grid { height: 100% !important; } }

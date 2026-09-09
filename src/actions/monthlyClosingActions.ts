@@ -3,13 +3,16 @@
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-export async function getClosingData(month: string) {
+export async function getClosingData(month: string, workplaceId?: string) {
   // Recebe YYYY-MM
   if (!month) return [];
 
   // Busca todos os funcionários que tem alguma escala nesse mês
   const assignments = await prisma.shiftAssignment.findMany({
-    where: { competencyMonth: month },
+    where: { 
+      competencyMonth: month,
+      ...(workplaceId ? { workplaceId } : {})
+    },
     include: {
       employee: { include: { user: true } },
       occurrences: true,
@@ -54,7 +57,10 @@ export async function getClosingData(month: string) {
   // Buscar coberturas feitas no mês (para pagar hora extra/banco de horas)
   const coverages = await prisma.coverage.findMany({
     where: {
-      assignment: { competencyMonth: month }
+      assignment: { 
+        competencyMonth: month,
+        ...(workplaceId ? { workplaceId } : {})
+      }
     },
     include: {
       assignment: { include: { shift: true } },
