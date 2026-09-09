@@ -11,7 +11,7 @@ export const metadata = {
   title: "Fechamento Mensal | AERP",
 };
 
-export default async function FechamentoPage({ searchParams }: { searchParams: { month?: string } }) {
+export default async function FechamentoPage({ searchParams }: { searchParams: { month?: string; workplaceId?: string } }) {
   const session = await getServerSession(authOptions);
 
   if (!session?.user) {
