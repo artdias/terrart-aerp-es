@@ -1,9 +1,9 @@
 "use client";
 
-import { createEmployee } from "@/actions/employeeActions";
+import { createEmployee, createJobRole, createShiftPattern } from "@/actions/employeeActions";
 import styles from "../../clientes/novo/novoCliente.module.css";
 import Link from "next/link";
-import { ArrowLeft, X, Paperclip } from "lucide-react";
+import { ArrowLeft, X, Paperclip, Plus } from "lucide-react";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
@@ -17,7 +17,12 @@ interface CargoOption {
   name: string;
 }
 
-export default function NovoFuncionarioForm({ clientes, cargos }: { clientes: ClientOption[], cargos: CargoOption[] }) {
+interface JornadaOption {
+  id: string;
+  name: string;
+}
+
+export default function NovoFuncionarioForm({ clientes, cargos, jornadas }: { clientes: ClientOption[], cargos: CargoOption[], jornadas: JornadaOption[] }) {
   const [cpf, setCpf] = useState("");
   const [rg, setRg] = useState("");
   const [cnh, setCnh] = useState("");
@@ -111,6 +116,20 @@ export default function NovoFuncionarioForm({ clientes, cargos }: { clientes: Cl
 
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  const handleAddCargo = async () => {
+    const name = window.prompt("Digite o nome do novo Cargo/Função:");
+    if (!name) return;
+    const res = await createJobRole(name);
+    if (res.error) alert(res.error);
+  };
+
+  const handleAddJornada = async () => {
+    const name = window.prompt("Digite o nome da nova Jornada (Ex: 12x36 Diurno):");
+    if (!name) return;
+    const res = await createShiftPattern(name);
+    if (res.error) alert(res.error);
+  };
 
   // Enviar os arquivos via onSubmit no Client Component para ter certeza de que o FormData contém apenas as seleções corretas (sem itens excluídos)
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -338,7 +357,12 @@ export default function NovoFuncionarioForm({ clientes, cargos }: { clientes: Cl
             </div>
 
             <div className={styles.inputGroup}>
-              <label>Cargo / Função <span className="no-print" style={{ color: '#e74c3c' }}>*</span></label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label>Cargo / Função <span className="no-print" style={{ color: '#e74c3c' }}>*</span></label>
+                <button type="button" onClick={handleAddCargo} className="no-print" style={{ background: 'none', border: 'none', color: '#0ea5e9', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
+                  <Plus size={14} /> Adicionar
+                </button>
+              </div>
               <div style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa', maxHeight: '150px', overflowY: 'auto' }}>
                 {cargos.length === 0 && <span style={{ color: '#666', fontSize: '0.9rem' }}>Nenhum cargo cadastrado.</span>}
                 {cargos.map(cargo => (
@@ -363,17 +387,30 @@ export default function NovoFuncionarioForm({ clientes, cargos }: { clientes: Cl
             </div>
             
             <div className={styles.inputGroup}>
-              <label>Jornada de Trabalho Pretendida</label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label>Jornada de Trabalho Pretendida</label>
+                <button type="button" onClick={handleAddJornada} className="no-print" style={{ background: 'none', border: 'none', color: '#0ea5e9', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
+                  <Plus size={14} /> Adicionar
+                </button>
+              </div>
               <div style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa', maxHeight: '150px', overflowY: 'auto' }}>
-                {["12x36 Diurno", "12x36 Noturno", "5x2 (Seg-Sex)", "6x1", "Horário Comercial", "Outra"].map(jornada => (
-                  <label key={jornada} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', cursor: 'pointer', fontSize: '0.95rem' }}>
+                {[
+                  { id: 'std1', name: "12x36 Diurno" },
+                  { id: 'std2', name: "12x36 Noturno" },
+                  { id: 'std3', name: "5x2 (Seg-Sex)" },
+                  { id: 'std4', name: "6x1" },
+                  { id: 'std5', name: "Horário Comercial" },
+                  { id: 'std6', name: "Outra" },
+                  ...jornadas.filter(j => !["12x36 Diurno", "12x36 Noturno", "5x2 (Seg-Sex)", "6x1", "Horário Comercial", "Outra"].includes(j.name))
+                ].map(jornada => (
+                  <label key={jornada.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', cursor: 'pointer', fontSize: '0.95rem' }}>
                     <input 
                       type="checkbox" 
                       name="jornadaPretendida" 
-                      value={jornada} 
+                      value={jornada.name} 
                       style={{ width: '18px', height: '18px', cursor: 'pointer' }}
                     />
-                    {jornada}
+                    {jornada.name}
                   </label>
                 ))}
               </div>

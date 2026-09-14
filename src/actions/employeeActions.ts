@@ -8,6 +8,40 @@ import fs from "fs/promises";
 import path from "path";
 import { logAction } from "@/lib/audit";
 
+export async function createJobRole(name: string) {
+  try {
+    const cleanName = sanitizeInput(name);
+    if (!cleanName) return { success: false, error: "Nome inválido" };
+    const existing = await prisma.jobRole.findUnique({ where: { name: cleanName } });
+    if (existing) return { success: false, error: "Cargo já existe" };
+    
+    await prisma.jobRole.create({ data: { name: cleanName } });
+    revalidatePath("/funcionarios/novo");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Erro ao criar cargo" };
+  }
+}
+
+export async function createShiftPattern(name: string) {
+  try {
+    const cleanName = sanitizeInput(name);
+    if (!cleanName) return { success: false, error: "Nome inválido" };
+    
+    await prisma.shiftPattern.create({ 
+      data: { 
+        name: cleanName,
+        cycleLength: 1,
+        cycleConfig: []
+      } 
+    });
+    revalidatePath("/funcionarios/novo");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Erro ao criar jornada" };
+  }
+}
+
 export async function createEmployee(formData: FormData) {
   try {
     // Higienizar todos os inputs textuais

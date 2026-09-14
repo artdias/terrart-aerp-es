@@ -12,5 +12,10 @@ export default async function NovoFuncionarioPage() {
     select: { id: true, name: true }
   });
 
-  return <NovoFuncionarioForm clientes={clientes} cargos={cargos} />;
+  const jornadas = await prisma.shiftPattern.findMany({
+    orderBy: { name: 'asc' },
+    select: { id: true, name: true }
+  });
+
+  return <NovoFuncionarioForm clientes={clientes} cargos={cargos} jornadas={jornadas} />;
 }
