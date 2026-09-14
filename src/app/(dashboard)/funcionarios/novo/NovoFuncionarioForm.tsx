@@ -208,7 +208,7 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
       
       if (isPublic) {
         alert("Ficha cadastral enviada com sucesso!");
-        window.location.reload();
+        window.location.href = "https://elitese.com.br/";
       } else {
         router.push("/funcionarios");
         router.refresh();
