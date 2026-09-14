@@ -196,6 +196,11 @@ model Employee {
   roleTitle String
   salary    Float?
   photoUrl  String?
+  address   String?
+  previousExperience String?
+
+  travelAvailability   Boolean @default(false)
+  overtimeAvailability Boolean @default(false)
 
   // Onde o funcionário está alocado atualmente
   workplaceId String?

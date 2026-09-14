@@ -42,6 +42,47 @@ export async function createShiftPattern(name: string) {
   }
 }
 
+export async function deleteJobRole(id: string) {
+  try {
+    const role = await prisma.jobRole.findUnique({ where: { id } });
+    if (!role) return { success: false, error: "Cargo não encontrado" };
+
+    const emps = await prisma.employee.findFirst({
+      where: { 
+        roleTitle: { contains: role.name },
+        deleted: false
+      }
+    });
+    if (emps) return { success: false, error: "Não é possível excluir pois existem funcionários ativos com este cargo." };
+
+    await prisma.jobRole.delete({ where: { id } });
+    revalidatePath("/funcionarios/novo");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Erro ao excluir cargo" };
+  }
+}
+
+export async function deleteShiftPattern(id: string) {
+  try {
+    const pattern = await prisma.shiftPattern.findUnique({ 
+      where: { id },
+      include: { scheduleConfigs: true }
+    });
+    if (!pattern) return { success: false, error: "Jornada não encontrada" };
+
+    if (pattern.scheduleConfigs.length > 0) {
+      return { success: false, error: "Não é possível excluir pois existem funcionários vinculados a esta jornada na escala." };
+    }
+
+    await prisma.shiftPattern.delete({ where: { id } });
+    revalidatePath("/funcionarios/novo");
+    return { success: true };
+  } catch (error) {
+    return { success: false, error: "Erro ao excluir jornada" };
+  }
+}
+
 export async function createEmployee(formData: FormData) {
   try {
     // Higienizar todos os inputs textuais
@@ -60,6 +101,9 @@ export async function createEmployee(formData: FormData) {
     const educationLevel = sanitizeInput(formData.get("educationLevel") as string);
     const gender = sanitizeInput(formData.get("gender") as string);
     const status = sanitizeInput(formData.get("status") as string);
+      const isPublic = formData.get("isPublic") === "true";
+      const address = sanitizeInput(formData.get("address") as string);
+      const previousExperience = sanitizeInput(formData.get("previousExperience") as string);
     
     const salaryStr = sanitizeInput(formData.get("salary") as string);
     const salary = salaryStr ? parseFloat(salaryStr) : null;
@@ -138,11 +182,15 @@ export async function createEmployee(formData: FormData) {
         birthDate,
         educationLevel,
         gender,
-        status: status || "Ativo",
+        status: status || (isPublic ? "Em Entrevista" : "Ativo"),
+          address,
+          previousExperience,
         roleTitle,
         workplaceId,
         photoUrl,
-        salary
+        salary,
+        travelAvailability: formData.get("disponibilidadeViagem") === "on",
+        overtimeAvailability: formData.get("disponibilidadeHorario") === "on"
       }
     });
 
@@ -210,6 +258,9 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
     const educationLevel = sanitizeInput(formData.get("educationLevel") as string);
     const gender = sanitizeInput(formData.get("gender") as string);
     const status = sanitizeInput(formData.get("status") as string);
+      const isPublic = formData.get("isPublic") === "true";
+      const address = sanitizeInput(formData.get("address") as string);
+      const previousExperience = sanitizeInput(formData.get("previousExperience") as string);
     
     const salaryStr = sanitizeInput(formData.get("salary") as string);
     const salary = salaryStr ? parseFloat(salaryStr) : null;
@@ -299,10 +350,14 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
       birthDate,
       educationLevel,
       gender,
-      status: status || "Ativo",
+      status: status || (isPublic ? "Em Entrevista" : "Ativo"),
+          address,
+          previousExperience,
       roleTitle,
       workplaceId,
-      salary
+      salary,
+      travelAvailability: formData.get("disponibilidadeViagem") === "on",
+      overtimeAvailability: formData.get("disponibilidadeHorario") === "on"
     };
 
     if (photoUrl) {
