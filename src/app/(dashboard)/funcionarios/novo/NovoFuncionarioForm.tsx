@@ -418,7 +418,7 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
             <div className={`print-box col-12 ${styles.inputGroup}`}>
               <label htmlFor="firstName">Nome completo <span className="no-print" style={{ color: '#e74c3c' }}>*</span></label>
               <div style={{ display: 'flex', gap: '10px', width: '100%', flexWrap: 'wrap' }}>
-                <input type="text" id="firstName" name="firstName" required placeholder="Nome e sobrenome" style={{ flex: '1 1 200px' }} />
+                <input type="text" id="firstName" name="firstName" required placeholder="Nome" style={{ flex: '1 1 200px' }} />
                 <input type="text" id="lastName" name="lastName" placeholder="Sobrenome" className="no-print" style={{ flex: '1 1 200px' }} />
               </div>
             </div>
