@@ -339,7 +339,7 @@ export default function NovoFuncionarioForm({ clientes, cargos }: { clientes: Cl
 
             <div className={styles.inputGroup}>
               <label>Cargo / Função <span className="no-print" style={{ color: '#e74c3c' }}>*</span></label>
-              <div className="no-print" style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa', maxHeight: '150px', overflowY: 'auto' }}>
+              <div style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa', maxHeight: '150px', overflowY: 'auto' }}>
                 {cargos.length === 0 && <span style={{ color: '#666', fontSize: '0.9rem' }}>Nenhum cargo cadastrado.</span>}
                 {cargos.map(cargo => (
                   <label key={cargo.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', cursor: 'pointer', fontSize: '0.95rem' }}>
@@ -353,7 +353,6 @@ export default function NovoFuncionarioForm({ clientes, cargos }: { clientes: Cl
                   </label>
                 ))}
               </div>
-              <div className="print-only" style={{ borderBottom: '1px solid #000', marginTop: '1rem', height: '20px' }}></div>
             </div>
           </div>
 
@@ -363,10 +362,21 @@ export default function NovoFuncionarioForm({ clientes, cargos }: { clientes: Cl
               <input type="number" step="0.01" id="salary" name="salary" placeholder="0.00" />
             </div>
             
-            {/* Campo Jornada - apenas para impressão */}
-            <div className="print-only" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#333' }}>Jornada de Trabalho Pretendida</label>
-              <div style={{ borderBottom: '1px solid #000', marginTop: '1rem', height: '20px' }}></div>
+            <div className={styles.inputGroup}>
+              <label>Jornada de Trabalho Pretendida</label>
+              <div style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa', maxHeight: '150px', overflowY: 'auto' }}>
+                {["12x36 Diurno", "12x36 Noturno", "5x2 (Seg-Sex)", "6x1", "Horário Comercial", "Outra"].map(jornada => (
+                  <label key={jornada} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', cursor: 'pointer', fontSize: '0.95rem' }}>
+                    <input 
+                      type="checkbox" 
+                      name="jornadaPretendida" 
+                      value={jornada} 
+                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                    />
+                    {jornada}
+                  </label>
+                ))}
+              </div>
             </div>
           </div>
 
