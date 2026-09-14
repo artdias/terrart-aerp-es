@@ -532,9 +532,11 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
               <div className="no-print">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <label>Cargo / Função <span className="no-print" style={{ color: '#e74c3c' }}>*</span></label>
-                  <button type="button" onClick={handleAddCargo} className="no-print" style={{ background: 'none', border: 'none', color: '#0ea5e9', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
+                  {!isPublic && (
+                    <button type="button" onClick={handleAddCargo} className="no-print" style={{ background: 'none', border: 'none', color: '#0ea5e9', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
                     <Plus size={14} /> Adicionar
-                  </button>
+                  </button> 
+                  )}
                 </div>
                 <div style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa', maxHeight: '150px', overflowY: 'auto' }}>
                   {cargos.length === 0 && <span style={{ color: '#666', fontSize: '0.9rem' }}>Nenhum cargo cadastrado.</span>}
@@ -549,9 +551,11 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
                         />
                         {cargo.name}
                       </label>
-                      <button type="button" onClick={() => handleDeleteCargo(cargo.id, cargo.name)} className="no-print" style={{ background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer', padding: '2px' }} title="Excluir Cargo">
+                      {!isPublic && (
+                        <button type="button" onClick={() => handleDeleteCargo(cargo.id, cargo.name)} className="no-print" style={{ background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer', padding: '2px' }} title="Excluir Cargo">
                         <Trash2 size={14} />
-                      </button>
+                      </button> 
+                      )}
                     </div>
                   ))}
                 </div>
@@ -572,9 +576,11 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
               <div className="no-print">
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <label>Jornada de trabalho pretendida</label>
-                  <button type="button" onClick={handleAddJornada} className="no-print" style={{ background: 'none', border: 'none', color: '#0ea5e9', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
+                  {!isPublic && (
+                    <button type="button" onClick={handleAddJornada} className="no-print" style={{ background: 'none', border: 'none', color: '#0ea5e9', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
                     <Plus size={14} /> Adicionar
-                  </button>
+                  </button> 
+                  )}
                 </div>
                 <div style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa', maxHeight: '150px', overflowY: 'auto' }}>
                   {jornadas.length === 0 && <span style={{ color: '#666', fontSize: '0.9rem' }}>Nenhuma jornada cadastrada.</span>}
@@ -589,9 +595,11 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
                         />
                         {jornada.name}
                       </label>
-                      <button type="button" onClick={() => handleDeleteJornada(jornada.id, jornada.name)} className="no-print" style={{ background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer', padding: '2px' }} title="Excluir Jornada">
+                      {!isPublic && (
+                        <button type="button" onClick={() => handleDeleteJornada(jornada.id, jornada.name)} className="no-print" style={{ background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer', padding: '2px' }} title="Excluir Jornada">
                         <Trash2 size={14} />
-                      </button>
+                      </button> 
+                      )}
                     </div>
                   ))}
                 </div>
