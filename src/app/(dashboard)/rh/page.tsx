@@ -1,6 +1,7 @@
 import React from "react";
 import styles from "../clientes/clientes.module.css";
 import Link from "next/link";
+import CopyLinkButton from "@/components/CopyLinkButton";
 import { Users, UserPlus, UserMinus, FileSignature, Link as LinkIcon } from "lucide-react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -77,9 +78,7 @@ export default async function RHPage() {
           <p style={{ fontSize: '0.9rem', color: '#64748b', marginBottom: '24px', lineHeight: '1.5' }}>
             Acesse e copie o link público para enviar a ficha online aos candidatos via WhatsApp ou E-mail.
           </p>
-          <Link href="/cadastro-candidato" target="_blank" style={{ background: '#9b59b6', color: 'white', padding: '10px 20px', borderRadius: '8px', textDecoration: 'none', fontWeight: 600, width: '100%' }}>
-            Abrir Ficha Online
-          </Link>
+          <CopyLinkButton url="/cadastro-candidato" label="Copiar Ficha Online" style={{ background: '#9b59b6', color: 'white', textDecoration: 'none', padding: '10px 20px', borderRadius: '8px', fontSize: '1rem', fontWeight: 600, width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }} />
         </div>
 
       </div>

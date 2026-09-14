@@ -1,6 +1,7 @@
 import styles from "../clientes/clientes.module.css";
 import { Plus, Users, Briefcase, ExternalLink, Printer } from "lucide-react";
 import Link from "next/link";
+import CopyLinkButton from "@/components/CopyLinkButton";
 import { prisma } from "@/lib/prisma";
 import SearchInput from "@/components/SearchInput";
 import SortableHeader from "@/components/SortableHeader";
@@ -68,10 +69,7 @@ export default async function FuncionariosPage({
               <Printer size={20} />
               <span>Imprimir Ficha Vazia</span>
             </Link>
-            <Link href="/cadastro-candidato" target="_blank" className={styles.actionBtn} style={{ background: '#9b59b6', color: 'white', textDecoration: 'none', padding: '10px 16px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <ExternalLink size={20} />
-              <span>Link p/ Candidato</span>
-            </Link>
+            <CopyLinkButton url="/cadastro-candidato" label="Copiar Link Candidato" style={{ background: '#9b59b6', color: 'white', textDecoration: 'none', padding: '10px 16px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }} />
             <Link href="/funcionarios/cargos" className={styles.actionBtn} style={{ background: '#f39c12', color: 'white', textDecoration: 'none', padding: '10px 16px', borderRadius: '8px', fontSize: '0.9rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Briefcase size={20} />
               <span>Gerenciar Cargos</span>
