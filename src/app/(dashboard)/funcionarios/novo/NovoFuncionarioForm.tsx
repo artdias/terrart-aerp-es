@@ -170,13 +170,36 @@ export default function NovoFuncionarioForm({ clientes, cargos }: { clientes: Cl
 
   return (
     <div className={styles.container}>
+      <style>{`
+        @media print {
+          .no-print { display: none !important; }
+          .print-only { display: block !important; }
+          .print-flex { display: flex !important; }
+          body { background: white; margin: 0; padding: 0; color: black; }
+          .${styles.card} { box-shadow: none !important; border: none !important; padding: 0 !important; }
+          input, select { border: none !important; border-bottom: 1px solid #000 !important; border-radius: 0 !important; background: transparent !important; padding: 4px 0 !important; color: black !important; }
+          input::placeholder { color: transparent !important; }
+        }
+        .print-only { display: none; }
+        .print-flex { display: none; }
+      `}</style>
+
       <div className={styles.header}>
-        <Link href="/funcionarios" className={styles.backButton}>
-          <ArrowLeft size={20} />
-          <span>Voltar</span>
-        </Link>
-        <h1 className={styles.title}>Cadastrar Funcionário</h1>
-        <p className={styles.subtitle}>Adicione os dados completos do novo colaborador.</p>
+        <div className="no-print" style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+          <Link href="/funcionarios" className={styles.backButton}>
+            <ArrowLeft size={20} />
+            <span>Voltar</span>
+          </Link>
+          <button 
+            type="button" 
+            onClick={() => window.print()}
+            style={{ display: "flex", alignItems: "center", gap: "6px", background: "#f1f5f9", border: "1px solid #cbd5e1", padding: "8px 12px", borderRadius: "6px", cursor: "pointer", fontWeight: 600, color: "#334155" }}
+          >
+            Imprimir Ficha (Entrevista)
+          </button>
+        </div>
+        <h1 className={styles.title}>Ficha Cadastral do Colaborador</h1>
+        <p className={styles.subtitle}>Adicione os dados completos ou imprima para preenchimento manual.</p>
       </div>
 
       <div className={styles.card}>
@@ -185,7 +208,7 @@ export default function NovoFuncionarioForm({ clientes, cargos }: { clientes: Cl
           <h3 className={styles.sectionTitle}>Dados Pessoais</h3>
           
           {/* FOTO DE PERFIL */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem' }}>
+          <div className="no-print" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '1.5rem' }}>
             <div 
               style={{ 
                 width: '120px', height: '120px', borderRadius: '50%', backgroundColor: '#f1f5f9', 
@@ -315,8 +338,8 @@ export default function NovoFuncionarioForm({ clientes, cargos }: { clientes: Cl
             </div>
 
             <div className={styles.inputGroup}>
-              <label>Cargo / Função <span style={{ color: '#e74c3c' }}>*</span></label>
-              <div style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa', maxHeight: '150px', overflowY: 'auto' }}>
+              <label>Cargo / Função <span className="no-print" style={{ color: '#e74c3c' }}>*</span></label>
+              <div className="no-print" style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa', maxHeight: '150px', overflowY: 'auto' }}>
                 {cargos.length === 0 && <span style={{ color: '#666', fontSize: '0.9rem' }}>Nenhum cargo cadastrado.</span>}
                 {cargos.map(cargo => (
                   <label key={cargo.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', cursor: 'pointer', fontSize: '0.95rem' }}>
@@ -330,6 +353,7 @@ export default function NovoFuncionarioForm({ clientes, cargos }: { clientes: Cl
                   </label>
                 ))}
               </div>
+              <div className="print-only" style={{ borderBottom: '1px solid #000', marginTop: '1rem', height: '20px' }}></div>
             </div>
           </div>
 
@@ -338,116 +362,145 @@ export default function NovoFuncionarioForm({ clientes, cargos }: { clientes: Cl
               <label htmlFor="salary">Salário Base / Pretensão (R$)</label>
               <input type="number" step="0.01" id="salary" name="salary" placeholder="0.00" />
             </div>
-          </div>
-
-          <div className={styles.formRow}>
-            <div className={styles.inputGroup}>
-              <label htmlFor="status">Status do Funcionário</label>
-              <select id="status" name="status" style={{ padding: '0.95rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa' }}>
-                <option value="Ativo">Ativo</option>
-                <option value="Ausente">Ausente</option>
-                <option value="Inativo">Inativo</option>
-                <option value="Em Entrevista">Em Entrevista</option>
-              </select>
-            </div>
-
-            <div className={styles.inputGroup}>
-              <label htmlFor="clientId">Alocar no Cliente (Posto)</label>
-              <select id="clientId" name="clientId" style={{ padding: '0.95rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa' }}>
-                <option value="">Sem alocação no momento (Banco de talentos)</option>
-                {clientes.map(c => (
-                  <option key={c.id} value={c.id}>{c.companyName}</option>
-                ))}
-              </select>
+            
+            {/* Campo Jornada - apenas para impressão */}
+            <div className="print-only" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#333' }}>Jornada de Trabalho Pretendida</label>
+              <div style={{ borderBottom: '1px solid #000', marginTop: '1rem', height: '20px' }}></div>
             </div>
           </div>
 
-          <h3 className={styles.sectionTitle}>Anexos</h3>
-          <div className={styles.formRow} style={{ marginBottom: '2rem', alignItems: 'flex-start' }}>
-            {/* Certificados */}
-            <div className={styles.inputGroup} style={{ flex: 1 }}>
-              <label>Anexar Certificados</label>
-              <div 
-                onClick={() => certInputRef.current?.click()} 
-                style={{ padding: '1.2rem', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1', textAlign: 'center', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}
-              >
-                <Paperclip size={20} style={{ color: '#64748b' }} />
-                <span style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 500 }}>Selecionar arquivos...</span>
+          <div className="no-print">
+            <div className={styles.formRow}>
+              <div className={styles.inputGroup}>
+                <label htmlFor="status">Status do Funcionário</label>
+                <select id="status" name="status" style={{ padding: '0.95rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa' }}>
+                  <option value="Ativo">Ativo</option>
+                  <option value="Ausente">Ausente</option>
+                  <option value="Inativo">Inativo</option>
+                  <option value="Em Entrevista">Em Entrevista</option>
+                </select>
               </div>
-              <input 
-                type="file" 
-                id="certificados-nativos"
-                name="certificados-nativos"
-                ref={certInputRef}
-                multiple 
-                style={{ display: 'none' }} 
-                onChange={handleCertificatesChange}
-                accept=".pdf,.png,.jpg,.jpeg"
-              />
-              <small style={{ color: '#666', marginTop: '4px' }}>Somente PDF, JPG ou PNG.</small>
 
-              {/* Lista de Certificados selecionados */}
-              {certificates.length > 0 && (
-                <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {certificates.map((file, idx) => (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: '#f1f5f9', borderRadius: '6px', fontSize: '0.85rem' }}>
-                      <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '80%' }}>{file.name}</span>
-                      <button 
-                        type="button" 
-                        onClick={() => removeCertificate(idx)} 
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#ef4444' }}
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
+              <div className={styles.inputGroup}>
+                <label htmlFor="clientId">Alocar no Cliente (Posto)</label>
+                <select id="clientId" name="clientId" style={{ padding: '0.95rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa' }}>
+                  <option value="">Sem alocação no momento (Banco de talentos)</option>
+                  {clientes.map(c => (
+                    <option key={c.id} value={c.id}>{c.companyName}</option>
                   ))}
-                </div>
-              )}
-            </div>
-
-            {/* Documentos Pessoais */}
-            <div className={styles.inputGroup} style={{ flex: 1 }}>
-              <label>Anexar Documentos Pessoais</label>
-              <div 
-                onClick={() => docInputRef.current?.click()} 
-                style={{ padding: '1.2rem', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1', textAlign: 'center', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}
-              >
-                <Paperclip size={20} style={{ color: '#64748b' }} />
-                <span style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 500 }}>Selecionar arquivos...</span>
+                </select>
               </div>
-              <input 
-                type="file" 
-                id="documentos-nativos"
-                name="documentos-nativos"
-                ref={docInputRef}
-                multiple 
-                style={{ display: 'none' }} 
-                onChange={handleDocumentsChange}
-                accept=".pdf,.png,.jpg,.jpeg"
-              />
-              <small style={{ color: '#666', marginTop: '4px' }}>Somente PDF, JPG ou PNG.</small>
-
-              {/* Lista de Documentos selecionados */}
-              {documents.length > 0 && (
-                <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                  {documents.map((file, idx) => (
-                    <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: '#f1f5f9', borderRadius: '6px', fontSize: '0.85rem' }}>
-                      <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '80%' }}>{file.name}</span>
-                      <button 
-                        type="button" 
-                        onClick={() => removeDocument(idx)} 
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#ef4444' }}
-                      >
-                        <X size={16} />
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
             </div>
           </div>
 
-          <div className={styles.footer}>
+          <div className="no-print">
+            <h3 className={styles.sectionTitle}>Anexos</h3>
+            <div className={styles.formRow} style={{ marginBottom: '2rem', alignItems: 'flex-start' }}>
+              {/* Certificados */}
+              <div className={styles.inputGroup} style={{ flex: 1 }}>
+                <label>Anexar Certificados</label>
+                <div 
+                  onClick={() => certInputRef.current?.click()} 
+                  style={{ padding: '1.2rem', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1', textAlign: 'center', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}
+                >
+                  <Paperclip size={20} style={{ color: '#64748b' }} />
+                  <span style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 500 }}>Selecionar arquivos...</span>
+                </div>
+                <input 
+                  type="file" 
+                  id="certificados-nativos"
+                  name="certificados-nativos"
+                  ref={certInputRef}
+                  multiple 
+                  style={{ display: 'none' }} 
+                  onChange={handleCertificatesChange}
+                  accept=".pdf,.png,.jpg,.jpeg"
+                />
+                <small style={{ color: '#666', marginTop: '4px' }}>Somente PDF, JPG ou PNG.</small>
+
+                {/* Lista de Certificados selecionados */}
+                {certificates.length > 0 && (
+                  <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {certificates.map((file, idx) => (
+                      <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: '#f1f5f9', borderRadius: '6px', fontSize: '0.85rem' }}>
+                        <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '80%' }}>{file.name}</span>
+                        <button 
+                          type="button" 
+                          onClick={() => removeCertificate(idx)} 
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#ef4444' }}
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Documentos Pessoais */}
+              <div className={styles.inputGroup} style={{ flex: 1 }}>
+                <label>Anexar Documentos Pessoais</label>
+                <div 
+                  onClick={() => docInputRef.current?.click()} 
+                  style={{ padding: '1.2rem', background: '#f8fafc', borderRadius: '8px', border: '1px dashed #cbd5e1', textAlign: 'center', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}
+                >
+                  <Paperclip size={20} style={{ color: '#64748b' }} />
+                  <span style={{ fontSize: '0.9rem', color: '#64748b', fontWeight: 500 }}>Selecionar arquivos...</span>
+                </div>
+                <input 
+                  type="file" 
+                  id="documentos-nativos"
+                  name="documentos-nativos"
+                  ref={docInputRef}
+                  multiple 
+                  style={{ display: 'none' }} 
+                  onChange={handleDocumentsChange}
+                  accept=".pdf,.png,.jpg,.jpeg"
+                />
+                <small style={{ color: '#666', marginTop: '4px' }}>Somente PDF, JPG ou PNG.</small>
+
+                {/* Lista de Documentos selecionados */}
+                {documents.length > 0 && (
+                  <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                    {documents.map((file, idx) => (
+                      <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: '#f1f5f9', borderRadius: '6px', fontSize: '0.85rem' }}>
+                        <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '80%' }}>{file.name}</span>
+                        <button 
+                          type="button" 
+                          onClick={() => removeDocument(idx)} 
+                          style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#ef4444' }}
+                        >
+                          <X size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* SECÇÃO EXCLUSIVA DE IMPRESSÃO (LGPD & ASSINATURA) */}
+          <div className="print-only" style={{ marginTop: '2rem', borderTop: '2px solid #000', paddingTop: '1.5rem' }}>
+            <h3 style={{ marginBottom: '1rem', fontSize: '1.1rem' }}>Termo de Consentimento - LGPD</h3>
+            <p style={{ fontSize: '0.85rem', textAlign: 'justify', lineHeight: '1.6', marginBottom: '2rem' }}>
+              Declaro que as informações acima são verdadeiras e consinto expressamente, de forma livre e informada, com a coleta, uso, armazenamento e tratamento dos meus dados pessoais e dados pessoais sensíveis pela Elite Soluções, em conformidade com a Lei Geral de Proteção de Dados Pessoais (Lei nº 13.709/2018 - LGPD), para a finalidade exclusiva de participação em processo seletivo, avaliação de currículo e possíveis contratações futuras. Compreendo que posso revogar este consentimento a qualquer momento, mediante solicitação formal.
+            </p>
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginTop: '4rem' }}>
+              <div style={{ textAlign: 'center', flex: 1, paddingRight: '20px' }}>
+                <div style={{ borderBottom: '1px solid #000', width: '90%', margin: '0 auto 8px auto' }}></div>
+                <label style={{ fontSize: '0.85rem' }}>Local e Data</label>
+              </div>
+              <div style={{ textAlign: 'center', flex: 1, paddingLeft: '20px' }}>
+                <div style={{ borderBottom: '1px solid #000', width: '90%', margin: '0 auto 8px auto' }}></div>
+                <label style={{ fontSize: '0.85rem' }}>Assinatura do(a) Candidato(a)</label>
+              </div>
+            </div>
+          </div>
+
+          <div className={`no-print ${styles.footer}`}>
             <button type="submit" className={styles.submitBtn} disabled={loading}>
               {loading ? "Salvando..." : "Salvar Funcionário"}
             </button>

@@ -17,6 +17,8 @@ export default async function DashboardHome() {
   if (!session || !session.user) redirect("/login");
 
   const userId = (session.user as any).id;
+  if (!userId) redirect("/login");
+  
   const userRole = (session.user as any).role;
   const isAdmin = userRole === "ADMIN" || session.user.email === "admin";
   const userPermissions = (session.user as any).permissions || {};
@@ -41,8 +43,8 @@ export default async function DashboardHome() {
   const formattedEvents = events.map((e) => ({
     id: e.id,
     title: e.title,
-    startAt: e.startAt.toISOString(),
-    endAt: e.endAt.toISOString(),
+    startAt: e.startAt ? new Date(e.startAt).toISOString() : new Date().toISOString(),
+    endAt: e.endAt ? new Date(e.endAt).toISOString() : new Date().toISOString(),
     status: e.status,
     privacy: e.privacy,
     creatorId: e.creatorId,
@@ -89,8 +91,8 @@ export default async function DashboardHome() {
       where: { status: "PENDENTE" },
       _sum: { amount: true }
     });
-    receitaPendente = pendingInvoices._sum.amount || 0;
-    despesaPendente = pendingExpenses._sum.amount || 0;
+    receitaPendente = pendingInvoices._sum?.amount || 0;
+    despesaPendente = pendingExpenses._sum?.amount || 0;
   }
   if (isAdmin || userPermissions.allowRecepcao) {
     recadosCount = await prisma.phoneMessage.count({ where: { status: "PENDENTE" } });
