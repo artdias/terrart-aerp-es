@@ -196,6 +196,7 @@ model Employee {
   roleTitle String
   salary    Float?
   photoUrl  String?
+  signatureUrl String?
   address   String?
   previousExperience String?
 

@@ -102,6 +102,7 @@ export async function createEmployee(formData: FormData) {
     const gender = sanitizeInput(formData.get("gender") as string);
     const status = sanitizeInput(formData.get("status") as string);
       const isPublic = formData.get("isPublic") === "true";
+      const signatureUrl = formData.get("signatureUrl") as string;
       const address = sanitizeInput(formData.get("address") as string);
       const previousExperience = sanitizeInput(formData.get("previousExperience") as string);
     
@@ -188,6 +189,7 @@ export async function createEmployee(formData: FormData) {
         roleTitle,
         workplaceId,
         photoUrl,
+          signatureUrl,
         salary,
         travelAvailability: formData.get("disponibilidadeViagem") === "on",
         overtimeAvailability: formData.get("disponibilidadeHorario") === "on"
@@ -259,6 +261,7 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
     const gender = sanitizeInput(formData.get("gender") as string);
     const status = sanitizeInput(formData.get("status") as string);
       const isPublic = formData.get("isPublic") === "true";
+      const signatureUrl = formData.get("signatureUrl") as string;
       const address = sanitizeInput(formData.get("address") as string);
       const previousExperience = sanitizeInput(formData.get("previousExperience") as string);
     

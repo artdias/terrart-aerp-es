@@ -125,6 +125,15 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
                   {func.salary !== null ? `R$ ${func.salary.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "Não cadastrado"}
                 </p>
               </div>
+              
+              {func.signatureUrl && (
+                <div style={{ gridColumn: '1 / -1', marginTop: '10px' }}>
+                  <strong style={{ color: '#666', fontSize: '0.85rem' }}>Assinatura Digital (Candidato):</strong>
+                  <div style={{ marginTop: '8px', border: '1px solid #ddd', padding: '10px', borderRadius: '8px', background: '#fafafa', display: 'inline-block' }}>
+                    <img src={func.signatureUrl} alt="Assinatura" style={{ maxHeight: '80px', objectFit: 'contain' }} />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

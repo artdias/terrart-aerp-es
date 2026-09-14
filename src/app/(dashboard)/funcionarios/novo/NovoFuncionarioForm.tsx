@@ -24,6 +24,49 @@ interface JornadaOption {
 
 export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPublic = false }: { clientes: ClientOption[], cargos: CargoOption[], jornadas: JornadaOption[], isPublic?: boolean }) {
   const [cpf, setCpf] = useState("");
+  const [signature, setSignature] = useState<string | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+
+  const startDrawing = (e: any) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.beginPath();
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+    ctx.moveTo(clientX - rect.left, clientY - rect.top);
+    setIsDrawing(true);
+  };
+  const draw = (e: any) => {
+    if (!isDrawing) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+    ctx.lineTo(clientX - rect.left, clientY - rect.top);
+    ctx.stroke();
+  };
+  const stopDrawing = () => {
+    if (!isDrawing) return;
+    setIsDrawing(false);
+    if (canvasRef.current) {
+      setSignature(canvasRef.current.toDataURL("image/png"));
+    }
+  };
+  const clearSignature = () => {
+    if (canvasRef.current) {
+      const ctx = canvasRef.current.getContext("2d");
+      if (ctx) ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+      setSignature(null);
+    }
+  };
+
   const [rg, setRg] = useState("");
   const [cnh, setCnh] = useState("");
   const [certificates, setCertificates] = useState<File[]>([]);
@@ -725,6 +768,29 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
               </div>
             )}
           </div>
+
+          {isPublic && (
+            <div className="no-print" style={{ marginTop: '20px', border: '1px solid #ddd', padding: '15px', borderRadius: '8px', background: '#fafafa' }}>
+              <label style={{ display: 'block', marginBottom: '10px', fontWeight: 600 }}>Assinatura Digital</label>
+              <p style={{ fontSize: '0.85rem', color: '#666', marginBottom: '10px' }}>Desenhe sua assinatura no quadro abaixo (use o dedo ou mouse):</p>
+              <canvas 
+                ref={canvasRef}
+                width={800}
+                height={200}
+                style={{ border: '1px solid #ccc', background: 'white', touchAction: 'none', width: '100%', maxWidth: '100%', borderRadius: '4px', cursor: 'crosshair' }}
+                onMouseDown={startDrawing}
+                onMouseMove={draw}
+                onMouseUp={stopDrawing}
+                onMouseLeave={stopDrawing}
+                onTouchStart={startDrawing}
+                onTouchMove={draw}
+                onTouchEnd={stopDrawing}
+              />
+              <button type="button" onClick={clearSignature} style={{ marginTop: '10px', background: 'none', border: '1px solid #e74c3c', color: '#e74c3c', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem' }}>
+                Limpar Assinatura
+              </button>
+            </div>
+          )}
 
           <div className={`no-print ${styles.footer}`}>
             <button type="submit" className={styles.submitBtn} disabled={loading}>
