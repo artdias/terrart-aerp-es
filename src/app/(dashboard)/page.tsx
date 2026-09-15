@@ -6,11 +6,81 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { 
   Building2, Users, Box, DollarSign, PhoneCall, 
-  ArrowRight, ShieldCheck, ClipboardList, Settings, Check, Clock 
+  ArrowRight, ShieldCheck, ClipboardList, Settings, Check, Clock, Cake 
 } from "lucide-react";
 import styles from "./clientes/clientes.module.css";
 import DashboardCalendar from "@/components/DashboardCalendar";
 import { resolvePhoneMessage } from "@/actions/receptionActions";
+
+function getBirthdaysThisWeek(employees: any[]) {
+  const today = new Date();
+  
+  // Início da semana (Domingo 00:00) e Fim da semana (Sábado 23:59:59)
+  const currentDay = today.getDay(); // 0 = Domingo, 6 = Sábado
+  const startOfWeek = new Date(today);
+  startOfWeek.setDate(today.getDate() - currentDay);
+  startOfWeek.setHours(0, 0, 0, 0);
+
+  const endOfWeek = new Date(startOfWeek);
+  endOfWeek.setDate(startOfWeek.getDate() + 6);
+  endOfWeek.setHours(23, 59, 59, 999);
+
+  const currentYear = today.getFullYear();
+  const birthdays: any[] = [];
+
+  for (const emp of employees) {
+    if (!emp.birthDate) continue;
+
+    let bMonth: number | null = null;
+    let bDay: number | null = null;
+    let bYear: number | null = null;
+
+    if (emp.birthDate.includes("-")) {
+      const parts = emp.birthDate.split("T")[0].split("-");
+      if (parts.length === 3) {
+        bYear = parseInt(parts[0], 10);
+        bMonth = parseInt(parts[1], 10);
+        bDay = parseInt(parts[2], 10);
+      }
+    } else if (emp.birthDate.includes("/")) {
+      const parts = emp.birthDate.split("/");
+      if (parts.length === 3) {
+        bDay = parseInt(parts[0], 10);
+        bMonth = parseInt(parts[1], 10);
+        bYear = parseInt(parts[2], 10);
+      }
+    }
+
+    if (!bMonth || !bDay || isNaN(bMonth) || isNaN(bDay)) continue;
+
+    const birthThisYear = new Date(currentYear, bMonth - 1, bDay, 12, 0, 0);
+
+    if (birthThisYear >= startOfWeek && birthThisYear <= endOfWeek) {
+      const isToday = birthThisYear.getDate() === today.getDate() && birthThisYear.getMonth() === today.getMonth();
+      
+      let age: number | null = null;
+      if (bYear && !isNaN(bYear)) {
+        age = currentYear - bYear;
+      }
+
+      const weekDayName = birthThisYear.toLocaleDateString("pt-BR", { weekday: "short" });
+      const dayFormatted = `${String(bDay).padStart(2, "0")}/${String(bMonth).padStart(2, "0")}`;
+
+      birthdays.push({
+        ...emp,
+        name: emp.user?.name || `${emp.firstName || ""} ${emp.lastName || ""}`.trim() || "Funcionário",
+        birthDateFormatted: dayFormatted,
+        weekDayName: weekDayName.replace(".", "").toUpperCase(),
+        isToday,
+        age,
+        dateObj: birthThisYear
+      });
+    }
+  }
+
+  birthdays.sort((a, b) => a.dateObj.getTime() - b.dateObj.getTime());
+  return birthdays;
+}
 
 export default async function DashboardHome() {
   const session = await getServerSession(authOptions);
@@ -148,6 +218,21 @@ export default async function DashboardHome() {
     select: { id: true, firstName: true, lastName: true },
     orderBy: { firstName: "asc" }
   });
+
+  const allEmployeesForBirthdays = await prisma.employee.findMany({
+    where: { deleted: false, status: "Ativo", birthDate: { not: null } },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      birthDate: true,
+      photoUrl: true,
+      roleTitle: true,
+      user: { select: { name: true } }
+    }
+  });
+
+  const birthdaysThisWeek = getBirthdaysThisWeek(allEmployeesForBirthdays);
 
   return (
     <div className={styles.container}>
@@ -298,6 +383,73 @@ export default async function DashboardHome() {
 
         {/* Coluna Direita: Painel Contextual/Atribuições */}
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          
+          {/* Card Aniversariantes da Semana */}
+          <div style={{ background: "white", padding: "20px", borderRadius: "12px", border: "1px solid #eee", boxShadow: "0 2px 8px rgba(0,0,0,0.01)" }}>
+            <h4 style={{ margin: "0 0 12px 0", fontSize: "0.95rem", color: "#002244", borderBottom: "1px solid #eee", paddingBottom: "8px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <Cake size={18} style={{ color: "#d97706" }} /> Aniversariantes da Semana
+              </span>
+              {birthdaysThisWeek.length > 0 && (
+                <span style={{ background: "#fef3c7", color: "#d97706", fontSize: "0.72rem", padding: "2px 8px", borderRadius: "10px", fontWeight: 600 }}>
+                  {birthdaysThisWeek.length} {birthdaysThisWeek.length === 1 ? "aniversariante" : "aniversariantes"}
+                </span>
+              )}
+            </h4>
+
+            {birthdaysThisWeek.length === 0 ? (
+              <p style={{ margin: 0, fontSize: "0.8rem", color: "#94a3b8", fontStyle: "italic", textAlign: "center", padding: "12px 0" }}>
+                Nenhum aniversariante nesta semana. 🎈
+              </p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {birthdaysThisWeek.map((bDay) => (
+                  <div 
+                    key={bDay.id} 
+                    style={{ 
+                      display: "flex", 
+                      alignItems: "center", 
+                      justifyContent: "space-between", 
+                      padding: "10px", 
+                      borderRadius: "8px", 
+                      background: bDay.isToday ? "#f0fdf4" : "#f8fafc",
+                      border: bDay.isToday ? "1px solid #bbf7d0" : "1px solid #e2e8f0" 
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      {bDay.photoUrl ? (
+                        <img src={bDay.photoUrl} alt={bDay.name} style={{ width: "38px", height: "38px", borderRadius: "50%", objectFit: "cover" }} />
+                      ) : (
+                        <div style={{ width: "38px", height: "38px", borderRadius: "50%", background: bDay.isToday ? "#16a34a" : "#0f172a", color: "white", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: "bold", fontSize: "0.85rem" }}>
+                          {bDay.name.substring(0, 2).toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <strong style={{ fontSize: "0.85rem", color: "#1e293b", display: "block" }}>
+                          {bDay.name}
+                        </strong>
+                        <span style={{ fontSize: "0.75rem", color: "#64748b" }}>
+                          {bDay.roleTitle || "Colaborador"} {bDay.age !== null ? `• ${bDay.age} anos` : ""}
+                        </span>
+                      </div>
+                    </div>
+
+                    <div>
+                      {bDay.isToday ? (
+                        <span style={{ background: "#22c55e", color: "white", fontSize: "0.72rem", padding: "4px 8px", borderRadius: "12px", fontWeight: "bold", display: "flex", alignItems: "center", gap: "4px" }}>
+                          🎉 Hoje! ({bDay.birthDateFormatted})
+                        </span>
+                      ) : (
+                        <span style={{ background: "#e2e8f0", color: "#334155", fontSize: "0.72rem", padding: "3px 8px", borderRadius: "6px", fontWeight: 600 }}>
+                          {bDay.weekDayName}, {bDay.birthDateFormatted}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           
           {/* Se for Colaborador de Posto (Visualização de Equipamentos e Postos) */}
           {employeeProfile && (

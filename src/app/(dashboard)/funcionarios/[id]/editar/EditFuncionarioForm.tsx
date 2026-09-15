@@ -22,6 +22,10 @@ interface EmployeeType {
   status: string;
   photoUrl: string | null;
   salary: number | null;
+  address: string | null;
+  previousExperience: string | null;
+  travelAvailability?: boolean;
+  overtimeAvailability?: boolean;
   workplaceId: string | null;
   workplace?: {
     clientId: string;
@@ -282,6 +286,13 @@ export default function EditFuncionarioForm({
 
           <div className={styles.formRow}>
             <div className={styles.inputGroup}>
+              <label htmlFor="address">Endereço completo</label>
+              <input type="text" id="address" name="address" defaultValue={employee.address || ""} placeholder="Rua, número, bairro, cidade - UF" />
+            </div>
+          </div>
+
+          <div className={styles.formRow}>
+            <div className={styles.inputGroup}>
               <label htmlFor="cpf">CPF <span style={{ color: '#e74c3c' }}>*</span></label>
               <input 
                 type="text" 
@@ -356,6 +367,18 @@ export default function EditFuncionarioForm({
             </select>
           </div>
 
+          <div className={styles.inputGroup} style={{ marginBottom: '1.5rem' }}>
+            <label htmlFor="previousExperience">Experiências Anteriores (Últimos empregos, empresas e cargos)</label>
+            <textarea 
+              id="previousExperience" 
+              name="previousExperience" 
+              rows={4}
+              defaultValue={employee.previousExperience || ""}
+              placeholder="Ex: Empresa X (2020-2022) - Cargo: Vendedor..."
+              style={{ width: '100%', resize: 'vertical', marginTop: '5px' }}
+            />
+          </div>
+
           <h3 className={styles.sectionTitle}>Dados de Contrato & Sistema</h3>
           <div className={styles.formRow}>
             <div className={styles.inputGroup}>
@@ -387,6 +410,21 @@ export default function EditFuncionarioForm({
             <div className={styles.inputGroup}>
               <label htmlFor="salary">Salário Base / Pretensão (R$)</label>
               <input type="number" step="0.01" id="salary" name="salary" defaultValue={employee.salary || ""} placeholder="0.00" />
+            </div>
+          </div>
+
+          <div className={styles.formRow}>
+            <div className={styles.inputGroup}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.95rem' }}>
+                <input type="checkbox" name="disponibilidadeHorario" defaultChecked={employee.overtimeAvailability} style={{ width: '18px', height: '18px' }} />
+                Disponível para cobrir faltas/plantão fora da escala
+              </label>
+            </div>
+            <div className={styles.inputGroup}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.95rem' }}>
+                <input type="checkbox" name="disponibilidadeViagem" defaultChecked={employee.travelAvailability} style={{ width: '18px', height: '18px' }} />
+                Disponibilidade de fazer viagens
+              </label>
             </div>
           </div>
 

@@ -65,15 +65,8 @@ export async function deleteJobRole(id: string) {
 
 export async function deleteShiftPattern(id: string) {
   try {
-    const pattern = await prisma.shiftPattern.findUnique({ 
-      where: { id },
-      include: { scheduleConfigs: true }
-    });
+    const pattern = await prisma.shiftPattern.findUnique({ where: { id } });
     if (!pattern) return { success: false, error: "Jornada não encontrada" };
-
-    if (pattern.scheduleConfigs.length > 0) {
-      return { success: false, error: "Não é possível excluir pois existem funcionários vinculados a esta jornada na escala." };
-    }
 
     await prisma.shiftPattern.delete({ where: { id } });
     revalidatePath("/funcionarios/novo");

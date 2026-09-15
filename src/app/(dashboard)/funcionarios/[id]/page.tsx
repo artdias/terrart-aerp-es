@@ -1,11 +1,10 @@
 import styles from "../../clientes/novo/novoCliente.module.css";
 import detailStyles from "../funcionarios.module.css"; // We'll add some styles to style this page beautifully or write inline
 import Link from "next/link";
-import { ArrowLeft, Edit2, Users, Briefcase, FileText, CalendarClock, Shield, Paperclip, Printer, Clock } from "lucide-react";
+import { ArrowLeft, Edit2, Users, Briefcase, FileText, CalendarClock, Shield, Paperclip, Printer } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import InterviewModal from "@/components/InterviewModal";
-import ScheduleConfigForm from "@/components/ScheduleConfigForm/ScheduleConfigForm";
 
 export default async function FuncionarioDetalhePage({ params }: { params: { id: string } }) {
   const func = await prisma.employee.findUnique({
@@ -26,15 +25,9 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
       },
       interviews: {
         orderBy: { interviewDate: 'desc' }
-      },
-      scheduleConfig: {
-        include: { shiftPattern: true, defaultShift: true }
       }
     }
   });
-
-  const patterns = await prisma.shiftPattern.findMany({ orderBy: { name: 'asc' } });
-  const shifts = await prisma.shift.findMany({ orderBy: { startTime: 'asc' } });
 
   if (!func) {
     return notFound();
@@ -89,6 +82,12 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
                 <strong style={{ color: '#666', fontSize: '0.85rem' }}>E-mail (Login):</strong>
                 <p style={{ margin: '4px 0 0', fontWeight: 600, color: '#1a1a1a' }}>{func.user?.email || "Sem e-mail"}</p>
               </div>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <strong style={{ color: '#666', fontSize: '0.85rem' }}>Endereço Residencial:</strong>
+                <p style={{ margin: '4px 0 0', fontWeight: 600, color: '#1a1a1a' }}>
+                  {func.address || "Não informado"}
+                </p>
+              </div>
               <div>
                 <strong style={{ color: '#666', fontSize: '0.85rem' }}>CPF:</strong>
                 <p style={{ margin: '4px 0 0', fontWeight: 600, color: '#1a1a1a' }}>{func.cpf}</p>
@@ -125,7 +124,28 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
                   {func.salary !== null ? `R$ ${func.salary.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "Não cadastrado"}
                 </p>
               </div>
+              <div>
+                <strong style={{ color: '#666', fontSize: '0.85rem' }}>Cobertura de Faltas/Plantão:</strong>
+                <p style={{ margin: '4px 0 0', fontWeight: 600, color: func.overtimeAvailability ? '#27ae60' : '#7f8c8d' }}>
+                  {func.overtimeAvailability ? "Sim (Disponível)" : "Não"}
+                </p>
+              </div>
+              <div>
+                <strong style={{ color: '#666', fontSize: '0.85rem' }}>Disponibilidade de Viagens:</strong>
+                <p style={{ margin: '4px 0 0', fontWeight: 600, color: func.travelAvailability ? '#27ae60' : '#7f8c8d' }}>
+                  {func.travelAvailability ? "Sim (Disponível)" : "Não"}
+                </p>
+              </div>
               
+              {func.previousExperience && (
+                <div style={{ gridColumn: '1 / -1', marginTop: '6px' }}>
+                  <strong style={{ color: '#666', fontSize: '0.85rem' }}>Experiências Anteriores:</strong>
+                  <p style={{ margin: '4px 0 0', fontWeight: 500, color: '#334155', whiteSpace: 'pre-wrap', background: '#f8fafc', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '0.9rem' }}>
+                    {func.previousExperience}
+                  </p>
+                </div>
+              )}
+
               {func.signatureUrl && (
                 <div style={{ gridColumn: '1 / -1', marginTop: '10px' }}>
                   <strong style={{ color: '#666', fontSize: '0.85rem' }}>Assinatura Digital (Candidato):</strong>
@@ -134,21 +154,6 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
                   </div>
                 </div>
               )}
-            </div>
-          </div>
-
-          {/* Card: Configuração de Escala (Novo Motor) */}
-          <div className={styles.card} style={{ padding: '20px' }}>
-            <h3 className={styles.sectionTitle} style={{ marginTop: 0, borderBottom: '1px solid #eee', paddingBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <Clock size={18} style={{ color: '#002244' }} /> Configuração da Escala (Motor Inteligente)
-            </h3>
-            <div style={{ marginTop: '16px' }}>
-              <ScheduleConfigForm 
-                employeeId={func.id} 
-                currentConfig={func.scheduleConfig} 
-                patterns={patterns} 
-                shifts={shifts} 
-              />
             </div>
           </div>
 

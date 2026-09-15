@@ -213,7 +213,6 @@ model Employee {
   documents             SignedDocument[]
   meetings              ScheduleEvent[]
   interviews            Interview[]
-  scheduleConfig        EmployeeScheduleConfig?
   assignments           ShiftAssignment[]
   workPeriods           WorkPeriod[]
   occurrences           Occurrence[]
@@ -569,7 +568,6 @@ model ShiftPattern {
   cycleLength Int // Tamanho do ciclo (Ex: 2 para 12x36, 7 para semanal)
   cycleConfig Json // Ex: [{"dayIndex": 0, "type": "WORK"}, {"dayIndex": 1, "type": "OFF"}] zero-based
 
-  scheduleConfigs EmployeeScheduleConfig[]
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt
 }
@@ -583,24 +581,6 @@ model Shift {
 
   requirements    WorkplaceRequirement[]
   assignments     ShiftAssignment[]
-  scheduleConfigs EmployeeScheduleConfig[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model EmployeeScheduleConfig {
-  id         String   @id @default(cuid())
-  employeeId String   @unique
-  employee   Employee @relation(fields: [employeeId], references: [id])
-
-  shiftPatternId String
-  shiftPattern   ShiftPattern @relation(fields: [shiftPatternId], references: [id])
-  defaultShiftId String?
-  defaultShift   Shift?       @relation(fields: [defaultShiftId], references: [id])
-
-  cycleAnchorDate     DateTime
-  cycleAnchorPosition Int // Zero-based internamente (0 a cycleLength - 1)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
