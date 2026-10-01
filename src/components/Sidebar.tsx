@@ -7,7 +7,7 @@ import { signOut, useSession } from "next-auth/react";
 import { 
   Users, Briefcase, Box, DollarSign, LogOut, Home, CalendarClock, ShieldCheck, 
   Scale, HandCoins, ConciergeBell, Settings, MessageSquare, ShieldAlert, Trash2, 
-  FileSpreadsheet, UserCheck, Wallet, ChevronDown, ChevronRight,
+  FileSpreadsheet, UserCheck, Wallet, ChevronDown, ChevronRight, QrCode,
   Database, Contact, Landmark, Gavel, Search
 } from "lucide-react";
 import styles from "./Sidebar.module.css";
@@ -39,6 +39,7 @@ export function Sidebar() {
       icon: Contact,
       items: [
         { name: "Recursos Humanos", path: "/rh", icon: UserCheck },
+        { name: "Crachás & QR Code", path: "/crachas", icon: QrCode },
         { name: "Escalas", path: "/escalas", icon: CalendarClock },
         { name: "Atribuição", path: "/cautelas", icon: ShieldCheck },
         { name: "Recepção", path: "/recepcao", icon: ConciergeBell },
@@ -91,6 +92,7 @@ export function Sidebar() {
       if (item.path === "/financeiro-clientes") return p.allowFaturamento;
       if (item.path === "/recepcao") return p.allowRecepcao;
       if (item.path === "/rh") return p.allowRh;
+      if (item.path === "/crachas") return p.allowRh || p.allowFuncionarios;
       return false;
     });
     return { ...section, items };

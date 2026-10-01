@@ -92,6 +92,10 @@ model User {
   allowRelatorios   Boolean @default(false)
   allowRh           Boolean @default(false)
 
+  // Informações de Crachá
+  department        String?
+  badgeCode         String? @unique
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -202,6 +206,10 @@ model Employee {
 
   travelAvailability   Boolean @default(false)
   overtimeAvailability Boolean @default(false)
+
+  // Informações de Crachá
+  department String?
+  badgeCode  String? @unique
 
   // Onde o funcionário está alocado atualmente
   workplaceId String?
