@@ -13,6 +13,7 @@ export default function NovoClientePage() {
   const [phone, setPhone] = useState("");
   const [cellphone, setCellphone] = useState("");
   const [managerContact, setManagerContact] = useState("");
+  const [logoUrl, setLogoUrl] = useState("");
 
   const handleCNPJChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
@@ -165,6 +166,42 @@ export default function NovoClientePage() {
             <div className={styles.inputGroup}>
               <label htmlFor="totalArea">Área Total</label>
               <input type="text" id="totalArea" name="totalArea" placeholder="Ex: 500m²" />
+            </div>
+          </div>
+
+          <div className={styles.formRow}>
+            <div className={styles.inputGroup} style={{ flex: 1 }}>
+              <label htmlFor="logoUrl">Logo da Empresa (para Crachás e Documentos)</label>
+              <input type="hidden" name="logoUrl" value={logoUrl} />
+              <div style={{ display: "flex", gap: "10px", alignItems: "center", marginTop: "4px" }}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const reader = new FileReader();
+                      reader.onload = (evt) => {
+                        if (evt.target?.result) setLogoUrl(evt.target.result as string);
+                      };
+                      reader.readAsDataURL(file);
+                    }
+                  }}
+                  style={{ fontSize: "0.85rem" }}
+                />
+                {logoUrl && (
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "#f1f5f9", padding: "4px 8px", borderRadius: "6px" }}>
+                    <img src={logoUrl} alt="Logo Preview" style={{ maxHeight: "36px", maxWidth: "100px", objectFit: "contain" }} />
+                    <button
+                      type="button"
+                      onClick={() => setLogoUrl("")}
+                      style={{ background: "#ef4444", color: "white", border: "none", borderRadius: "4px", padding: "2px 6px", fontSize: "0.75rem", cursor: "pointer" }}
+                    >
+                      Remover
+                    </button>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 

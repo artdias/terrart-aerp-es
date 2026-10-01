@@ -19,10 +19,13 @@ export default async function CrachasPage() {
     redirect("/");
   }
 
-  // Buscar todos os funcionários
+  // Buscar todos os funcionários com posto de trabalho e cliente
   const employees = await prisma.employee.findMany({
     where: { deleted: false },
-    orderBy: { firstName: "asc" }
+    orderBy: { firstName: "asc" },
+    include: {
+      workplace: { include: { client: true } }
+    }
   });
 
   // Buscar todos os usuários
@@ -53,7 +56,9 @@ export default async function CrachasPage() {
       badgeCode: code,
       photoUrl: emp.photoUrl,
       status: emp.status,
-      cpf: emp.cpf
+      cpf: emp.cpf,
+      clientName: emp.workplace?.client?.companyName || null,
+      clientLogoUrl: emp.workplace?.client?.logoUrl || null
     });
   }
 

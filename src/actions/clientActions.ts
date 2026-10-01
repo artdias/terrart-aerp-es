@@ -25,6 +25,7 @@ export async function createClient(formData: FormData) {
     const observations = sanitizeInput(formData.get("observations") as string);
     const managerName = sanitizeInput(formData.get("managerName") as string);
     const managerContact = sanitizeInput(formData.get("managerContact") as string);
+    const logoUrl = formData.get("logoUrl") as string || null;
 
     if (!companyName || !cnpj || !address) {
       return { success: false, error: "Razão Social, CNPJ e Endereço são obrigatórios" };
@@ -60,6 +61,7 @@ export async function createClient(formData: FormData) {
         observations,
         managerName,
         managerContact,
+        logoUrl,
         workplaces: {
           create: {
             name: "Posto Padrão",
@@ -140,6 +142,7 @@ export async function updateClient(clientId: string, formData: FormData) {
     const observations = sanitizeInput(formData.get("observations") as string);
     const managerName = sanitizeInput(formData.get("managerName") as string);
     const managerContact = sanitizeInput(formData.get("managerContact") as string);
+    const logoUrl = formData.get("logoUrl") as string || null;
 
     if (!clientId || !companyName || !cnpj || !address) {
       return { success: false, error: "Razão Social, CNPJ e Endereço são obrigatórios" };
@@ -174,7 +177,8 @@ export async function updateClient(clientId: string, formData: FormData) {
         email2,
         observations,
         managerName,
-        managerContact
+        managerContact,
+        logoUrl
       }
     });
 

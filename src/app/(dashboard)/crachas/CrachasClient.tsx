@@ -17,6 +17,8 @@ export interface BadgeItem {
   photoUrl?: string | null;
   status: string;
   cpf?: string | null;
+  clientName?: string | null;
+  clientLogoUrl?: string | null;
 }
 
 interface CrachasClientProps {
@@ -341,6 +343,8 @@ export default function CrachasClient({ initialItems }: CrachasClientProps) {
           department={selectedBadge.department}
           badgeCode={selectedBadge.badgeCode}
           photoUrl={selectedBadge.photoUrl}
+          initialClientName={selectedBadge.clientName}
+          initialClientLogoUrl={selectedBadge.clientLogoUrl}
         />
       )}
     </div>

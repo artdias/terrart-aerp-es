@@ -48,7 +48,8 @@ export default async function ValidarCrachaPage({ params }: PageProps) {
   const badgeCode = employee ? (employee.badgeCode || codeParam) : (user?.badgeCode || codeParam);
   const status = employee ? employee.status : "Ativo";
   const photoUrl = employee?.photoUrl || null;
-  const cpf = employee?.cpf ? employee.cpf.replace(/(\d{3})\d{3}\d{3}(\d{2})/, "$1.***.***-$2") : null;
+  const cpfDigits = employee?.cpf ? employee.cpf.replace(/\D/g, "") : "";
+  const cpf = cpfDigits.length >= 3 ? `${cpfDigits.slice(0, 3)}.***.***-**` : null;
   const workplaceName = employee?.workplace?.client?.companyName || employee?.workplace?.name || "Base Operacional";
 
   const currentDateStr = new Date().toLocaleDateString("pt-BR", {

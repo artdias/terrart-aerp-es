@@ -139,6 +139,7 @@ model Client {
   observations   String?
   managerName    String?
   managerContact String?
+  logoUrl        String?
 
   workplaces     Workplace[]
   invoices       Invoice[]
