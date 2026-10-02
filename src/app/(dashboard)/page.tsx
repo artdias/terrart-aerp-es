@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import styles from "./clientes/clientes.module.css";
 import DashboardCalendar from "@/components/DashboardCalendar";
+import IncompleteRegistrationsCard, { IncompleteItem } from "@/components/IncompleteRegistrationsCard";
 import { resolvePhoneMessage } from "@/actions/receptionActions";
 
 function getBirthdaysThisWeek(employees: any[]) {
@@ -234,6 +235,121 @@ export default async function DashboardHome() {
 
   const birthdaysThisWeek = getBirthdaysThisWeek(allEmployeesForBirthdays);
 
+  // 4. Buscar Cadastros Incompletos (Funcionários, Clientes e Materiais)
+  const incompleteItems: IncompleteItem[] = [];
+
+  if (isAdmin || userPermissions.allowFuncionarios) {
+    const rawEmployees = await prisma.employee.findMany({
+      where: { deleted: false },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        rg: true,
+        birthDate: true,
+        address: true,
+        photoUrl: true,
+        salary: true,
+        isMei: true,
+        meiCnpj: true,
+        meiRazaoSocial: true,
+        user: { select: { name: true } }
+      }
+    });
+
+    for (const emp of rawEmployees) {
+      const empName = emp.user?.name || `${emp.firstName || ""} ${emp.lastName || ""}`.trim() || "Funcionário sem Nome";
+      const missing: string[] = [];
+      if (!emp.rg) missing.push("RG");
+      if (!emp.birthDate) missing.push("Data Nasc.");
+      if (!emp.address) missing.push("Endereço");
+      if (!emp.photoUrl) missing.push("Foto");
+      if (emp.salary === null || emp.salary === undefined) missing.push("Salário");
+      if (emp.isMei) {
+        if (!emp.meiCnpj) missing.push("CNPJ da MEI");
+        if (!emp.meiRazaoSocial) missing.push("Razão Social MEI");
+      }
+
+      if (missing.length > 0) {
+        incompleteItems.push({
+          id: emp.id,
+          type: "EMPLOYEE",
+          name: empName,
+          missingFields: missing,
+          editUrl: `/funcionarios/${emp.id}/editar`
+        });
+      }
+    }
+  }
+
+  if (isAdmin || userPermissions.allowClientes) {
+    const rawClients = await prisma.client.findMany({
+      where: { deleted: false },
+      select: {
+        id: true,
+        companyName: true,
+        email: true,
+        phone: true,
+        cellphone: true,
+        cep: true,
+        city: true,
+        state: true,
+        managerName: true,
+        managerContact: true
+      }
+    });
+
+    for (const client of rawClients) {
+      const missing: string[] = [];
+      if (!client.email) missing.push("E-mail");
+      if (!client.phone && !client.cellphone) missing.push("Telefone/Celular");
+      if (!client.cep || !client.city || !client.state) missing.push("Endereço/CEP");
+      if (!client.managerName && !client.managerContact) missing.push("Gestor/Contato");
+
+      if (missing.length > 0) {
+        incompleteItems.push({
+          id: client.id,
+          type: "CLIENT",
+          name: client.companyName,
+          missingFields: missing,
+          editUrl: `/clientes/${client.id}/editar`
+        });
+      }
+    }
+  }
+
+  if (isAdmin || userPermissions.allowEstoque) {
+    const rawProducts = await prisma.product.findMany({
+      where: { deleted: false },
+      select: {
+        id: true,
+        name: true,
+        category: true,
+        description: true,
+        price: true,
+        minQuantity: true
+      }
+    });
+
+    for (const prod of rawProducts) {
+      const missing: string[] = [];
+      if (!prod.category) missing.push("Categoria");
+      if (!prod.description) missing.push("Descrição");
+      if (prod.price <= 0) missing.push("Preço Unitário");
+      if (prod.minQuantity <= 0) missing.push("Estoque Mínimo");
+
+      if (missing.length > 0) {
+        incompleteItems.push({
+          id: prod.id,
+          type: "MATERIAL",
+          name: prod.name,
+          missingFields: missing,
+          editUrl: `/estoque/${prod.id}/editar`
+        });
+      }
+    }
+  }
+
   return (
     <div className={styles.container}>
       {/* Header de boas-vindas */}
@@ -367,6 +483,13 @@ export default async function DashboardHome() {
         )}
 
       </div>
+
+      {/* Widget Cadastros Incompletos (Clientes, Funcionários, Materiais) */}
+      {(isAdmin || userPermissions.allowClientes || userPermissions.allowFuncionarios || userPermissions.allowEstoque) && (
+        <div style={{ marginBottom: "30px" }}>
+          <IncompleteRegistrationsCard items={incompleteItems} />
+        </div>
+      )}
 
       {/* Grid Principal Layout (Agenda e Atribuições) */}
       <div className="dashboard-grid">

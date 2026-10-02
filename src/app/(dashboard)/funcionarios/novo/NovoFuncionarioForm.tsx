@@ -85,6 +85,27 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
 
   const [rg, setRg] = useState("");
   const [cnh, setCnh] = useState("");
+  const [isMei, setIsMei] = useState(false);
+  const [meiCnpj, setMeiCnpj] = useState("");
+
+  const handleMeiCNPJChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/\D/g, "");
+    let formatted = raw;
+    if (raw.length > 2) {
+      formatted = raw.replace(/^(\d{2})(\d)/, "$1.$2");
+    }
+    if (raw.length > 5) {
+      formatted = formatted.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+    }
+    if (raw.length > 8) {
+      formatted = formatted.replace(/^(\d{2})\.(\d{3})\.(\d{3})(\d)/, "$1.$2.$3/$4");
+    }
+    if (raw.length > 12) {
+      formatted = formatted.replace(/^(\d{2})\.(\d{3})\.(\d{3})\/(\d{4})(\d{1,2})/, "$1.$2.$3/$4-$5");
+    }
+    setMeiCnpj(formatted.substring(0, 18));
+  };
+
   const [certificates, setCertificates] = useState<File[]>([]);
   const [documents, setDocuments] = useState<File[]>([]);
   const [photo, setPhoto] = useState<File | null>(null);
@@ -536,7 +557,81 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
             </div>
           </div>
 
-          <div className="print-section-title" style={{ marginTop: '20px' }}>02 • DADOS DE CONTRATO & SISTEMA</div>
+          <div className="print-section-title" style={{ marginTop: '20px' }}>02 • DADOS DA MEI (PESSOA JURÍDICA)</div>
+          
+          <div className={`${styles.formRow} print-grid`} style={{ marginBottom: '1rem' }}>
+            <div className={`print-box col-12 ${styles.inputGroup}`}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#0f172a' }}>
+                <input 
+                  type="checkbox" 
+                  name="isMei" 
+                  checked={isMei} 
+                  onChange={(e) => setIsMei(e.target.checked)} 
+                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                />
+                Possui MEI (Prestador de Serviço PJ)?
+              </label>
+            </div>
+          </div>
+
+          {isMei && (
+            <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '1.5rem' }}>
+              <div className={`${styles.formRow} print-grid`}>
+                <div className={`print-box col-6 ${styles.inputGroup}`}>
+                  <label htmlFor="meiCnpj">CNPJ da MEI</label>
+                  <input 
+                    type="text" 
+                    id="meiCnpj" 
+                    name="meiCnpj" 
+                    placeholder="00.000.000/0000-00" 
+                    value={meiCnpj}
+                    onChange={handleMeiCNPJChange}
+                  />
+                </div>
+                <div className={`print-box col-6 ${styles.inputGroup}`}>
+                  <label htmlFor="meiRazaoSocial">Razão Social da MEI</label>
+                  <input 
+                    type="text" 
+                    id="meiRazaoSocial" 
+                    name="meiRazaoSocial" 
+                    placeholder="Ex: NOME DO FUNCIONARIO 12345678900" 
+                  />
+                </div>
+              </div>
+
+              <div className={`${styles.formRow} print-grid`}>
+                <div className={`print-box col-4 ${styles.inputGroup}`}>
+                  <label htmlFor="meiNomeFantasia">Nome Fantasia (Opcional)</label>
+                  <input 
+                    type="text" 
+                    id="meiNomeFantasia" 
+                    name="meiNomeFantasia" 
+                    placeholder="Nome Fantasia" 
+                  />
+                </div>
+                <div className={`print-box col-4 ${styles.inputGroup}`}>
+                  <label htmlFor="meiInscricaoEstadual">Inscrição Estadual (Opcional)</label>
+                  <input 
+                    type="text" 
+                    id="meiInscricaoEstadual" 
+                    name="meiInscricaoEstadual" 
+                    placeholder="Isento ou Nº" 
+                  />
+                </div>
+                <div className={`print-box col-4 ${styles.inputGroup}`}>
+                  <label htmlFor="meiInscricaoMunicipal">Inscrição Municipal (Opcional)</label>
+                  <input 
+                    type="text" 
+                    id="meiInscricaoMunicipal" 
+                    name="meiInscricaoMunicipal" 
+                    placeholder="Nº Inscrição" 
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="print-section-title" style={{ marginTop: '20px' }}>03 • DADOS DE CONTRATO & SISTEMA</div>
           
           <div className={`${styles.formRow} print-grid`}>
             <div className={`print-box col-6 ${styles.inputGroup}`}>

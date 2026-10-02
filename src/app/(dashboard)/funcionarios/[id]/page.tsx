@@ -137,6 +137,39 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
                 </p>
               </div>
               
+              {func.isMei && (
+                <div style={{ gridColumn: '1 / -1', marginTop: '12px', background: '#f8fafc', padding: '14px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+                  <div style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.9rem', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span style={{ background: '#0284c7', color: 'white', padding: '2px 8px', borderRadius: '4px', fontSize: '0.75rem' }}>PJ / MEI</span>
+                    Dados do Microempreendedor Individual (MEI)
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <strong style={{ color: '#64748b', fontSize: '0.8rem' }}>CNPJ da MEI:</strong>
+                      <p style={{ margin: '2px 0 0', fontWeight: 600, color: '#1e293b' }}>{func.meiCnpj || "Não informado"}</p>
+                    </div>
+                    <div>
+                      <strong style={{ color: '#64748b', fontSize: '0.8rem' }}>Razão Social da MEI:</strong>
+                      <p style={{ margin: '2px 0 0', fontWeight: 600, color: '#1e293b' }}>{func.meiRazaoSocial || "Não informado"}</p>
+                    </div>
+                    {func.meiNomeFantasia && (
+                      <div>
+                        <strong style={{ color: '#64748b', fontSize: '0.8rem' }}>Nome Fantasia:</strong>
+                        <p style={{ margin: '2px 0 0', fontWeight: 600, color: '#1e293b' }}>{func.meiNomeFantasia}</p>
+                      </div>
+                    )}
+                    {(func.meiInscricaoEstadual || func.meiInscricaoMunicipal) && (
+                      <div>
+                        <strong style={{ color: '#64748b', fontSize: '0.8rem' }}>Inscrição Est. / Mun.:</strong>
+                        <p style={{ margin: '2px 0 0', fontWeight: 600, color: '#1e293b' }}>
+                          IE: {func.meiInscricaoEstadual || "Isento"} | IM: {func.meiInscricaoMunicipal || "Isento"}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {func.previousExperience && (
                 <div style={{ gridColumn: '1 / -1', marginTop: '6px' }}>
                   <strong style={{ color: '#666', fontSize: '0.85rem' }}>Experiências Anteriores:</strong>

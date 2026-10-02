@@ -99,6 +99,13 @@ export async function createEmployee(formData: FormData) {
       const address = sanitizeInput(formData.get("address") as string);
       const previousExperience = sanitizeInput(formData.get("previousExperience") as string);
     
+    const isMei = formData.get("isMei") === "true" || formData.get("isMei") === "on";
+    const meiCnpj = sanitizeInput(formData.get("meiCnpj") as string);
+    const meiRazaoSocial = sanitizeInput(formData.get("meiRazaoSocial") as string);
+    const meiNomeFantasia = sanitizeInput(formData.get("meiNomeFantasia") as string);
+    const meiInscricaoEstadual = sanitizeInput(formData.get("meiInscricaoEstadual") as string);
+    const meiInscricaoMunicipal = sanitizeInput(formData.get("meiInscricaoMunicipal") as string);
+    
     const salaryStr = sanitizeInput(formData.get("salary") as string);
     const salary = salaryStr ? parseFloat(salaryStr) : null;
 
@@ -177,12 +184,18 @@ export async function createEmployee(formData: FormData) {
         educationLevel,
         gender,
         status: status || (isPublic ? "Em Entrevista" : "Ativo"),
-          address,
-          previousExperience,
+        address,
+        previousExperience,
+        isMei,
+        meiCnpj,
+        meiRazaoSocial,
+        meiNomeFantasia,
+        meiInscricaoEstadual,
+        meiInscricaoMunicipal,
         roleTitle,
         workplaceId,
         photoUrl,
-          signatureUrl,
+        signatureUrl,
         salary,
         travelAvailability: formData.get("disponibilidadeViagem") === "on",
         overtimeAvailability: formData.get("disponibilidadeHorario") === "on"
@@ -257,6 +270,13 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
       const signatureUrl = formData.get("signatureUrl") as string;
       const address = sanitizeInput(formData.get("address") as string);
       const previousExperience = sanitizeInput(formData.get("previousExperience") as string);
+
+    const isMei = formData.get("isMei") === "true" || formData.get("isMei") === "on";
+    const meiCnpj = sanitizeInput(formData.get("meiCnpj") as string);
+    const meiRazaoSocial = sanitizeInput(formData.get("meiRazaoSocial") as string);
+    const meiNomeFantasia = sanitizeInput(formData.get("meiNomeFantasia") as string);
+    const meiInscricaoEstadual = sanitizeInput(formData.get("meiInscricaoEstadual") as string);
+    const meiInscricaoMunicipal = sanitizeInput(formData.get("meiInscricaoMunicipal") as string);
     
     const salaryStr = sanitizeInput(formData.get("salary") as string);
     const salary = salaryStr ? parseFloat(salaryStr) : null;
@@ -347,8 +367,14 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
       educationLevel,
       gender,
       status: status || (isPublic ? "Em Entrevista" : "Ativo"),
-          address,
-          previousExperience,
+      address,
+      previousExperience,
+      isMei,
+      meiCnpj,
+      meiRazaoSocial,
+      meiNomeFantasia,
+      meiInscricaoEstadual,
+      meiInscricaoMunicipal,
       roleTitle,
       workplaceId,
       salary,

@@ -26,6 +26,12 @@ interface EmployeeType {
   previousExperience: string | null;
   travelAvailability?: boolean;
   overtimeAvailability?: boolean;
+  isMei?: boolean;
+  meiCnpj?: string | null;
+  meiRazaoSocial?: string | null;
+  meiNomeFantasia?: string | null;
+  meiInscricaoEstadual?: string | null;
+  meiInscricaoMunicipal?: string | null;
   workplaceId: string | null;
   workplace?: {
     clientId: string;
@@ -64,6 +70,26 @@ export default function EditFuncionarioForm({
   const [cpf, setCpf] = useState(employee.cpf);
   const [rg, setRg] = useState(employee.rg || "");
   const [cnh, setCnh] = useState(employee.cnh || "");
+  const [isMei, setIsMei] = useState(employee.isMei || false);
+  const [meiCnpj, setMeiCnpj] = useState(employee.meiCnpj || "");
+
+  const handleMeiCNPJChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value.replace(/\D/g, "");
+    let formatted = raw;
+    if (raw.length > 2) {
+      formatted = raw.replace(/^(\d{2})(\d)/, "$1.$2");
+    }
+    if (raw.length > 5) {
+      formatted = formatted.replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3");
+    }
+    if (raw.length > 8) {
+      formatted = formatted.replace(/^(\d{2})\.(\d{3})\.(\d{3})(\d)/, "$1.$2.$3/$4");
+    }
+    if (raw.length > 12) {
+      formatted = formatted.replace(/^(\d{2})\.(\d{3})\.(\d{3})\/(\d{4})(\d{1,2})/, "$1.$2.$3/$4-$5");
+    }
+    setMeiCnpj(formatted.substring(0, 18));
+  };
   const [certificates, setCertificates] = useState<File[]>([]);
   const [documents, setDocuments] = useState<File[]>([]);
   const [existingAttachments, setExistingAttachments] = useState(employee.attachments || []);
@@ -378,6 +404,83 @@ export default function EditFuncionarioForm({
               style={{ width: '100%', resize: 'vertical', marginTop: '5px' }}
             />
           </div>
+
+          <h3 className={styles.sectionTitle}>Dados da MEI (Pessoa Jurídica)</h3>
+          <div className={styles.formRow} style={{ marginBottom: '1rem' }}>
+            <div className={styles.inputGroup}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#0f172a' }}>
+                <input 
+                  type="checkbox" 
+                  name="isMei" 
+                  checked={isMei} 
+                  onChange={(e) => setIsMei(e.target.checked)} 
+                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                />
+                Possui MEI (Prestador de Serviço PJ)?
+              </label>
+            </div>
+          </div>
+
+          {isMei && (
+            <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '8px', border: '1px solid #e2e8f0', marginBottom: '1.5rem' }}>
+              <div className={styles.formRow}>
+                <div className={styles.inputGroup}>
+                  <label htmlFor="meiCnpj">CNPJ da MEI</label>
+                  <input 
+                    type="text" 
+                    id="meiCnpj" 
+                    name="meiCnpj" 
+                    placeholder="00.000.000/0000-00" 
+                    value={meiCnpj}
+                    onChange={handleMeiCNPJChange}
+                  />
+                </div>
+                <div className={styles.inputGroup}>
+                  <label htmlFor="meiRazaoSocial">Razão Social da MEI</label>
+                  <input 
+                    type="text" 
+                    id="meiRazaoSocial" 
+                    name="meiRazaoSocial" 
+                    defaultValue={employee.meiRazaoSocial || ""}
+                    placeholder="Ex: NOME DO FUNCIONARIO 12345678900" 
+                  />
+                </div>
+              </div>
+
+              <div className={styles.formRow}>
+                <div className={styles.inputGroup}>
+                  <label htmlFor="meiNomeFantasia">Nome Fantasia (Opcional)</label>
+                  <input 
+                    type="text" 
+                    id="meiNomeFantasia" 
+                    name="meiNomeFantasia" 
+                    defaultValue={employee.meiNomeFantasia || ""}
+                    placeholder="Nome Fantasia" 
+                  />
+                </div>
+                <div className={styles.inputGroup}>
+                  <label htmlFor="meiInscricaoEstadual">Inscrição Estadual (Opcional)</label>
+                  <input 
+                    type="text" 
+                    id="meiInscricaoEstadual" 
+                    name="meiInscricaoEstadual" 
+                    defaultValue={employee.meiInscricaoEstadual || ""}
+                    placeholder="Isento ou Nº" 
+                  />
+                </div>
+                <div className={styles.inputGroup}>
+                  <label htmlFor="meiInscricaoMunicipal">Inscrição Municipal (Opcional)</label>
+                  <input 
+                    type="text" 
+                    id="meiInscricaoMunicipal" 
+                    name="meiInscricaoMunicipal" 
+                    defaultValue={employee.meiInscricaoMunicipal || ""}
+                    placeholder="Nº Inscrição" 
+                  />
+                </div>
+              </div>
+            </div>
+          )}
 
           <h3 className={styles.sectionTitle}>Dados de Contrato & Sistema</h3>
           <div className={styles.formRow}>

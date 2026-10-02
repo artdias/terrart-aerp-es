@@ -208,6 +208,14 @@ model Employee {
   travelAvailability   Boolean @default(false)
   overtimeAvailability Boolean @default(false)
 
+  // Dados de MEI (Pessoa Jurídica)
+  isMei                 Boolean @default(false)
+  meiCnpj               String?
+  meiRazaoSocial        String?
+  meiNomeFantasia       String?
+  meiInscricaoEstadual  String?
+  meiInscricaoMunicipal String?
+
   // Informações de Crachá
   department String?
   badgeCode  String? @unique
