@@ -490,43 +490,109 @@ export default function EditFuncionarioForm({
             </div>
 
             <div className={styles.inputGroup}>
-              <label>Cargo / Função <span style={{ color: '#e74c3c' }}>*</span></label>
-              <div style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa', maxHeight: '150px', overflowY: 'auto' }}>
-                {cargos.length === 0 && <span style={{ color: '#666', fontSize: '0.9rem' }}>Nenhum cargo cadastrado.</span>}
-                {cargos.map(cargo => (
-                  <label key={cargo.id} style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', cursor: 'pointer', fontSize: '0.95rem' }}>
-                    <input 
-                      type="checkbox" 
-                      name="roleTitle" 
-                      value={cargo.name} 
-                      defaultChecked={employee.roleTitle?.split(", ").includes(cargo.name)}
-                      style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                    />
-                    {cargo.name}
-                  </label>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className={styles.formRow}>
-            <div className={styles.inputGroup}>
               <label htmlFor="salary">Salário Base / Pretensão (R$)</label>
               <input type="number" step="0.01" id="salary" name="salary" defaultValue={employee.salary || ""} placeholder="0.00" />
             </div>
           </div>
 
           <div className={styles.formRow}>
+            <div className={styles.inputGroup} style={{ gridColumn: '1 / -1' }}>
+              <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#333', marginBottom: '8px', display: 'block' }}>
+                Cargo / Função <span style={{ color: '#e74c3c' }}>*</span>
+              </label>
+              <div style={{ 
+                display: 'grid', 
+                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
+                gap: '10px', 
+                padding: '12px', 
+                borderRadius: '8px', 
+                border: '1px solid #ddd', 
+                background: '#fafafa', 
+                maxHeight: '220px', 
+                overflowY: 'auto' 
+              }}>
+                {cargos.length === 0 && <span style={{ color: '#666', fontSize: '0.9rem', gridColumn: '1 / -1' }}>Nenhum cargo cadastrado.</span>}
+                {cargos.map(cargo => (
+                  <label 
+                    key={cargo.id} 
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '10px', 
+                      padding: '10px 12px', 
+                      background: '#ffffff', 
+                      border: '1px solid #e2e8f0', 
+                      borderRadius: '6px', 
+                      cursor: 'pointer', 
+                      transition: 'all 0.15s ease',
+                      margin: 0
+                    }}
+                  >
+                    <input 
+                      type="checkbox" 
+                      name="roleTitle" 
+                      value={cargo.name} 
+                      defaultChecked={employee.roleTitle?.split(", ").includes(cargo.name)}
+                      style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#003366' }}
+                    />
+                    <span style={{ fontSize: '0.9rem', color: '#1e293b', fontWeight: 500 }}>{cargo.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: '8px' }}>
+            <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#333', display: 'block', marginBottom: '8px' }}>
+              Disponibilidade & Preferências
+            </label>
+          </div>
+
+          <div className={styles.formRow}>
             <div className={styles.inputGroup}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.95rem' }}>
-                <input type="checkbox" name="disponibilidadeHorario" defaultChecked={employee.overtimeAvailability} style={{ width: '18px', height: '18px' }} />
-                Disponível para cobrir faltas/plantão fora da escala
+              <label 
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '12px', 
+                  cursor: 'pointer', 
+                  padding: '12px 14px', 
+                  background: '#fafafa', 
+                  border: '1px solid #ddd', 
+                  borderRadius: '8px',
+                  fontSize: '0.9rem',
+                  color: '#1e293b',
+                  fontWeight: 500,
+                  margin: 0,
+                  width: '100%',
+                  boxSizing: 'border-box'
+                }}
+              >
+                <input type="checkbox" name="disponibilidadeHorario" defaultChecked={employee.overtimeAvailability} style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#003366', flexShrink: 0 }} />
+                <span>Disponível para cobrir faltas/plantão fora da escala</span>
               </label>
             </div>
             <div className={styles.inputGroup}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.95rem' }}>
-                <input type="checkbox" name="disponibilidadeViagem" defaultChecked={employee.travelAvailability} style={{ width: '18px', height: '18px' }} />
-                Disponibilidade de fazer viagens
+              <label 
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '12px', 
+                  cursor: 'pointer', 
+                  padding: '12px 14px', 
+                  background: '#fafafa', 
+                  border: '1px solid #ddd', 
+                  borderRadius: '8px',
+                  fontSize: '0.9rem',
+                  color: '#1e293b',
+                  fontWeight: 500,
+                  margin: 0,
+                  width: '100%',
+                  boxSizing: 'border-box'
+                }}
+              >
+                <input type="checkbox" name="disponibilidadeViagem" defaultChecked={employee.travelAvailability} style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#003366', flexShrink: 0 }} />
+                <span>Disponibilidade de fazer viagens</span>
               </label>
             </div>
           </div>

@@ -658,36 +658,91 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
               <label htmlFor="email">Melhor e-mail <span className="no-print" style={{ color: '#e74c3c' }}>*</span></label>
               <input type="email" id="email" name="email" required placeholder="ex.: nome@empresa.com" />
             </div>
+            <div className={`print-box col-6 ${styles.inputGroup}`}>
+              <label htmlFor="salary">Salário base / Pretensão (R$)</label>
+              <input type="number" step="0.01" id="salary" name="salary" placeholder="Ex.: 0,00" />
+            </div>
+          </div>
 
-            <div className={`print-box col-6 ${styles.inputGroup}`} style={{ minHeight: '80px' }}>
-              <div className="no-print">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <label>Cargo / Função <span className="no-print" style={{ color: '#e74c3c' }}>*</span></label>
+          <div className={`${styles.formRow} print-grid`}>
+            <div className={`print-box col-12 ${styles.inputGroup}`}>
+              <div className="no-print" style={{ width: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#333' }}>
+                    Cargo / Função Pretendida <span style={{ color: '#e74c3c' }}>*</span>
+                  </label>
                   {!isPublic && (
-                    <button type="button" onClick={handleAddCargo} className="no-print" style={{ background: 'none', border: 'none', color: '#0ea5e9', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
-                    <Plus size={14} /> Adicionar
-                  </button> 
+                    <button 
+                      type="button" 
+                      onClick={handleAddCargo} 
+                      style={{ 
+                        background: '#f0f9ff', 
+                        border: '1px solid #bae6fd', 
+                        color: '#0284c7', 
+                        padding: '4px 10px', 
+                        borderRadius: '6px', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '4px', 
+                        cursor: 'pointer', 
+                        fontSize: '0.8rem', 
+                        fontWeight: 600 
+                      }}
+                    >
+                      <Plus size={14} /> Adicionar Cargo
+                    </button>
                   )}
                 </div>
-                <div style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa', maxHeight: '150px', overflowY: 'auto' }}>
-                  {cargos.length === 0 && <span style={{ color: '#666', fontSize: '0.9rem' }}>Nenhum cargo cadastrado.</span>}
+
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
+                  gap: '10px', 
+                  padding: '12px', 
+                  borderRadius: '8px', 
+                  border: '1px solid #ddd', 
+                  background: '#fafafa', 
+                  maxHeight: '220px', 
+                  overflowY: 'auto' 
+                }}>
+                  {cargos.length === 0 && <span style={{ color: '#666', fontSize: '0.9rem', gridColumn: '1 / -1' }}>Nenhum cargo cadastrado.</span>}
                   {cargos.map(cargo => (
-                    <div key={cargo.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.95rem' }}>
+                    <label 
+                      key={cargo.id} 
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between', 
+                        padding: '10px 12px', 
+                        background: '#ffffff', 
+                        border: '1px solid #e2e8f0', 
+                        borderRadius: '6px', 
+                        cursor: 'pointer', 
+                        transition: 'all 0.15s ease',
+                        userSelect: 'none',
+                        margin: 0
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <input 
                           type="checkbox" 
                           name="roleTitle" 
                           value={cargo.name} 
-                          style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                          style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#003366' }}
                         />
-                        {cargo.name}
-                      </label>
+                        <span style={{ fontSize: '0.9rem', color: '#1e293b', fontWeight: 500 }}>{cargo.name}</span>
+                      </div>
                       {!isPublic && (
-                        <button type="button" onClick={() => handleDeleteCargo(cargo.id, cargo.name)} className="no-print" style={{ background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer', padding: '2px' }} title="Excluir Cargo">
-                        <Trash2 size={14} />
-                      </button> 
+                        <button 
+                          type="button" 
+                          onClick={(e) => { e.preventDefault(); handleDeleteCargo(cargo.id, cargo.name); }} 
+                          style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }} 
+                          title="Excluir Cargo"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       )}
-                    </div>
+                    </label>
                   ))}
                 </div>
               </div>
@@ -698,40 +753,84 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
           </div>
 
           <div className={`${styles.formRow} print-grid`}>
-            <div className={`print-box col-6 ${styles.inputGroup}`}>
-              <label htmlFor="salary">Salário base / Pretensão (R$)</label>
-              <input type="number" step="0.01" id="salary" name="salary" placeholder="Ex.: 0,00" />
-            </div>
-            
-            <div className={`print-box col-6 ${styles.inputGroup}`} style={{ minHeight: '80px' }}>
-              <div className="no-print">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <label>Jornada de trabalho pretendida</label>
+            <div className={`print-box col-12 ${styles.inputGroup}`}>
+              <div className="no-print" style={{ width: '100%' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#333' }}>
+                    Jornada de Trabalho Pretendida
+                  </label>
                   {!isPublic && (
-                    <button type="button" onClick={handleAddJornada} className="no-print" style={{ background: 'none', border: 'none', color: '#0ea5e9', display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}>
-                    <Plus size={14} /> Adicionar
-                  </button> 
+                    <button 
+                      type="button" 
+                      onClick={handleAddJornada} 
+                      style={{ 
+                        background: '#f0f9ff', 
+                        border: '1px solid #bae6fd', 
+                        color: '#0284c7', 
+                        padding: '4px 10px', 
+                        borderRadius: '6px', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '4px', 
+                        cursor: 'pointer', 
+                        fontSize: '0.8rem', 
+                        fontWeight: 600 
+                      }}
+                    >
+                      <Plus size={14} /> Adicionar Jornada
+                    </button>
                   )}
                 </div>
-                <div style={{ padding: '0.8rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa', maxHeight: '150px', overflowY: 'auto' }}>
-                  {jornadas.length === 0 && <span style={{ color: '#666', fontSize: '0.9rem' }}>Nenhuma jornada cadastrada.</span>}
+
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', 
+                  gap: '10px', 
+                  padding: '12px', 
+                  borderRadius: '8px', 
+                  border: '1px solid #ddd', 
+                  background: '#fafafa', 
+                  maxHeight: '220px', 
+                  overflowY: 'auto' 
+                }}>
+                  {jornadas.length === 0 && <span style={{ color: '#666', fontSize: '0.9rem', gridColumn: '1 / -1' }}>Nenhuma jornada cadastrada.</span>}
                   {jornadas.map(jornada => (
-                    <div key={jornada.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                      <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.95rem' }}>
+                    <label 
+                      key={jornada.id} 
+                      style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between', 
+                        padding: '10px 12px', 
+                        background: '#ffffff', 
+                        border: '1px solid #e2e8f0', 
+                        borderRadius: '6px', 
+                        cursor: 'pointer', 
+                        transition: 'all 0.15s ease',
+                        userSelect: 'none',
+                        margin: 0
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <input 
                           type="checkbox" 
                           name="jornadaPretendida" 
                           value={jornada.name} 
-                          style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                          style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#003366' }}
                         />
-                        {jornada.name}
-                      </label>
+                        <span style={{ fontSize: '0.9rem', color: '#1e293b', fontWeight: 500 }}>{jornada.name}</span>
+                      </div>
                       {!isPublic && (
-                        <button type="button" onClick={() => handleDeleteJornada(jornada.id, jornada.name)} className="no-print" style={{ background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer', padding: '2px' }} title="Excluir Jornada">
-                        <Trash2 size={14} />
-                      </button> 
+                        <button 
+                          type="button" 
+                          onClick={(e) => { e.preventDefault(); handleDeleteJornada(jornada.id, jornada.name); }} 
+                          style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }} 
+                          title="Excluir Jornada"
+                        >
+                          <Trash2 size={14} />
+                        </button>
                       )}
-                    </div>
+                    </label>
                   ))}
                 </div>
               </div>
@@ -741,11 +840,35 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
             </div>
           </div>
 
+          <div className="no-print" style={{ marginTop: '8px' }}>
+            <label style={{ fontSize: '0.85rem', fontWeight: 600, color: '#333', display: 'block', marginBottom: '8px' }}>
+              Disponibilidade & Preferências
+            </label>
+          </div>
+
           <div className={`${styles.formRow} print-grid`}>
             <div className={`print-box col-6 ${styles.inputGroup}`}>
-              <label className="no-print" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.95rem' }}>
-                <input type="checkbox" name="disponibilidadeHorario" style={{ width: '18px', height: '18px' }} />
-                Disponível para cobrir faltas/plantão fora da escala
+              <label 
+                className="no-print" 
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '12px', 
+                  cursor: 'pointer', 
+                  padding: '12px 14px', 
+                  background: '#fafafa', 
+                  border: '1px solid #ddd', 
+                  borderRadius: '8px',
+                  fontSize: '0.9rem',
+                  color: '#1e293b',
+                  fontWeight: 500,
+                  margin: 0,
+                  width: '100%',
+                  boxSizing: 'border-box'
+                }}
+              >
+                <input type="checkbox" name="disponibilidadeHorario" style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#003366', flexShrink: 0 }} />
+                <span>Disponível para cobrir faltas/plantão fora da escala</span>
               </label>
               <div className="print-only">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
@@ -755,9 +878,27 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
               </div>
             </div>
             <div className={`print-box col-6 ${styles.inputGroup}`}>
-              <label className="no-print" style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.95rem' }}>
-                <input type="checkbox" name="disponibilidadeViagem" style={{ width: '18px', height: '18px' }} />
-                Disponibilidade de fazer viagens
+              <label 
+                className="no-print" 
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '12px', 
+                  cursor: 'pointer', 
+                  padding: '12px 14px', 
+                  background: '#fafafa', 
+                  border: '1px solid #ddd', 
+                  borderRadius: '8px',
+                  fontSize: '0.9rem',
+                  color: '#1e293b',
+                  fontWeight: 500,
+                  margin: 0,
+                  width: '100%',
+                  boxSizing: 'border-box'
+                }}
+              >
+                <input type="checkbox" name="disponibilidadeViagem" style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#003366', flexShrink: 0 }} />
+                <span>Disponibilidade de fazer viagens</span>
               </label>
               <div className="print-only">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
