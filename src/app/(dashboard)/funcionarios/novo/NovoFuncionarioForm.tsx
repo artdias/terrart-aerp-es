@@ -720,23 +720,25 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
                         cursor: 'pointer', 
                         transition: 'all 0.15s ease',
                         userSelect: 'none',
-                        margin: 0
+                        margin: 0,
+                        width: '100%',
+                        boxSizing: 'border-box'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
                         <input 
                           type="checkbox" 
                           name="roleTitle" 
                           value={cargo.name} 
-                          style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#003366' }}
+                          style={{ width: '18px', height: '18px', minWidth: '18px', cursor: 'pointer', accentColor: '#003366', flexShrink: 0 }}
                         />
-                        <span style={{ fontSize: '0.9rem', color: '#1e293b', fontWeight: 500 }}>{cargo.name}</span>
+                        <span style={{ fontSize: '0.9rem', color: '#1e293b', fontWeight: 500, wordBreak: 'break-word', flex: 1 }}>{cargo.name}</span>
                       </div>
                       {!isPublic && (
                         <button 
                           type="button" 
                           onClick={(e) => { e.preventDefault(); handleDeleteCargo(cargo.id, cargo.name); }} 
-                          style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }} 
+                          style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center', flexShrink: 0 }} 
                           title="Excluir Cargo"
                         >
                           <Trash2 size={14} />
@@ -808,23 +810,25 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
                         cursor: 'pointer', 
                         transition: 'all 0.15s ease',
                         userSelect: 'none',
-                        margin: 0
+                        margin: 0,
+                        width: '100%',
+                        boxSizing: 'border-box'
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, minWidth: 0 }}>
                         <input 
                           type="checkbox" 
                           name="jornadaPretendida" 
                           value={jornada.name} 
-                          style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#003366' }}
+                          style={{ width: '18px', height: '18px', minWidth: '18px', cursor: 'pointer', accentColor: '#003366', flexShrink: 0 }}
                         />
-                        <span style={{ fontSize: '0.9rem', color: '#1e293b', fontWeight: 500 }}>{jornada.name}</span>
+                        <span style={{ fontSize: '0.9rem', color: '#1e293b', fontWeight: 500, wordBreak: 'break-word', flex: 1 }}>{jornada.name}</span>
                       </div>
                       {!isPublic && (
                         <button 
                           type="button" 
                           onClick={(e) => { e.preventDefault(); handleDeleteJornada(jornada.id, jornada.name); }} 
-                          style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center' }} 
+                          style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', padding: '2px', display: 'flex', alignItems: 'center', flexShrink: 0 }} 
                           title="Excluir Jornada"
                         >
                           <Trash2 size={14} />
@@ -867,8 +871,8 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
                   boxSizing: 'border-box'
                 }}
               >
-                <input type="checkbox" name="disponibilidadeHorario" style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#003366', flexShrink: 0 }} />
-                <span>Disponível para cobrir faltas/plantão fora da escala</span>
+                <input type="checkbox" name="disponibilidadeHorario" style={{ width: '18px', height: '18px', minWidth: '18px', cursor: 'pointer', accentColor: '#003366', flexShrink: 0 }} />
+                <span style={{ flex: 1, wordBreak: 'break-word', lineHeight: '1.4' }}>Disponível para cobrir faltas/plantão fora da escala</span>
               </label>
               <div className="print-only">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
@@ -897,8 +901,8 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
                   boxSizing: 'border-box'
                 }}
               >
-                <input type="checkbox" name="disponibilidadeViagem" style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#003366', flexShrink: 0 }} />
-                <span>Disponibilidade de fazer viagens</span>
+                <input type="checkbox" name="disponibilidadeViagem" style={{ width: '18px', height: '18px', minWidth: '18px', cursor: 'pointer', accentColor: '#003366', flexShrink: 0 }} />
+                <span style={{ flex: 1, wordBreak: 'break-word', lineHeight: '1.4' }}>Disponibilidade de fazer viagens</span>
               </label>
               <div className="print-only">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>

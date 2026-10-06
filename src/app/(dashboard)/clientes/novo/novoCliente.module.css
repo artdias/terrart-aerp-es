@@ -150,12 +150,20 @@
     width: 100% !important;
   }
 
-  .inputGroup input,
+  .inputGroup input:not([type="checkbox"]):not([type="radio"]),
   .inputGroup select,
   .inputGroup textarea {
     font-size: 16px !important; /* Prevents auto-zoom on iOS mobile browsers */
     width: 100% !important;
     box-sizing: border-box !important;
+  }
+
+  .inputGroup input[type="checkbox"],
+  .inputGroup input[type="radio"] {
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+    flex-shrink: 0 !important;
   }
 
   .footer {
