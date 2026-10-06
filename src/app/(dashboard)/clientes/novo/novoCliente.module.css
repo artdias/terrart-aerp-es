@@ -114,12 +114,58 @@
 }
 
 @media (max-width: 768px) {
-  .formRow {
-    grid-template-columns: 1fr;
+  .container {
+    padding: 0 4px;
     gap: 1rem;
+    max-width: 100%;
+    overflow-x: hidden;
   }
   
+  .header {
+    align-items: center;
+    text-align: center;
+    width: 100%;
+  }
+
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.85rem;
+  }
+
   .card {
-    padding: 1.5rem;
+    padding: 1.25rem 0.85rem;
+    border-radius: 8px;
+  }
+
+  .formRow {
+    grid-template-columns: 1fr !important;
+    flex-direction: column !important;
+    gap: 1rem !important;
+  }
+
+  .inputGroup {
+    width: 100% !important;
+  }
+
+  .inputGroup input,
+  .inputGroup select,
+  .inputGroup textarea {
+    font-size: 16px !important; /* Prevents auto-zoom on iOS mobile browsers */
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .footer {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .submitBtn {
+    width: 100%;
+    padding: 0.95rem;
+    font-size: 1rem;
   }
 }

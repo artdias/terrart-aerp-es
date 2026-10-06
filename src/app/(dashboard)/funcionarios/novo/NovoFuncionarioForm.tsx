@@ -29,6 +29,9 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
   const [isDrawing, setIsDrawing] = useState(false);
 
   const startDrawing = (e: any) => {
+    if (e.touches && e.cancelable) {
+      e.preventDefault();
+    }
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
@@ -41,8 +44,8 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
     
     ctx.beginPath();
     const rect = canvas.getBoundingClientRect();
-    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+    const clientX = e.clientX || (e.touches && e.touches[0] && e.touches[0].clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0] && e.touches[0].clientY);
     
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
@@ -52,6 +55,9 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
   };
   
   const draw = (e: any) => {
+    if (e.touches && e.cancelable) {
+      e.preventDefault();
+    }
     if (!isDrawing) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -59,8 +65,8 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
     if (!ctx) return;
     
     const rect = canvas.getBoundingClientRect();
-    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+    const clientX = e.clientX || (e.touches && e.touches[0] && e.touches[0].clientX);
+    const clientY = e.clientY || (e.touches && e.touches[0] && e.touches[0].clientY);
     
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
@@ -387,7 +393,7 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
 
       <div className={styles.header}>
         {!isPublic && (
-          <div className="no-print" style={{ display: "flex", justifyContent: "space-between", width: "100%" }}>
+          <div className="no-print" style={{ display: "flex", justifyContent: "space-between", width: "100%", flexWrap: "wrap", gap: "10px" }}>
             <Link href="/funcionarios" className={styles.backButton}>
               <ArrowLeft size={20} />
               <span>Voltar</span>
@@ -401,6 +407,16 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
             </button>
           </div>
         )}
+        
+        {/* LOGO DA EMPRESA (TELA / CELULAR / DESKTOP) */}
+        <div className="no-print" style={{ textAlign: "center", width: "100%", margin: "8px 0 16px 0" }}>
+          <img 
+            src="/logo.png" 
+            alt="Logo Elite Soluções" 
+            style={{ maxHeight: "85px", maxWidth: "240px", width: "auto", objectFit: "contain", display: "inline-block" }} 
+          />
+        </div>
+
         <h1 className={styles.title}>Ficha Cadastral do Colaborador</h1>
         <p className={styles.subtitle}>Adicione os dados completos ou imprima para preenchimento manual.</p>
       </div>
