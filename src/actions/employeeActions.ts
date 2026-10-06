@@ -16,7 +16,9 @@ export async function createJobRole(name: string) {
     if (existing) return { success: false, error: "Cargo já existe" };
     
     await prisma.jobRole.create({ data: { name: cleanName } });
+    revalidatePath("/funcionarios/cargos");
     revalidatePath("/funcionarios/novo");
+    revalidatePath("/cadastro-candidato");
     return { success: true };
   } catch (error) {
     return { success: false, error: "Erro ao criar cargo" };
@@ -35,7 +37,9 @@ export async function createShiftPattern(name: string) {
         cycleConfig: []
       } 
     });
+    revalidatePath("/funcionarios/cargos");
     revalidatePath("/funcionarios/novo");
+    revalidatePath("/cadastro-candidato");
     return { success: true };
   } catch (error) {
     return { success: false, error: "Erro ao criar jornada" };
@@ -56,7 +60,9 @@ export async function deleteJobRole(id: string) {
     if (emps) return { success: false, error: "Não é possível excluir pois existem funcionários ativos com este cargo." };
 
     await prisma.jobRole.delete({ where: { id } });
+    revalidatePath("/funcionarios/cargos");
     revalidatePath("/funcionarios/novo");
+    revalidatePath("/cadastro-candidato");
     return { success: true };
   } catch (error) {
     return { success: false, error: "Erro ao excluir cargo" };
@@ -69,7 +75,9 @@ export async function deleteShiftPattern(id: string) {
     if (!pattern) return { success: false, error: "Jornada não encontrada" };
 
     await prisma.shiftPattern.delete({ where: { id } });
+    revalidatePath("/funcionarios/cargos");
     revalidatePath("/funcionarios/novo");
+    revalidatePath("/cadastro-candidato");
     return { success: true };
   } catch (error) {
     return { success: false, error: "Erro ao excluir jornada" };

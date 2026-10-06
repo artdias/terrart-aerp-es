@@ -28,6 +28,7 @@ export async function createRole(formData: FormData) {
     revalidatePath("/funcionarios/cargos");
     revalidatePath("/funcionarios/novo");
     revalidatePath("/funcionarios");
+    revalidatePath("/cadastro-candidato");
     return { success: true };
   } catch (error: any) {
     console.error("Erro em createRole:", error);
@@ -62,6 +63,8 @@ export async function deleteRole(formData: FormData) {
 
     revalidatePath("/funcionarios/cargos");
     revalidatePath("/funcionarios/novo");
+    revalidatePath("/funcionarios");
+    revalidatePath("/cadastro-candidato");
     return { success: true };
   } catch (error: any) {
     console.error("Erro em deleteRole:", error);

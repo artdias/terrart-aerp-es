@@ -1,6 +1,9 @@
 import NovoFuncionarioForm from "./NovoFuncionarioForm";
 import { prisma } from "@/lib/prisma";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 export default async function NovoFuncionarioPage() {
   const clientes = await prisma.client.findMany({
     where: { deleted: false }, orderBy: { companyName: 'asc' },

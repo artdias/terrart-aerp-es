@@ -219,6 +219,7 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
     if (!name) return;
     const res = await createJobRole(name);
     if (res.error) alert(res.error);
+    else router.refresh();
   };
 
   const handleAddJornada = async () => {
@@ -226,18 +227,21 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
     if (!name) return;
     const res = await createShiftPattern(name);
     if (res.error) alert(res.error);
+    else router.refresh();
   };
 
   const handleDeleteCargo = async (id: string, name: string) => {
     if (!window.confirm(`Tem certeza que deseja excluir o cargo "${name}"?`)) return;
     const res = await deleteJobRole(id);
     if (res.error) alert(res.error);
+    else router.refresh();
   };
 
   const handleDeleteJornada = async (id: string, name: string) => {
     if (!window.confirm(`Tem certeza que deseja excluir a jornada "${name}"?`)) return;
     const res = await deleteShiftPattern(id);
     if (res.error) alert(res.error);
+    else router.refresh();
   };
 
   // Enviar os arquivos via onSubmit no Client Component para ter certeza de que o FormData contém apenas as seleções corretas (sem itens excluídos)
