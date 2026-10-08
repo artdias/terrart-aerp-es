@@ -3,7 +3,7 @@
 import { updateEmployee, deleteAttachment } from "@/actions/employeeActions";
 import styles from "../../../clientes/novo/novoCliente.module.css";
 import Link from "next/link";
-import { ArrowLeft, X, Paperclip, Trash2 } from "lucide-react";
+import { ArrowLeft, X, Paperclip, Trash2, Download } from "lucide-react";
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 
@@ -120,6 +120,16 @@ export default function EditFuncionarioForm({
     setPhoto(null);
     setPhotoPreview(null);
     if (photoInputRef.current) photoInputRef.current.value = "";
+  };
+
+  const downloadPhoto = () => {
+    if (!photoPreview) return;
+    const a = document.createElement("a");
+    a.href = photoPreview;
+    a.download = `foto-${employee.firstName || "funcionario"}-${employee.lastName || ""}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
   };
 
   const handleCPFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -284,13 +294,35 @@ export default function EditFuncionarioForm({
               )}
             </div>
             {photoPreview && (
-              <button 
-                type="button" 
-                onClick={removePhoto} 
-                style={{ marginTop: '8px', background: 'none', border: 'none', color: '#ef4444', fontSize: '0.85rem', cursor: 'pointer' }}
-              >
-                Remover foto
-              </button>
+              <div style={{ display: 'flex', gap: '12px', marginTop: '8px', alignItems: 'center' }}>
+                <button 
+                  type="button" 
+                  onClick={downloadPhoto} 
+                  style={{ 
+                    background: '#eff6ff', 
+                    border: '1px solid #bfdbfe', 
+                    color: '#2563eb', 
+                    padding: '4px 10px', 
+                    borderRadius: '6px', 
+                    fontSize: '0.82rem', 
+                    fontWeight: 600, 
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                  title="Baixar imagem da foto de perfil"
+                >
+                  <Download size={14} /> Baixar foto
+                </button>
+                <button 
+                  type="button" 
+                  onClick={removePhoto} 
+                  style={{ background: 'none', border: 'none', color: '#ef4444', fontSize: '0.85rem', cursor: 'pointer' }}
+                >
+                  Remover foto
+                </button>
+              </div>
             )}
             <input 
               type="file" 

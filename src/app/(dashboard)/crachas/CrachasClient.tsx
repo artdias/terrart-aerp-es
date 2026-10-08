@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { QrCode, Search, ExternalLink, UserCheck } from "lucide-react";
+import { QrCode, Search, ExternalLink, UserCheck, Eye } from "lucide-react";
 import styles from "../clientes/clientes.module.css";
 import BadgeModal from "@/components/BadgeModal";
 import Link from "next/link";
@@ -153,7 +153,11 @@ export default function CrachasClient({ initialItems }: CrachasClientProps) {
               filteredItems.map((item) => (
                 <tr key={`${item.type}-${item.id}`}>
                   <td>
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <Link
+                      href={item.type === "employee" ? `/funcionarios/${item.id}` : `/usuarios`}
+                      style={{ display: "flex", alignItems: "center", gap: "12px", textDecoration: "none" }}
+                      title="Clique para ver o perfil completo"
+                    >
                       <div style={{
                         width: "40px",
                         height: "40px",
@@ -180,7 +184,7 @@ export default function CrachasClient({ initialItems }: CrachasClientProps) {
                           {item.roleTitle}
                         </div>
                       </div>
-                    </div>
+                    </Link>
                   </td>
                   <td>
                     <span style={{
@@ -230,7 +234,7 @@ export default function CrachasClient({ initialItems }: CrachasClientProps) {
                     </span>
                   </td>
                   <td style={{ textAlign: "right" }}>
-                    <div style={{ display: "inline-flex", gap: "8px" }}>
+                    <div style={{ display: "inline-flex", gap: "8px", alignItems: "center" }}>
                       <button
                         onClick={() => setSelectedBadge(item)}
                         style={{
@@ -249,6 +253,25 @@ export default function CrachasClient({ initialItems }: CrachasClientProps) {
                       >
                         <QrCode size={15} /> Ver QR Code
                       </button>
+
+                      <Link
+                        href={item.type === "employee" ? `/funcionarios/${item.id}` : `/usuarios`}
+                        style={{
+                          background: "#2563eb",
+                          color: "white",
+                          padding: "6px 12px",
+                          borderRadius: "6px",
+                          fontSize: "0.82rem",
+                          fontWeight: 700,
+                          textDecoration: "none",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "5px"
+                        }}
+                        title="Ver ficha / perfil completo do colaborador"
+                      >
+                        <Eye size={15} /> Ver Perfil
+                      </Link>
 
                       <Link
                         href={`/validar/${encodeURIComponent(item.badgeCode)}`}

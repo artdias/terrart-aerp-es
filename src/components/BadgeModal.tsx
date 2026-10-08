@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import QRCode from "qrcode";
-import { Download, Copy, Printer, X, QrCode as QrIcon, CheckCircle2, User } from "lucide-react";
+import { Download, Copy, Printer, X, QrCode as QrIcon, CheckCircle2, User, Eye } from "lucide-react";
+import Link from "next/link";
 
 interface BadgeModalProps {
   isOpen: boolean;
@@ -19,6 +20,8 @@ interface BadgeModalProps {
 export default function BadgeModal({
   isOpen,
   onClose,
+  id,
+  type,
   name,
   roleTitle,
   department,
@@ -330,49 +333,66 @@ export default function BadgeModal({
         </div>
 
         {/* Botões de Ação do Modal */}
-        <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
-          <button
-            onClick={handleDownload}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", justifyContent: "space-between" }}>
+          <Link
+            href={type === "employee" ? `/funcionarios/${id}` : `/usuarios`}
             style={{
-              flex: 1,
-              background: "#16a34a",
+              background: "#2563eb",
               color: "white",
-              border: "none",
               padding: "10px 14px",
               borderRadius: "8px",
               fontSize: "0.85rem",
               fontWeight: 700,
-              cursor: "pointer",
+              textDecoration: "none",
               display: "flex",
               alignItems: "center",
-              justifyContent: "center",
-              gap: "6px",
-              boxShadow: "0 2px 6px rgba(22,163,74,0.2)"
+              gap: "6px"
             }}
           >
-            <Download size={16} /> Baixar QR Code (PNG)
-          </button>
+            <Eye size={16} /> Ver Perfil
+          </Link>
 
-          <button
-            onClick={handlePrint}
-            style={{
-              background: "#001b3a",
-              color: "white",
-              border: "none",
-              padding: "10px 16px",
-              borderRadius: "8px",
-              fontSize: "0.85rem",
-              fontWeight: 700,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: "6px",
-              boxShadow: "0 2px 6px rgba(0,27,58,0.2)"
-            }}
-          >
-            <Printer size={16} /> Imprimir
-          </button>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button
+              onClick={handleDownload}
+              style={{
+                background: "#16a34a",
+                color: "white",
+                border: "none",
+                padding: "10px 14px",
+                borderRadius: "8px",
+                fontSize: "0.85rem",
+                fontWeight: 700,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                boxShadow: "0 2px 6px rgba(22,163,74,0.2)"
+              }}
+            >
+              <Download size={16} /> Baixar QR Code
+            </button>
+
+            <button
+              onClick={handlePrint}
+              style={{
+                background: "#001b3a",
+                color: "white",
+                border: "none",
+                padding: "10px 16px",
+                borderRadius: "8px",
+                fontSize: "0.85rem",
+                fontWeight: 700,
+                cursor: "pointer",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                boxShadow: "0 2px 6px rgba(0,27,58,0.2)"
+              }}
+            >
+              <Printer size={16} /> Imprimir
+            </button>
+          </div>
         </div>
       </div>
     </div>

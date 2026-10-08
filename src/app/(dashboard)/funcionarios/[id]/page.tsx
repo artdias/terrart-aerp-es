@@ -1,7 +1,7 @@
 import styles from "../../clientes/novo/novoCliente.module.css";
 import detailStyles from "../funcionarios.module.css"; // We'll add some styles to style this page beautifully or write inline
 import Link from "next/link";
-import { ArrowLeft, Edit2, Users, Briefcase, FileText, CalendarClock, Shield, Paperclip, Printer, Shirt } from "lucide-react";
+import { ArrowLeft, Edit2, Users, Briefcase, FileText, CalendarClock, Shield, Paperclip, Printer, Shirt, Download } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import InterviewModal from "@/components/InterviewModal";
@@ -406,9 +406,32 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
         
         {/* Card Status Atual e Foto */}
         <div className={styles.card} style={{ padding: '20px', textAlign: 'center' }}>
-          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginBottom: '16px' }}>
             {func.photoUrl ? (
-              <img src={func.photoUrl} alt={`Foto de ${func.firstName}`} style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #eee' }} />
+              <>
+                <img src={func.photoUrl} alt={`Foto de ${func.firstName}`} style={{ width: '120px', height: '120px', borderRadius: '50%', objectFit: 'cover', border: '3px solid #eee' }} />
+                <a 
+                  href={func.photoUrl} 
+                  download={`foto-${func.firstName}-${func.lastName || ''}.png`}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    marginTop: '8px',
+                    fontSize: '0.78rem',
+                    color: '#2563eb',
+                    fontWeight: 600,
+                    textDecoration: 'none',
+                    background: '#eff6ff',
+                    padding: '4px 10px',
+                    borderRadius: '6px',
+                    border: '1px solid #bfdbfe'
+                  }}
+                  title="Baixar foto de perfil"
+                >
+                  <Download size={13} /> Baixar Foto
+                </a>
+              </>
             ) : (
               <div style={{ width: '120px', height: '120px', borderRadius: '50%', background: '#f1f5f9', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#cbd5e1', border: '3px solid #eee' }}>
                 <Users size={48} />
