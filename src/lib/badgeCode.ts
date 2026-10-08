@@ -62,40 +62,36 @@ export function getSectorPrefix(departmentOrRole?: string | null): string {
 }
 
 /**
- * Gera o próximo código de crachá único para um determinado setor (ex: TI-0001, RH-0002)
+ * Gera um código de crachá único e aleatório não-sequencial para um determinado setor (ex: TI-7492, REC-3184).
+ * Isso evita que pessoas externas deduza o número exato de funcionários da empresa.
  */
 export async function generateNextBadgeCode(department?: string | null): Promise<string> {
   const prefix = getSectorPrefix(department);
 
-  // Buscar códigos existentes que começam com o prefixo no banco (User e Employee)
+  // Buscar todos os códigos existentes no banco (User e Employee) para garantia de unicidade absoluta
   const [users, employees] = await Promise.all([
-    prisma.user.findMany({
-      where: { badgeCode: { startsWith: `${prefix}-` } },
-      select: { badgeCode: true }
-    }),
-    prisma.employee.findMany({
-      where: { badgeCode: { startsWith: `${prefix}-` } },
-      select: { badgeCode: true }
-    })
+    prisma.user.findMany({ select: { badgeCode: true } }),
+    prisma.employee.findMany({ select: { badgeCode: true } })
   ]);
 
-  const existingCodes = [
-    ...users.map(u => u.badgeCode),
-    ...employees.map(e => e.badgeCode)
-  ].filter(Boolean) as string[];
+  const existingCodes = new Set<string>([
+    ...users.map(u => u?.badgeCode).filter(Boolean),
+    ...employees.map(e => e?.badgeCode).filter(Boolean)
+  ] as string[]);
 
-  let maxNum = 0;
-  for (const code of existingCodes) {
-    const parts = code.split("-");
-    if (parts.length >= 2) {
-      const numPart = parseInt(parts[parts.length - 1], 10);
-      if (!isNaN(numPart) && numPart > maxNum) {
-        maxNum = numPart;
-      }
+  let attempts = 0;
+  while (attempts < 1000) {
+    // Número aleatório não-sequencial entre 1000 e 9999
+    const randomNum = Math.floor(1000 + Math.random() * 9000);
+    const candidateCode = `${prefix}-${randomNum}`;
+    
+    if (!existingCodes.has(candidateCode)) {
+      return candidateCode;
     }
+    attempts++;
   }
 
-  const nextNum = maxNum + 1;
-  const formattedNum = String(nextNum).padStart(4, "0");
-  return `${prefix}-${formattedNum}`;
+  // Fallback para maior amplitude se houver muitas colisões: 5 dígitos aleatórios
+  const randomNum5 = Math.floor(10000 + Math.random() * 90000);
+  return `${prefix}-${randomNum5}`;
 }
