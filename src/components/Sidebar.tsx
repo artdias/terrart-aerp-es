@@ -39,7 +39,7 @@ export function Sidebar() {
       icon: Contact,
       items: [
         { name: "Recursos Humanos", path: "/rh", icon: UserCheck },
-        { name: "Crachás & QR Code", path: "/crachas", icon: QrCode },
+        { name: "QR Codes & Autenticação", path: "/crachas", icon: QrCode },
         { name: "Escalas", path: "/escalas", icon: CalendarClock },
         { name: "Atribuição", path: "/cautelas", icon: ShieldCheck },
         { name: "Recepção", path: "/recepcao", icon: ConciergeBell },

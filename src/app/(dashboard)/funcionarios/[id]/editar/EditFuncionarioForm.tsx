@@ -24,6 +24,10 @@ interface EmployeeType {
   salary: number | null;
   address: string | null;
   previousExperience: string | null;
+  uniformSize?: string | null;
+  pantsSize?: string | null;
+  shoeSize?: string | null;
+  uniformMeasurements?: string | null;
   travelAvailability?: boolean;
   overtimeAvailability?: boolean;
   isMei?: boolean;
@@ -403,6 +407,106 @@ export default function EditFuncionarioForm({
               placeholder="Ex: Empresa X (2020-2022) - Cargo: Vendedor..."
               style={{ width: '100%', resize: 'vertical', marginTop: '5px' }}
             />
+          </div>
+
+          <h3 className={styles.sectionTitle}>Tamanhos de Uniforme & Calçado</h3>
+
+          <div className={styles.formRow}>
+            <div className={styles.inputGroup}>
+              <label htmlFor="uniformSize">Tamanho do Uniforme / Camisa</label>
+              <input 
+                type="text" 
+                id="uniformSize" 
+                name="uniformSize" 
+                defaultValue={employee.uniformSize || ""}
+                placeholder="Ex: P, M, G, GG, 40..."
+                list="uniformSizeOptions"
+              />
+              <datalist id="uniformSizeOptions">
+                <option value="PP" />
+                <option value="P" />
+                <option value="M" />
+                <option value="G" />
+                <option value="GG" />
+                <option value="XGG" />
+                <option value="EXG" />
+                <option value="36" />
+                <option value="38" />
+                <option value="40" />
+                <option value="42" />
+                <option value="44" />
+                <option value="46" />
+              </datalist>
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label htmlFor="pantsSize">Tamanho da Calça / Bermuda</label>
+              <input 
+                type="text" 
+                id="pantsSize" 
+                name="pantsSize" 
+                defaultValue={employee.pantsSize || ""}
+                placeholder="Ex: 38, 40, 42, 44..."
+                list="pantsSizeOptions"
+              />
+              <datalist id="pantsSizeOptions">
+                <option value="34" />
+                <option value="36" />
+                <option value="38" />
+                <option value="40" />
+                <option value="42" />
+                <option value="44" />
+                <option value="46" />
+                <option value="48" />
+                <option value="50" />
+                <option value="52" />
+                <option value="P" />
+                <option value="M" />
+                <option value="G" />
+                <option value="GG" />
+              </datalist>
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label htmlFor="shoeSize">Número do Calçado / Bota</label>
+              <input 
+                type="text" 
+                id="shoeSize" 
+                name="shoeSize" 
+                defaultValue={employee.shoeSize || ""}
+                placeholder="Ex: 37, 38, 39, 40, 41..."
+                list="shoeSizeOptions"
+              />
+              <datalist id="shoeSizeOptions">
+                <option value="33" />
+                <option value="34" />
+                <option value="35" />
+                <option value="36" />
+                <option value="37" />
+                <option value="38" />
+                <option value="39" />
+                <option value="40" />
+                <option value="41" />
+                <option value="42" />
+                <option value="43" />
+                <option value="44" />
+                <option value="45" />
+                <option value="46" />
+              </datalist>
+            </div>
+          </div>
+
+          <div className={styles.formRow} style={{ marginBottom: '1.5rem' }}>
+            <div className={styles.inputGroup} style={{ width: '100%' }}>
+              <label htmlFor="uniformMeasurements">Medidas Detalhadas do Uniforme (Opcional)</label>
+              <input 
+                type="text" 
+                id="uniformMeasurements" 
+                name="uniformMeasurements" 
+                defaultValue={employee.uniformMeasurements || ""}
+                placeholder="Ex: Busto/Peito: 98cm, Cintura: 82cm, Quadril: 102cm, Comprimento: 75cm" 
+              />
+            </div>
           </div>
 
           <h3 className={styles.sectionTitle}>Dados da MEI (Pessoa Jurídica)</h3>

@@ -26,7 +26,11 @@ export default function LoginPage() {
     });
 
     if (res?.error) {
-      setError("Usuário ou senha incorretos.");
+      if (res.error === "USUARIO_INATIVO" || res.error.includes("USUARIO_INATIVO") || res.error.toLowerCase().includes("inativo")) {
+        setError("Usuário inativo. Seu acesso ao sistema está bloqueado.");
+      } else {
+        setError("Usuário ou senha incorretos.");
+      }
     } else {
       router.push("/");
       router.refresh();

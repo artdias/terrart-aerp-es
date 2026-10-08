@@ -47,6 +47,7 @@ export async function createUser(formData: FormData) {
   const allowRecepcao = formData.get("allowRecepcao") === "on";
   const allowRelatorios = formData.get("allowRelatorios") === "on";
   const allowRh = formData.get("allowRh") === "on";
+  const active = formData.get("active") !== "off";
 
   await prisma.user.create({
     data: {
@@ -54,6 +55,7 @@ export async function createUser(formData: FormData) {
       email,
       password: hashedPassword,
       role,
+      active,
       allowClientes,
       allowFuncionarios,
       allowEscalas,
@@ -72,6 +74,54 @@ export async function createUser(formData: FormData) {
 
   revalidatePath("/usuarios");
   redirect("/usuarios");
+}
+
+export async function toggleUserStatus(formData: FormData) {
+  try {
+    const session = await getServerSession(authOptions);
+    if (!session?.user || (session.user as any).role !== "ADMIN") {
+      return { success: false, error: "Apenas administradores podem gerenciar usuários." };
+    }
+
+    const userId = sanitizeInput(formData.get("userId") as string);
+    if (!userId) {
+      return { success: false, error: "ID de usuário inválido." };
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      return { success: false, error: "Usuário não encontrado." };
+    }
+
+    if (user.email === "admin") {
+      return { success: false, error: "Não é possível inativar o administrador master padrão." };
+    }
+
+    if (user.id === (session.user as any).id) {
+      return { success: false, error: "Você não pode inativar a si mesmo." };
+    }
+
+    const newStatus = !user.active;
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { active: newStatus }
+    });
+
+    await logAction(
+      newStatus ? "ACTIVATE_USER" : "DEACTIVATE_USER",
+      `${newStatus ? "Ativou" : "Inativou / Bloqueou"} o usuário ${user.email} (ID: ${userId}, Nome: ${user.name}).`
+    );
+
+    revalidatePath("/usuarios");
+    return { success: true, active: newStatus };
+  } catch (error: any) {
+    console.error("Erro em toggleUserStatus:", error);
+    return { success: false, error: "Ocorreu um erro interno ao alterar o status do usuário." };
+  }
 }
 
 export async function deleteUser(formData: FormData) {
@@ -166,6 +216,10 @@ export async function updateUser(formData: FormData) {
     allowRelatorios: formData.get("allowRelatorios") === "on",
     allowRh: formData.get("allowRh") === "on"
   };
+
+  if (formData.has("active")) {
+    dataToUpdate.active = formData.get("active") === "on";
+  }
 
   if (password && password.trim() !== "") {
     dataToUpdate.password = await bcrypt.hash(password, 10);

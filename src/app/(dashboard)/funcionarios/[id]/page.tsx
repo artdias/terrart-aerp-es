@@ -1,7 +1,7 @@
 import styles from "../../clientes/novo/novoCliente.module.css";
 import detailStyles from "../funcionarios.module.css"; // We'll add some styles to style this page beautifully or write inline
 import Link from "next/link";
-import { ArrowLeft, Edit2, Users, Briefcase, FileText, CalendarClock, Shield, Paperclip, Printer } from "lucide-react";
+import { ArrowLeft, Edit2, Users, Briefcase, FileText, CalendarClock, Shield, Paperclip, Printer, Shirt } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import InterviewModal from "@/components/InterviewModal";
@@ -51,14 +51,25 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
           </div>
         </div>
 
-        <Link 
-          href={`/funcionarios/${func.id}/editar`} 
-          className={styles.submitBtn} 
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.6rem 1.2rem', textDecoration: 'none', background: '#e67e22' }}
-        >
-          <Edit2 size={16} />
-          <span>Editar Cadastro</span>
-        </Link>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <Link 
+            href={`/api/funcionarios/${func.id}/ficha`} 
+            target="_blank"
+            className={styles.submitBtn} 
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.6rem 1.2rem', textDecoration: 'none', background: '#003366', color: '#ffffff' }}
+          >
+            <Printer size={16} />
+            <span>Exportar Ficha (PDF)</span>
+          </Link>
+          <Link 
+            href={`/funcionarios/${func.id}/editar`} 
+            className={styles.submitBtn} 
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0.6rem 1.2rem', textDecoration: 'none', background: '#e67e22' }}
+          >
+            <Edit2 size={16} />
+            <span>Editar Cadastro</span>
+          </Link>
+        </div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: '24px', marginTop: '24px' }}>
@@ -135,6 +146,33 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
                 <p style={{ margin: '4px 0 0', fontWeight: 600, color: func.travelAvailability ? '#27ae60' : '#7f8c8d' }}>
                   {func.travelAvailability ? "Sim (Disponível)" : "Não"}
                 </p>
+              </div>
+
+              <div style={{ gridColumn: '1 / -1', marginTop: '12px', background: '#f8fafc', padding: '14px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
+                <div style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.9rem', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <Shirt size={16} style={{ color: '#003366' }} />
+                  Tamanhos de Uniforme, Vestuário e Calçado
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '12px' }}>
+                  <div>
+                    <strong style={{ color: '#64748b', fontSize: '0.8rem' }}>Uniforme / Camisa:</strong>
+                    <p style={{ margin: '2px 0 0', fontWeight: 600, color: '#1e293b' }}>{func.uniformSize || "Não informado"}</p>
+                  </div>
+                  <div>
+                    <strong style={{ color: '#64748b', fontSize: '0.8rem' }}>Calça / Bermuda:</strong>
+                    <p style={{ margin: '2px 0 0', fontWeight: 600, color: '#1e293b' }}>{func.pantsSize || "Não informado"}</p>
+                  </div>
+                  <div>
+                    <strong style={{ color: '#64748b', fontSize: '0.8rem' }}>Calçado / Bota:</strong>
+                    <p style={{ margin: '2px 0 0', fontWeight: 600, color: '#1e293b' }}>{func.shoeSize || "Não informado"}</p>
+                  </div>
+                  {func.uniformMeasurements && (
+                    <div style={{ gridColumn: '1 / -1', marginTop: '4px' }}>
+                      <strong style={{ color: '#64748b', fontSize: '0.8rem' }}>Medidas Detalhadas:</strong>
+                      <p style={{ margin: '2px 0 0', fontWeight: 500, color: '#334155', fontSize: '0.85rem' }}>{func.uniformMeasurements}</p>
+                    </div>
+                  )}
+                </div>
               </div>
               
               {func.isMei && (

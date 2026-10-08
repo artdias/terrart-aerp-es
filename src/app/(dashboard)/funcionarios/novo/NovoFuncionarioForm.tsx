@@ -577,7 +577,104 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
             </div>
           </div>
 
-          <div className="print-section-title" style={{ marginTop: '20px' }}>02 • DADOS DA MEI (PESSOA JURÍDICA)</div>
+          <div className="print-section-title" style={{ marginTop: '20px' }}>02 • UNIFORME, VESTUÁRIO & CALÇADO</div>
+          <h3 className={`${styles.sectionTitle} no-print`} style={{ marginTop: '1.5rem' }}>Tamanhos de Uniforme & Calçado</h3>
+
+          <div className={`${styles.formRow} print-grid`}>
+            <div className={`print-box col-4 ${styles.inputGroup}`}>
+              <label htmlFor="uniformSize">Tamanho do Uniforme / Camisa</label>
+              <input 
+                type="text" 
+                id="uniformSize" 
+                name="uniformSize" 
+                placeholder="Ex: P, M, G, GG, 40..."
+                list="uniformSizeOptions"
+              />
+              <datalist id="uniformSizeOptions">
+                <option value="PP" />
+                <option value="P" />
+                <option value="M" />
+                <option value="G" />
+                <option value="GG" />
+                <option value="XGG" />
+                <option value="EXG" />
+                <option value="36" />
+                <option value="38" />
+                <option value="40" />
+                <option value="42" />
+                <option value="44" />
+                <option value="46" />
+              </datalist>
+            </div>
+
+            <div className={`print-box col-4 ${styles.inputGroup}`}>
+              <label htmlFor="pantsSize">Tamanho da Calça / Bermuda</label>
+              <input 
+                type="text" 
+                id="pantsSize" 
+                name="pantsSize" 
+                placeholder="Ex: 38, 40, 42, 44..."
+                list="pantsSizeOptions"
+              />
+              <datalist id="pantsSizeOptions">
+                <option value="34" />
+                <option value="36" />
+                <option value="38" />
+                <option value="40" />
+                <option value="42" />
+                <option value="44" />
+                <option value="46" />
+                <option value="48" />
+                <option value="50" />
+                <option value="52" />
+                <option value="P" />
+                <option value="M" />
+                <option value="G" />
+                <option value="GG" />
+              </datalist>
+            </div>
+
+            <div className={`print-box col-4 ${styles.inputGroup}`}>
+              <label htmlFor="shoeSize">Número do Calçado / Bota</label>
+              <input 
+                type="text" 
+                id="shoeSize" 
+                name="shoeSize" 
+                placeholder="Ex: 37, 38, 39, 40, 41..."
+                list="shoeSizeOptions"
+              />
+              <datalist id="shoeSizeOptions">
+                <option value="33" />
+                <option value="34" />
+                <option value="35" />
+                <option value="36" />
+                <option value="37" />
+                <option value="38" />
+                <option value="39" />
+                <option value="40" />
+                <option value="41" />
+                <option value="42" />
+                <option value="43" />
+                <option value="44" />
+                <option value="45" />
+                <option value="46" />
+              </datalist>
+            </div>
+          </div>
+
+          <div className={`${styles.formRow} print-grid`}>
+            <div className={`print-box col-12 ${styles.inputGroup}`}>
+              <label htmlFor="uniformMeasurements">Medidas Detalhadas do Uniforme (Opcional)</label>
+              <input 
+                type="text" 
+                id="uniformMeasurements" 
+                name="uniformMeasurements" 
+                placeholder="Ex: Busto/Peito: 98cm, Cintura: 82cm, Quadril: 102cm, Comprimento: 75cm" 
+              />
+            </div>
+          </div>
+
+          <div className="print-section-title" style={{ marginTop: '20px' }}>03 • DADOS DA MEI (PESSOA JURÍDICA)</div>
           
           <div className={`${styles.formRow} print-grid`} style={{ marginBottom: '1rem' }}>
             <div className={`print-box col-12 ${styles.inputGroup}`}>

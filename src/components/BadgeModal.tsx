@@ -1,16 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import BadgeCard from "./BadgeCard";
-import { Printer, X, Edit3, Check, RefreshCw, Layout, Building2 } from "lucide-react";
+import QRCode from "qrcode";
+import { Download, Copy, Printer, X, Edit3, RefreshCw, QrCode as QrIcon, CheckCircle2, User } from "lucide-react";
 import { updateBadgeInfo } from "@/actions/badgeActions";
-
-interface ClientOption {
-  id: string;
-  companyName: string;
-  name?: string | null;
-  logoUrl?: string | null;
-}
 
 interface BadgeModalProps {
   isOpen: boolean;
@@ -22,8 +15,6 @@ interface BadgeModalProps {
   department: string;
   badgeCode: string;
   photoUrl?: string | null;
-  initialClientName?: string | null;
-  initialClientLogoUrl?: string | null;
 }
 
 export default function BadgeModal({
@@ -35,54 +26,44 @@ export default function BadgeModal({
   roleTitle,
   department: initialDept,
   badgeCode: initialCode,
-  photoUrl,
-  initialClientName,
-  initialClientLogoUrl
+  photoUrl
 }: BadgeModalProps) {
   const [department, setDepartment] = useState(initialDept);
   const [badgeCode, setBadgeCode] = useState(initialCode);
-  const [side, setSide] = useState<"front" | "back" | "both">("both");
-  
-  const [clients, setClients] = useState<ClientOption[]>([]);
-  const [selectedClientId, setSelectedClientId] = useState<string>("");
-  const [clientName, setClientName] = useState<string>(initialClientName || "UMI SAN");
-  const [clientLogoUrl, setClientLogoUrl] = useState<string | null>(initialClientLogoUrl || null);
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
+  const [validationUrl, setValidationUrl] = useState<string>("");
 
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<{ text: string; error?: boolean } | null>(null);
+  const [copied, setCopied] = useState(false);
 
-  // Carregar lista de clientes cadastrados no sistema
   useEffect(() => {
-    async function loadClients() {
+    async function generateQR() {
       try {
-        const res = await fetch("/api/clients");
-        const data = await res.json();
-        if (data.success && data.clients) {
-          setClients(data.clients);
-        }
-      } catch (e) {
-        console.error("Erro ao carregar clientes:", e);
+        const origin = typeof window !== "undefined" ? window.location.origin : "";
+        const url = `${origin}/validar/${encodeURIComponent(badgeCode)}`;
+        setValidationUrl(url);
+
+        const dataUrl = await QRCode.toDataURL(url, {
+          width: 300,
+          margin: 1,
+          color: {
+            dark: "#001b3a",
+            light: "#FFFFFF"
+          }
+        });
+        setQrCodeDataUrl(dataUrl);
+      } catch (err) {
+        console.error("Erro ao gerar QR Code:", err);
       }
     }
-    loadClients();
-  }, []);
+    if (badgeCode) {
+      generateQR();
+    }
+  }, [badgeCode]);
 
   if (!isOpen) return null;
-
-  function handleClientChange(clientId: string) {
-    setSelectedClientId(clientId);
-    if (!clientId) {
-      setClientName(initialClientName || "UMI SAN");
-      setClientLogoUrl(initialClientLogoUrl || null);
-      return;
-    }
-    const found = clients.find(c => c.id === clientId);
-    if (found) {
-      setClientName(found.companyName);
-      setClientLogoUrl(found.logoUrl || null);
-    }
-  }
 
   async function handleSave() {
     setSaving(true);
@@ -91,7 +72,7 @@ export default function BadgeModal({
     setSaving(false);
     if (res.success) {
       setIsEditing(false);
-      setMsg({ text: "Informações salvas com sucesso!" });
+      setMsg({ text: "Informações atualizadas com sucesso!" });
     } else {
       setMsg({ text: res.error || "Erro ao salvar", error: true });
     }
@@ -109,6 +90,23 @@ export default function BadgeModal({
     }
   }
 
+  function handleDownload() {
+    if (!qrCodeDataUrl) return;
+    const a = document.createElement("a");
+    a.href = qrCodeDataUrl;
+    a.download = `qrcode-${badgeCode.toLowerCase()}-${name.toLowerCase().replace(/\s+/g, "_")}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
+
+  function handleCopyLink() {
+    if (!validationUrl) return;
+    navigator.clipboard.writeText(validationUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
   function handlePrint() {
     window.print();
   }
@@ -121,10 +119,10 @@ export default function BadgeModal({
         background: "rgba(0,0,0,0.65)",
         backdropFilter: "blur(4px)",
         display: "flex",
-        alignItems: "center",
+        alignItems: "flex-start",
         justifyContent: "center",
         zIndex: 9999,
-        padding: "20px",
+        padding: "20px 16px",
         overflowY: "auto"
       }}
     >
@@ -133,10 +131,10 @@ export default function BadgeModal({
           body * {
             visibility: hidden !important;
           }
-          #printable-badge-area, #printable-badge-area * {
+          #printable-qr-area, #printable-qr-area * {
             visibility: visible !important;
           }
-          #printable-badge-area {
+          #printable-qr-area {
             position: absolute !important;
             left: 50% !important;
             top: 50% !important;
@@ -152,49 +150,80 @@ export default function BadgeModal({
           background: "white",
           borderRadius: "20px",
           width: "100%",
-          maxWidth: side === "both" ? "680px" : "440px",
-          padding: "24px",
+          maxWidth: "440px",
+          padding: "18px 20px",
           boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
           position: "relative",
-          transition: "max-width 0.3s ease"
+          maxHeight: "calc(100vh - 40px)",
+          overflowY: "auto",
+          margin: "auto 0"
         }}
       >
         {/* Cabeçalho do Modal */}
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-          <div>
-            <h2 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 800, color: "#001b3a" }}>
-              Crachá Oficial de Identificação
-            </h2>
-            <p style={{ margin: "2px 0 0", fontSize: "0.82rem", color: "#64748b" }}>
-              Layout idêntico ao modelo físico com Frente, Verso e QR Code.
-            </p>
+        <div style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "12px",
+          position: "sticky",
+          top: 0,
+          background: "white",
+          zIndex: 10,
+          paddingBottom: "6px",
+          borderBottom: "1px solid #f1f5f9"
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div style={{
+              width: "36px",
+              height: "36px",
+              borderRadius: "8px",
+              background: "#eff6ff",
+              color: "#2563eb",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0
+            }}>
+              <QrIcon size={20} />
+            </div>
+            <div>
+              <h2 style={{ margin: 0, fontSize: "1.05rem", fontWeight: 800, color: "#001b3a" }}>
+                QR Code de Verificação
+              </h2>
+              <p style={{ margin: "1px 0 0", fontSize: "0.75rem", color: "#64748b" }}>
+                Autenticação de identidade do colaborador
+              </p>
+            </div>
           </div>
           <button
             onClick={onClose}
+            title="Fechar"
             style={{
-              background: "#f1f5f9",
+              background: "#e2e8f0",
               border: "none",
               borderRadius: "50%",
-              width: "36px",
-              height: "36px",
+              width: "32px",
+              height: "32px",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               cursor: "pointer",
-              color: "#64748b"
+              color: "#0f172a",
+              flexShrink: 0,
+              transition: "background 0.2s"
             }}
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
         {/* Notificação */}
         {msg && (
           <div style={{
-            padding: "10px 14px",
+            padding: "8px 12px",
             borderRadius: "8px",
-            marginBottom: "14px",
-            fontSize: "0.85rem",
+            marginBottom: "10px",
+            fontSize: "0.82rem",
             background: msg.error ? "#fde8e8" : "#eafaf1",
             color: msg.error ? "#e74c3c" : "#27ae60",
             border: `1px solid ${msg.error ? "#f5c6cb" : "#c3e6cb"}`
@@ -203,238 +232,301 @@ export default function BadgeModal({
           </div>
         )}
 
-        {/* Seletor de Lado (Frente / Verso / Ambos) */}
-        <div style={{
-          display: "flex",
-          justifyContent: "center",
-          gap: "8px",
-          marginBottom: "16px",
-          background: "#f1f5f9",
-          padding: "4px",
-          borderRadius: "10px"
-        }}>
-          <button
-            onClick={() => setSide("front")}
-            style={{
-              flex: 1,
-              padding: "6px 12px",
-              borderRadius: "8px",
-              border: "none",
-              fontSize: "0.82rem",
-              fontWeight: 700,
-              cursor: "pointer",
-              background: side === "front" ? "#001b3a" : "transparent",
-              color: side === "front" ? "white" : "#64748b"
-            }}
-          >
-            Frente
-          </button>
-          <button
-            onClick={() => setSide("back")}
-            style={{
-              flex: 1,
-              padding: "6px 12px",
-              borderRadius: "8px",
-              border: "none",
-              fontSize: "0.82rem",
-              fontWeight: 700,
-              cursor: "pointer",
-              background: side === "back" ? "#001b3a" : "transparent",
-              color: side === "back" ? "white" : "#64748b"
-            }}
-          >
-            Verso
-          </button>
-          <button
-            onClick={() => setSide("both")}
-            style={{
-              flex: 1,
-              padding: "6px 12px",
-              borderRadius: "8px",
-              border: "none",
-              fontSize: "0.82rem",
-              fontWeight: 700,
-              cursor: "pointer",
-              background: side === "both" ? "#001b3a" : "transparent",
-              color: side === "both" ? "white" : "#64748b"
-            }}
-          >
-            Ambos (Imprimir)
-          </button>
-        </div>
-
-        {/* Área de Visualização e Impressão do Crachá */}
-        <div id="printable-badge-area" style={{ margin: "16px 0", display: "flex", justifyContent: "center" }}>
-          <BadgeCard
-            name={name}
-            roleTitle={roleTitle}
-            department={department}
-            badgeCode={badgeCode}
-            photoUrl={photoUrl}
-            clientName={clientName}
-            clientLogoUrl={clientLogoUrl}
-            side={side}
-          />
-        </div>
-
-        {/* Controles de Seleção de Cliente e Edição */}
-        <div style={{
-          background: "#f8fafc",
-          padding: "12px 14px",
-          borderRadius: "12px",
-          border: "1px solid #e2e8f0",
-          marginTop: "16px"
-        }}>
-          <div style={{ marginBottom: isEditing ? "12px" : 0 }}>
-            <label style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.82rem", fontWeight: 700, color: "#334155", marginBottom: "4px" }}>
-              <Building2 size={16} color="#007acc" /> Logo da Empresa Parceira (Cliente Cadastrado):
-            </label>
-            <select
-              value={selectedClientId}
-              onChange={(e) => handleClientChange(e.target.value)}
-              style={{
-                width: "100%",
-                padding: "8px 12px",
-                borderRadius: "8px",
-                border: "1px solid #cbd5e1",
-                fontSize: "0.88rem",
-                background: "white",
-                fontWeight: 600
-              }}
-            >
-              <option value="">Exibir Padrão (Amarelo - UMI SAN)</option>
-              {clients.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.companyName} {c.logoUrl ? " (com Logo)" : " (sem Logo)"}
-                </option>
-              ))}
-            </select>
+        {/* Card Printable de Apresentação do QR Code */}
+        <div
+          id="printable-qr-area"
+          style={{
+            background: "#f8fafc",
+            borderRadius: "14px",
+            border: "1.5px solid #e2e8f0",
+            padding: "14px 16px",
+            textAlign: "center",
+            boxShadow: "inset 0 2px 4px rgba(0,0,0,0.02)",
+            margin: "8px 0 12px"
+          }}
+        >
+          {/* Logo Principal */}
+          <div style={{ marginBottom: "10px" }}>
+            <img
+              src="/logo.png"
+              alt="Elite Soluções"
+              style={{ maxHeight: "38px", objectFit: "contain", margin: "0 auto" }}
+            />
           </div>
 
-          {isEditing && (
-            <div style={{ display: "grid", gap: "12px", marginTop: "12px", borderTop: "1px solid #e2e8f0", paddingTop: "12px" }}>
-              <div>
-                <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 600, color: "#475569", marginBottom: "4px" }}>
-                  Setor / Departamento
-                </label>
+          {/* Dados do Colaborador */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", marginBottom: "10px" }}>
+            <div style={{
+              width: "44px",
+              height: "44px",
+              borderRadius: "50%",
+              overflow: "hidden",
+              border: "2px solid #001b3a",
+              background: "#e2e8f0",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0
+            }}>
+              {photoUrl ? (
+                <img src={photoUrl} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              ) : (
+                <User size={24} color="#64748b" />
+              )}
+            </div>
+            <div style={{ textAlign: "left" }}>
+              <h3 style={{ margin: 0, fontSize: "0.92rem", fontWeight: 900, color: "#001b3a", textTransform: "uppercase", lineHeight: 1.1 }}>
+                {name}
+              </h3>
+              <div style={{ fontSize: "0.76rem", fontWeight: 700, color: "#475569", marginTop: "2px" }}>
+                {roleTitle}
+              </div>
+              <div style={{ fontSize: "0.72rem", color: "#64748b" }}>
+                Setor: {department}
+              </div>
+            </div>
+          </div>
+
+          {/* Código de Registro */}
+          <div style={{ marginBottom: "10px" }}>
+            <div style={{ fontSize: "0.65rem", fontWeight: 900, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+              Nº REGISTRO / CÓDIGO DE VERIFICAÇÃO
+            </div>
+            <div style={{
+              display: "inline-block",
+              background: "#001b3a",
+              color: "#ffffff",
+              fontWeight: 900,
+              fontFamily: "monospace",
+              fontSize: "1rem",
+              padding: "3px 14px",
+              borderRadius: "16px",
+              marginTop: "2px",
+              letterSpacing: "1px"
+            }}>
+              {badgeCode}
+            </div>
+          </div>
+
+          {/* Imagem do QR Code */}
+          <div style={{
+            background: "white",
+            padding: "8px",
+            borderRadius: "10px",
+            display: "inline-block",
+            border: "1px solid #cbd5e1",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
+          }}>
+            {qrCodeDataUrl ? (
+              <img
+                src={qrCodeDataUrl}
+                alt={`QR Code ${badgeCode}`}
+                style={{ width: "150px", height: "150px", display: "block" }}
+              />
+            ) : (
+              <div style={{ width: "150px", height: "150px", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <RefreshCw size={20} className="spin" color="#94a3b8" />
+              </div>
+            )}
+          </div>
+
+          <div style={{ fontSize: "0.68rem", fontWeight: 800, color: "#001b3a", marginTop: "6px", textTransform: "uppercase" }}>
+            Acesse ou escaneie para validação oficial
+          </div>
+        </div>
+
+        {/* Link de Validação Direct Input */}
+        <div style={{
+          display: "flex",
+          gap: "8px",
+          background: "#f1f5f9",
+          padding: "6px 10px",
+          borderRadius: "8px",
+          alignItems: "center",
+          marginBottom: "12px"
+        }}>
+          <input
+            type="text"
+            readOnly
+            value={validationUrl}
+            style={{
+              flex: 1,
+              background: "transparent",
+              border: "none",
+              fontSize: "0.75rem",
+              color: "#334155",
+              fontWeight: 600,
+              outline: "none"
+            }}
+          />
+          <button
+            onClick={handleCopyLink}
+            style={{
+              background: copied ? "#16a34a" : "#2563eb",
+              color: "white",
+              border: "none",
+              padding: "5px 10px",
+              borderRadius: "6px",
+              fontSize: "0.75rem",
+              fontWeight: 700,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "4px"
+            }}
+          >
+            {copied ? <CheckCircle2 size={13} /> : <Copy size={13} />}
+            {copied ? "Copiado!" : "Copiar"}
+          </button>
+        </div>
+
+        {/* Edição de Setor / Código */}
+        {isEditing && (
+          <div style={{
+            background: "#f8fafc",
+            padding: "10px",
+            borderRadius: "10px",
+            border: "1px solid #e2e8f0",
+            marginBottom: "12px",
+            display: "grid",
+            gap: "8px"
+          }}>
+            <div>
+              <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#475569", marginBottom: "3px" }}>
+                Setor / Departamento
+              </label>
+              <input
+                type="text"
+                value={department}
+                onChange={(e) => setDepartment(e.target.value)}
+                style={{
+                  width: "100%",
+                  padding: "6px 10px",
+                  borderRadius: "6px",
+                  border: "1px solid #cbd5e1",
+                  fontSize: "0.85rem"
+                }}
+              />
+            </div>
+
+            <div>
+              <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#475569", marginBottom: "3px" }}>
+                Código de Registro
+              </label>
+              <div style={{ display: "flex", gap: "6px" }}>
                 <input
                   type="text"
-                  value={department}
-                  onChange={(e) => setDepartment(e.target.value)}
-                  placeholder="Ex: TI, RH, Financeiro, Operacional"
+                  value={badgeCode}
+                  onChange={(e) => setBadgeCode(e.target.value.toUpperCase())}
                   style={{
-                    width: "100%",
-                    padding: "8px 12px",
+                    flex: 1,
+                    padding: "6px 10px",
                     borderRadius: "6px",
                     border: "1px solid #cbd5e1",
-                    fontSize: "0.9rem"
+                    fontSize: "0.85rem",
+                    fontFamily: "monospace",
+                    fontWeight: 700
                   }}
                 />
-              </div>
-
-              <div>
-                <label style={{ display: "block", fontSize: "0.8rem", fontWeight: 600, color: "#475569", marginBottom: "4px" }}>
-                  Código de Referência (Crachá)
-                </label>
-                <div style={{ display: "flex", gap: "8px" }}>
-                  <input
-                    type="text"
-                    value={badgeCode}
-                    onChange={(e) => setBadgeCode(e.target.value.toUpperCase())}
-                    placeholder="Ex: TI-0237"
-                    style={{
-                      flex: 1,
-                      padding: "8px 12px",
-                      borderRadius: "6px",
-                      border: "1px solid #cbd5e1",
-                      fontSize: "0.9rem",
-                      fontFamily: "monospace",
-                      fontWeight: 700
-                    }}
-                  />
-                  <button
-                    type="button"
-                    onClick={handleAutoGenerate}
-                    style={{
-                      background: "#e0f2fe",
-                      color: "#0369a1",
-                      border: "1px solid #bae6fd",
-                      padding: "0 12px",
-                      borderRadius: "6px",
-                      fontSize: "0.8rem",
-                      fontWeight: 600,
-                      cursor: "pointer",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "4px"
-                    }}
-                  >
-                    <RefreshCw size={14} /> Gerar
-                  </button>
-                </div>
-              </div>
-
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px", marginTop: "4px" }}>
                 <button
                   type="button"
-                  onClick={() => setIsEditing(false)}
+                  onClick={handleAutoGenerate}
                   style={{
-                    background: "#e2e8f0",
-                    color: "#475569",
-                    border: "none",
-                    padding: "8px 14px",
+                    background: "#e0f2fe",
+                    color: "#0369a1",
+                    border: "1px solid #bae6fd",
+                    padding: "0 8px",
                     borderRadius: "6px",
-                    fontSize: "0.85rem",
-                    cursor: "pointer"
-                  }}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={saving}
-                  style={{
-                    background: "#001b3a",
-                    color: "white",
-                    border: "none",
-                    padding: "8px 16px",
-                    borderRadius: "6px",
-                    fontSize: "0.85rem",
-                    fontWeight: 600,
+                    fontSize: "0.75rem",
+                    fontWeight: 700,
                     cursor: "pointer",
                     display: "flex",
                     alignItems: "center",
-                    gap: "6px"
+                    gap: "4px"
                   }}
                 >
-                  <Check size={16} /> {saving ? "Salvando..." : "Salvar Alterações"}
+                  <RefreshCw size={13} /> Gerar
                 </button>
               </div>
             </div>
-          )}
-        </div>
 
-        {/* Botões do Rodapé */}
-        {!isEditing && (
-          <div style={{ display: "flex", justifyContent: "space-between", gap: "12px", marginTop: "20px" }}>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: "6px", marginTop: "2px" }}>
+              <button
+                type="button"
+                onClick={() => setIsEditing(false)}
+                style={{
+                  background: "#e2e8f0",
+                  color: "#475569",
+                  border: "none",
+                  padding: "5px 10px",
+                  borderRadius: "6px",
+                  fontSize: "0.78rem",
+                  cursor: "pointer"
+                }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={saving}
+                style={{
+                  background: "#001b3a",
+                  color: "white",
+                  border: "none",
+                  padding: "5px 12px",
+                  borderRadius: "6px",
+                  fontSize: "0.78rem",
+                  fontWeight: 700,
+                  cursor: "pointer"
+                }}
+              >
+                {saving ? "Salvando..." : "Salvar Alterações"}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Botões de Ação do Modal */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", justifyContent: "space-between" }}>
+          <button
+            onClick={() => setIsEditing(!isEditing)}
+            style={{
+              background: "#f1f5f9",
+              color: "#334155",
+              border: "1px solid #cbd5e1",
+              padding: "8px 12px",
+              borderRadius: "8px",
+              fontSize: "0.8rem",
+              fontWeight: 700,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px"
+            }}
+          >
+            <Edit3 size={15} /> {isEditing ? "Fechar Edição" : "Editar Código"}
+          </button>
+
+          <div style={{ display: "flex", gap: "6px" }}>
             <button
-              onClick={() => setIsEditing(true)}
+              onClick={handleDownload}
               style={{
-                background: "#f1f5f9",
-                color: "#334155",
-                border: "1px solid #cbd5e1",
-                padding: "10px 16px",
+                background: "#16a34a",
+                color: "white",
+                border: "none",
+                padding: "8px 12px",
                 borderRadius: "8px",
-                fontSize: "0.88rem",
-                fontWeight: 600,
+                fontSize: "0.8rem",
+                fontWeight: 700,
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
-                gap: "8px"
+                gap: "5px",
+                boxShadow: "0 2px 6px rgba(22,163,74,0.2)"
               }}
             >
-              <Edit3 size={18} /> Editar Setor/Código
+              <Download size={15} /> Baixar QR Code
             </button>
 
             <button
@@ -443,21 +535,21 @@ export default function BadgeModal({
                 background: "#001b3a",
                 color: "white",
                 border: "none",
-                padding: "10px 22px",
+                padding: "8px 14px",
                 borderRadius: "8px",
-                fontSize: "0.9rem",
+                fontSize: "0.8rem",
                 fontWeight: 700,
                 cursor: "pointer",
                 display: "flex",
                 alignItems: "center",
-                gap: "8px",
-                boxShadow: "0 4px 12px rgba(0,27,58,0.25)"
+                gap: "5px",
+                boxShadow: "0 2px 6px rgba(0,27,58,0.2)"
               }}
             >
-              <Printer size={18} /> Imprimir Crachá
+              <Printer size={15} /> Imprimir
             </button>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

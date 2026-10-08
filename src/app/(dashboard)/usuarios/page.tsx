@@ -6,8 +6,9 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { Plus, Users, ShieldAlert, Check, X, Edit2 } from "lucide-react";
 import styles from "../clientes/clientes.module.css";
-import { deleteUser } from "@/actions/userActions";
+import { deleteUser, toggleUserStatus } from "@/actions/userActions";
 import DeleteButton from "@/components/DeleteButton";
+import UserStatusToggleButton from "@/components/UserStatusToggleButton";
 
 export default async function UsuariosDashboard() {
   const session = await getServerSession(authOptions);
@@ -43,6 +44,7 @@ export default async function UsuariosDashboard() {
               <th>Nome / Funcionário</th>
               <th>Login / Usuário</th>
               <th>Perfil</th>
+              <th>Status</th>
               <th>Acesso aos Módulos</th>
               <th style={{ textAlign: "right" }}>Ações</th>
             </tr>
@@ -64,11 +66,12 @@ export default async function UsuariosDashboard() {
 
               const isSelf = u.id === loggedUserId;
               const isAdminMaster = u.email === "admin";
+              const isActive = u.active ?? true;
 
               return (
-                <tr key={u.id}>
+                <tr key={u.id} style={{ opacity: isActive ? 1 : 0.75, background: isActive ? "transparent" : "#fafafa" }}>
                   <td>
-                    <div style={{ fontWeight: 600, color: "#002244" }}>
+                    <div style={{ fontWeight: 600, color: isActive ? "#002244" : "#64748b" }}>
                       {u.name} {isSelf && <span style={{ fontSize: "0.75rem", color: "#3498db", fontWeight: "normal" }}>(você)</span>}
                     </div>
                   </td>
@@ -87,6 +90,19 @@ export default async function UsuariosDashboard() {
                       color: u.role === "ADMIN" ? "#c0392b" : "#555"
                     }}>
                       {u.role}
+                    </span>
+                  </td>
+                  <td>
+                    <span style={{
+                      padding: "3px 8px",
+                      borderRadius: "12px",
+                      fontSize: "0.75rem",
+                      fontWeight: 700,
+                      background: isActive ? "#eafaf1" : "#fef2f2",
+                      color: isActive ? "#27ae60" : "#dc2626",
+                      border: `1px solid ${isActive ? "#a3e635" : "#fca5a5"}`
+                    }}>
+                      {isActive ? "Ativo" : "Inativo (Bloqueado)"}
                     </span>
                   </td>
                   <td>
@@ -127,18 +143,27 @@ export default async function UsuariosDashboard() {
                         Logado
                       </span>
                     ) : (
-                      <div style={{ display: "flex", gap: "12px", justifyContent: "end", alignItems: "center" }}>
+                      <div style={{ display: "flex", gap: "8px", justifyContent: "end", alignItems: "center" }}>
                         <Link 
                           href={`/usuarios/${u.id}/editar`}
                           style={{
                             color: "#003366",
                             display: "inline-flex",
-                            alignItems: "center"
+                            alignItems: "center",
+                            padding: "6px 8px",
+                            borderRadius: "6px",
+                            background: "#f1f5f9"
                           }}
                           title="Editar Usuário"
                         >
                           <Edit2 size={16} />
                         </Link>
+                        <UserStatusToggleButton
+                          action={toggleUserStatus}
+                          userId={u.id}
+                          active={isActive}
+                          userName={u.name}
+                        />
                         <DeleteButton 
                           action={deleteUser} 
                           id={u.id} 

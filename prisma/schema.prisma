@@ -78,6 +78,7 @@ model User {
   name     String
   password String // Hash da senha
   role     String @default("EMPLOYEE") // "ADMIN", "CLIENT", "EMPLOYEE"
+  active   Boolean @default(true)
 
   // Permissões de Módulo
   allowClientes     Boolean @default(false)
@@ -207,6 +208,12 @@ model Employee {
 
   travelAvailability   Boolean @default(false)
   overtimeAvailability Boolean @default(false)
+
+  // Uniformes & Vestuário (Tamanhos e Medidas)
+  uniformSize         String?
+  pantsSize           String?
+  shoeSize            String?
+  uniformMeasurements String?
 
   // Dados de MEI (Pessoa Jurídica)
   isMei                 Boolean @default(false)

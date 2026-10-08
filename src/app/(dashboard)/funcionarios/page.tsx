@@ -179,6 +179,15 @@ export default async function FuncionariosPage({
                         Visualizar
                       </Link>
                       <Link 
+                        href={`/api/funcionarios/${func.id}/ficha`}
+                        target="_blank"
+                        className={styles.actionBtn} 
+                        style={{ background: '#003366', color: 'white', textDecoration: 'none', padding: '6px 10px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                        title="Exportar Ficha em PDF"
+                      >
+                        <Printer size={14} /> Ficha
+                      </Link>
+                      <Link 
                         href={`/funcionarios/${func.id}/editar`} 
                         className={styles.actionBtn} 
                         style={{ background: '#f39c12', color: 'white', textDecoration: 'none', padding: '6px 12px', borderRadius: '6px', fontSize: '0.85rem', fontWeight: 600 }}

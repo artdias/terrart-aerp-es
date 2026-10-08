@@ -106,6 +106,11 @@ export async function createEmployee(formData: FormData) {
       const signatureUrl = formData.get("signatureUrl") as string;
       const address = sanitizeInput(formData.get("address") as string);
       const previousExperience = sanitizeInput(formData.get("previousExperience") as string);
+      
+      const uniformSize = sanitizeInput(formData.get("uniformSize") as string);
+      const pantsSize = sanitizeInput(formData.get("pantsSize") as string);
+      const shoeSize = sanitizeInput(formData.get("shoeSize") as string);
+      const uniformMeasurements = sanitizeInput(formData.get("uniformMeasurements") as string);
     
     const isMei = formData.get("isMei") === "true" || formData.get("isMei") === "on";
     const meiCnpj = sanitizeInput(formData.get("meiCnpj") as string);
@@ -194,6 +199,10 @@ export async function createEmployee(formData: FormData) {
         status: status || (isPublic ? "Em Entrevista" : "Ativo"),
         address,
         previousExperience,
+        uniformSize,
+        pantsSize,
+        shoeSize,
+        uniformMeasurements,
         isMei,
         meiCnpj,
         meiRazaoSocial,
@@ -278,6 +287,11 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
       const signatureUrl = formData.get("signatureUrl") as string;
       const address = sanitizeInput(formData.get("address") as string);
       const previousExperience = sanitizeInput(formData.get("previousExperience") as string);
+      
+      const uniformSize = sanitizeInput(formData.get("uniformSize") as string);
+      const pantsSize = sanitizeInput(formData.get("pantsSize") as string);
+      const shoeSize = sanitizeInput(formData.get("shoeSize") as string);
+      const uniformMeasurements = sanitizeInput(formData.get("uniformMeasurements") as string);
 
     const isMei = formData.get("isMei") === "true" || formData.get("isMei") === "on";
     const meiCnpj = sanitizeInput(formData.get("meiCnpj") as string);
@@ -377,6 +391,10 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
       status: status || (isPublic ? "Em Entrevista" : "Ativo"),
       address,
       previousExperience,
+      uniformSize,
+      pantsSize,
+      shoeSize,
+      uniformMeasurements,
       isMei,
       meiCnpj,
       meiRazaoSocial,

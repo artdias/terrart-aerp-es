@@ -55,6 +55,11 @@ export const authOptions: NextAuthOptions = {
             return null;
           }
 
+          if (user.active === false) {
+            console.log("[Auth] User is inactive/blocked.");
+            throw new Error("USUARIO_INATIVO");
+          }
+
           console.log("[Auth] User found, verifying password...");
           const isValidPassword = await bcrypt.compare(credentials.password, user.password);
           
@@ -69,6 +74,7 @@ export const authOptions: NextAuthOptions = {
             name: user.name,
             email: user.email,
             role: user.role,
+            active: user.active,
             allowClientes: user.allowClientes,
             allowFuncionarios: user.allowFuncionarios,
             allowEscalas: user.allowEscalas,
@@ -83,7 +89,7 @@ export const authOptions: NextAuthOptions = {
           };
         } catch (error) {
           console.error("[Auth] Exception during authorization:", error);
-          return null;
+          throw error;
         }
       }
     })
@@ -92,6 +98,7 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.role = (user as any).role;
+        token.active = (user as any).active;
         token.allowClientes = (user as any).allowClientes;
         token.allowFuncionarios = (user as any).allowFuncionarios;
         token.allowEscalas = (user as any).allowEscalas;
@@ -109,6 +116,7 @@ export const authOptions: NextAuthOptions = {
     async session({ session, token }) {
       if (session.user) {
         (session.user as any).role = token.role;
+        (session.user as any).active = token.active;
         (session.user as any).id = token.sub;
         (session.user as any).permissions = {
           allowClientes: token.allowClientes,

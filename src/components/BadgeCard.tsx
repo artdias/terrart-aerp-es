@@ -57,21 +57,32 @@ export default function BadgeCard({
   }, [badgeCode, baseUrl]);
 
   // Render da Logo do Cliente (Imagem oficial ou Caixa Amarela padrão)
+  // Render da Logo do Cliente (Imagem oficial ou Caixa Amarela padrão)
   const renderClientLogo = (isBack = false) => {
     if (clientLogoUrl) {
       return (
         <div style={{
           background: isBack ? "white" : "#ffe600",
-          padding: "4px 8px",
+          padding: "3px 6px",
           borderRadius: "4px",
           display: "inline-flex",
           alignItems: "center",
           justifyContent: "center",
-          maxHeight: isBack ? "60px" : "40px",
+          maxHeight: isBack ? "60px" : "46px",
           maxWidth: isBack ? "190px" : "110px",
-          boxShadow: isBack ? "0 4px 10px rgba(0,0,0,0.3)" : "none"
+          boxShadow: isBack ? "0 4px 10px rgba(0,0,0,0.3)" : "none",
+          boxSizing: "border-box",
+          overflow: "hidden"
         }}>
-          <img src={clientLogoUrl} alt={clientName || "Cliente"} style={{ maxHeight: isBack ? "50px" : "32px", maxWidth: "100%", objectFit: "contain" }} />
+          <img
+            src={clientLogoUrl}
+            alt={clientName || "Cliente"}
+            style={{
+              maxHeight: isBack ? "50px" : "38px",
+              maxWidth: "100%",
+              objectFit: "contain"
+            }}
+          />
         </div>
       );
     }
@@ -81,26 +92,45 @@ export default function BadgeCard({
     return (
       <div style={{
         background: "#ffe600",
-        border: "2px solid #001b3a",
-        padding: isBack ? "8px 16px" : "3px 8px",
+        border: "1.5px solid #001b3a",
+        padding: isBack ? "8px 16px" : "2px 4px",
         textAlign: "center",
         color: "#001b3a",
         fontFamily: "'Arial Black', sans-serif",
         display: "inline-block",
-        boxShadow: "0 2px 4px rgba(0,0,0,0.2)"
+        maxWidth: isBack ? "190px" : "110px",
+        maxHeight: isBack ? "60px" : "48px",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+        boxSizing: "border-box",
+        overflow: "hidden"
       }}>
-        <div style={{ fontSize: isBack ? "1.2rem" : "0.75rem", fontWeight: 900, letterSpacing: "1px", textTransform: "uppercase" }}>
+        <div style={{
+          fontSize: isBack ? "1.2rem" : "0.58rem",
+          fontWeight: 900,
+          letterSpacing: "0.3px",
+          textTransform: "uppercase",
+          lineHeight: 1.05,
+          maxHeight: isBack ? "auto" : "24px",
+          overflow: "hidden",
+          display: "-webkit-box",
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: "vertical",
+          wordBreak: "break-word"
+        }}>
           {displayName}
         </div>
         <div style={{
           background: "#001b3a",
           color: "#ffffff",
-          fontSize: isBack ? "0.55rem" : "0.45rem",
+          fontSize: isBack ? "0.55rem" : "0.38rem",
           fontWeight: 700,
-          letterSpacing: "0.5px",
-          marginTop: "2px",
-          padding: "1px 4px",
-          textTransform: "uppercase"
+          letterSpacing: "0.3px",
+          marginTop: "1px",
+          padding: "1px 2px",
+          textTransform: "uppercase",
+          whiteSpace: "nowrap",
+          overflow: "hidden",
+          textOverflow: "ellipsis"
         }}>
           HIDROGRAFIA E ENGENHARIA
         </div>
@@ -134,12 +164,14 @@ export default function BadgeCard({
       <div style={{
         background: "#001b3a",
         color: "white",
-        padding: "8px 12px 10px",
+        padding: "6px 8px",
         position: "relative",
-        height: "70px",
+        height: "76px",
         display: "flex",
         alignItems: "center",
-        justifyContent: "space-between"
+        justifyContent: "space-between",
+        boxSizing: "border-box",
+        overflow: "hidden"
       }}>
         {/* Furo do Crachá (Slot Punch) */}
         <div style={{
@@ -148,7 +180,7 @@ export default function BadgeCard({
           background: "#ffffff",
           borderRadius: "6px",
           position: "absolute",
-          top: "6px",
+          top: "5px",
           left: "50%",
           transform: "translateX(-50%)",
           boxShadow: "inset 0 1px 3px rgba(0,0,0,0.4)",
@@ -156,23 +188,35 @@ export default function BadgeCard({
         }} />
 
         {/* Logo ES (Esquerda) */}
-        <div style={{ display: "flex", alignItems: "center", gap: "4px", marginTop: "10px" }}>
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          marginTop: "10px",
+          maxWidth: "110px",
+          flexShrink: 0
+        }}>
           <img
             src="/logo.png"
             alt="ES Elite Soluções"
-            style={{ height: "38px", objectFit: "contain", filter: "brightness(0) invert(1)" }}
+            style={{ height: "42px", maxWidth: "100px", objectFit: "contain" }}
             onError={(e) => {
               // Fallback visual se a logo em imagem falhar
               (e.target as HTMLElement).style.display = "none";
             }}
           />
-          <div style={{ fontSize: "0.6rem", fontWeight: 800, color: "white", lineHeight: 1.1, textAlign: "left" }}>
-            Elite Soluções<br /><span style={{ fontSize: "0.5rem", fontWeight: 400, opacity: 0.8 }}>Empresariais Ltda.</span>
-          </div>
         </div>
 
         {/* Logo Cliente (Direita) */}
-        <div style={{ marginTop: "10px" }}>
+        <div style={{
+          marginTop: "10px",
+          maxWidth: "115px",
+          maxHeight: "50px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "flex-end",
+          overflow: "hidden",
+          flexShrink: 0
+        }}>
           {renderClientLogo(false)}
         </div>
       </div>
@@ -181,22 +225,22 @@ export default function BadgeCard({
       {/* Canto Superior Esquerdo */}
       <div style={{
         position: "absolute",
-        top: "70px",
+        top: "76px",
         left: 0,
         width: 0,
         height: 0,
-        borderTop: "70px solid #007acc",
-        borderRight: "70px solid transparent",
+        borderTop: "65px solid #007acc",
+        borderRight: "65px solid transparent",
         zIndex: 1
       }} />
       <div style={{
         position: "absolute",
-        top: "70px",
+        top: "76px",
         left: 0,
         width: 0,
         height: 0,
-        borderTop: "45px solid #0052cc",
-        borderRight: "45px solid transparent",
+        borderTop: "42px solid #0052cc",
+        borderRight: "42px solid transparent",
         zIndex: 2
       }} />
 
@@ -391,17 +435,11 @@ export default function BadgeCard({
         <img
           src="/logo.png"
           alt="ES Elite Soluções"
-          style={{ height: "55px", objectFit: "contain", filter: "brightness(0) invert(1)" }}
+          style={{ height: "65px", objectFit: "contain" }}
           onError={(e) => {
             (e.target as HTMLElement).style.display = "none";
           }}
         />
-        <div style={{ fontSize: "1.1rem", fontWeight: 900, color: "white", marginTop: "4px" }}>
-          Elite Soluções
-        </div>
-        <div style={{ fontSize: "0.75rem", opacity: 0.8 }}>
-          Empresariais Ltda.
-        </div>
       </div>
 
       {/* Texto Institucional de Segurança */}

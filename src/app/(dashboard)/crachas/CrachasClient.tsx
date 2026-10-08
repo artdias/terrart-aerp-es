@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { QrCode, Search, Filter, Printer, RefreshCw, ExternalLink, UserCheck, ShieldCheck } from "lucide-react";
+import { QrCode, Search, RefreshCw, ExternalLink, UserCheck } from "lucide-react";
 import styles from "../clientes/clientes.module.css";
 import BadgeModal from "@/components/BadgeModal";
 import { ensureAllBadgeCodes } from "@/actions/badgeActions";
@@ -68,10 +68,10 @@ export default function CrachasClient({ initialItems }: CrachasClientProps) {
       <div className={styles.header}>
         <div>
           <h1 className={styles.title} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <QrCode size={28} color="#2563eb" /> Central de Crachás & Autenticação QR Code
+            <QrCode size={28} color="#2563eb" /> Autenticação & QR Code de Funcionários
           </h1>
           <p className={styles.subtitle}>
-            Gerencie e imprima crachás com códigos de referência únicos por setor e validação via QR Code.
+            Gere, visualize e baixe o QR Code de verificação individual dos colaboradores com código único por setor.
           </p>
         </div>
         <div style={{ display: "flex", gap: "12px" }}>
@@ -182,15 +182,15 @@ export default function CrachasClient({ initialItems }: CrachasClientProps) {
         </select>
       </div>
 
-      {/* Tabela de Crachás */}
+      {/* Tabela de QR Codes */}
       <div className={styles.card} style={{ padding: 0, overflow: "hidden" }}>
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Titular do Crachá</th>
+              <th>Colaborador</th>
               <th>Tipo</th>
               <th>Setor / Departamento</th>
-              <th>Código de Referência</th>
+              <th>Código de Registro</th>
               <th>Status</th>
               <th style={{ textAlign: "right" }}>Ações</th>
             </tr>
@@ -199,7 +199,7 @@ export default function CrachasClient({ initialItems }: CrachasClientProps) {
             {filteredItems.length === 0 ? (
               <tr>
                 <td colSpan={6} style={{ textAlign: "center", padding: "40px 20px", color: "#64748b" }}>
-                  Nenhum crachá encontrado com os filtros selecionados.
+                  Nenhum registro encontrado com os filtros selecionados.
                 </td>
               </tr>
             ) : (
@@ -300,7 +300,7 @@ export default function CrachasClient({ initialItems }: CrachasClientProps) {
                           gap: "6px"
                         }}
                       >
-                        <Printer size={15} /> Ver Crachá
+                        <QrCode size={15} /> Gerar / Ver QR Code
                       </button>
 
                       <Link
@@ -331,7 +331,7 @@ export default function CrachasClient({ initialItems }: CrachasClientProps) {
         </table>
       </div>
 
-      {/* Modal de Impressão de Crachá */}
+      {/* Modal de QR Code de Verificação */}
       {selectedBadge && (
         <BadgeModal
           isOpen={!!selectedBadge}
@@ -343,8 +343,6 @@ export default function CrachasClient({ initialItems }: CrachasClientProps) {
           department={selectedBadge.department}
           badgeCode={selectedBadge.badgeCode}
           photoUrl={selectedBadge.photoUrl}
-          initialClientName={selectedBadge.clientName}
-          initialClientLogoUrl={selectedBadge.clientLogoUrl}
         />
       )}
     </div>

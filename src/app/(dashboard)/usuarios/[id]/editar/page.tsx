@@ -92,6 +92,22 @@ export default async function EditarUsuarioPage({
             </div>
           </div>
 
+          <div className={styles.formRow} style={{ marginTop: '0.5rem' }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "#f8fafc", padding: "12px 16px", borderRadius: "8px", border: "1px solid #e2e8f0", width: "100%" }}>
+              <input 
+                type="checkbox" 
+                id="active" 
+                name="active" 
+                defaultChecked={userToEdit.active ?? true}
+                disabled={isMasterAdmin}
+                style={{ width: "18px", height: "18px", cursor: "pointer" }} 
+              />
+              <label htmlFor="active" style={{ fontSize: "0.9rem", color: "#1e293b", cursor: "pointer", fontWeight: 600 }}>
+                Usuário Ativo (Se desmarcado, o usuário ficará inativo e terá seu acesso bloqueado)
+              </label>
+            </div>
+          </div>
+
           <h3 className={styles.sectionTitle} style={{ marginTop: '2rem' }}>
             <Shield size={18} style={{ marginRight: '6px', verticalAlign: 'middle', color: '#e67e22' }} />
             Permissões de Módulo
