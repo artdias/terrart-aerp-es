@@ -2,8 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import QRCode from "qrcode";
-import { Download, Copy, Printer, X, Edit3, RefreshCw, QrCode as QrIcon, CheckCircle2, User } from "lucide-react";
-import { updateBadgeInfo } from "@/actions/badgeActions";
+import { Download, Copy, Printer, X, QrCode as QrIcon, CheckCircle2, User } from "lucide-react";
 
 interface BadgeModalProps {
   isOpen: boolean;
@@ -20,22 +19,14 @@ interface BadgeModalProps {
 export default function BadgeModal({
   isOpen,
   onClose,
-  id,
-  type,
   name,
   roleTitle,
-  department: initialDept,
-  badgeCode: initialCode,
+  department,
+  badgeCode,
   photoUrl
 }: BadgeModalProps) {
-  const [department, setDepartment] = useState(initialDept);
-  const [badgeCode, setBadgeCode] = useState(initialCode);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string>("");
   const [validationUrl, setValidationUrl] = useState<string>("");
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [saving, setSaving] = useState(false);
-  const [msg, setMsg] = useState<{ text: string; error?: boolean } | null>(null);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -64,31 +55,6 @@ export default function BadgeModal({
   }, [badgeCode]);
 
   if (!isOpen) return null;
-
-  async function handleSave() {
-    setSaving(true);
-    setMsg(null);
-    const res = await updateBadgeInfo(id, type, department, badgeCode);
-    setSaving(false);
-    if (res.success) {
-      setIsEditing(false);
-      setMsg({ text: "Informações atualizadas com sucesso!" });
-    } else {
-      setMsg({ text: res.error || "Erro ao salvar", error: true });
-    }
-  }
-
-  async function handleAutoGenerate() {
-    try {
-      const res = await fetch(`/api/badge-code/generate?department=${encodeURIComponent(department)}`);
-      const data = await res.json();
-      if (data.success && data.code) {
-        setBadgeCode(data.code);
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }
 
   function handleDownload() {
     if (!qrCodeDataUrl) return;
@@ -191,7 +157,7 @@ export default function BadgeModal({
                 QR Code de Verificação
               </h2>
               <p style={{ margin: "1px 0 0", fontSize: "0.75rem", color: "#64748b" }}>
-                Autenticação de identidade do colaborador
+                Autenticação permanente do colaborador
               </p>
             </div>
           </div>
@@ -216,21 +182,6 @@ export default function BadgeModal({
             <X size={18} />
           </button>
         </div>
-
-        {/* Notificação */}
-        {msg && (
-          <div style={{
-            padding: "8px 12px",
-            borderRadius: "8px",
-            marginBottom: "10px",
-            fontSize: "0.82rem",
-            background: msg.error ? "#fde8e8" : "#eafaf1",
-            color: msg.error ? "#e74c3c" : "#27ae60",
-            border: `1px solid ${msg.error ? "#f5c6cb" : "#c3e6cb"}`
-          }}>
-            {msg.text}
-          </div>
-        )}
 
         {/* Card Printable de Apresentação do QR Code */}
         <div
@@ -287,10 +238,10 @@ export default function BadgeModal({
             </div>
           </div>
 
-          {/* Código de Registro */}
+          {/* Código de Registro Permanente */}
           <div style={{ marginBottom: "10px" }}>
             <div style={{ fontSize: "0.65rem", fontWeight: 900, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-              Nº REGISTRO / CÓDIGO DE VERIFICAÇÃO
+              CÓDIGO DE VERIFICAÇÃO PERMANENTE
             </div>
             <div style={{
               display: "inline-block",
@@ -298,10 +249,10 @@ export default function BadgeModal({
               color: "#ffffff",
               fontWeight: 900,
               fontFamily: "monospace",
-              fontSize: "1rem",
-              padding: "3px 14px",
+              fontSize: "1.05rem",
+              padding: "4px 16px",
               borderRadius: "16px",
-              marginTop: "2px",
+              marginTop: "3px",
               letterSpacing: "1px"
             }}>
               {badgeCode}
@@ -324,9 +275,7 @@ export default function BadgeModal({
                 style={{ width: "150px", height: "150px", display: "block" }}
               />
             ) : (
-              <div style={{ width: "150px", height: "150px", background: "#f1f5f9", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <RefreshCw size={20} className="spin" color="#94a3b8" />
-              </div>
+              <div style={{ width: "150px", height: "150px", background: "#f1f5f9" }} />
             )}
           </div>
 
@@ -343,7 +292,7 @@ export default function BadgeModal({
           padding: "6px 10px",
           borderRadius: "8px",
           alignItems: "center",
-          marginBottom: "12px"
+          marginBottom: "14px"
         }}>
           <input
             type="text"
@@ -380,175 +329,50 @@ export default function BadgeModal({
           </button>
         </div>
 
-        {/* Edição de Setor / Código */}
-        {isEditing && (
-          <div style={{
-            background: "#f8fafc",
-            padding: "10px",
-            borderRadius: "10px",
-            border: "1px solid #e2e8f0",
-            marginBottom: "12px",
-            display: "grid",
-            gap: "8px"
-          }}>
-            <div>
-              <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#475569", marginBottom: "3px" }}>
-                Setor / Departamento
-              </label>
-              <input
-                type="text"
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "6px 10px",
-                  borderRadius: "6px",
-                  border: "1px solid #cbd5e1",
-                  fontSize: "0.85rem"
-                }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: "block", fontSize: "0.75rem", fontWeight: 700, color: "#475569", marginBottom: "3px" }}>
-                Código de Registro
-              </label>
-              <div style={{ display: "flex", gap: "6px" }}>
-                <input
-                  type="text"
-                  value={badgeCode}
-                  onChange={(e) => setBadgeCode(e.target.value.toUpperCase())}
-                  style={{
-                    flex: 1,
-                    padding: "6px 10px",
-                    borderRadius: "6px",
-                    border: "1px solid #cbd5e1",
-                    fontSize: "0.85rem",
-                    fontFamily: "monospace",
-                    fontWeight: 700
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={handleAutoGenerate}
-                  style={{
-                    background: "#e0f2fe",
-                    color: "#0369a1",
-                    border: "1px solid #bae6fd",
-                    padding: "0 8px",
-                    borderRadius: "6px",
-                    fontSize: "0.75rem",
-                    fontWeight: 700,
-                    cursor: "pointer",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "4px"
-                  }}
-                >
-                  <RefreshCw size={13} /> Gerar
-                </button>
-              </div>
-            </div>
-
-            <div style={{ display: "flex", justifyContent: "flex-end", gap: "6px", marginTop: "2px" }}>
-              <button
-                type="button"
-                onClick={() => setIsEditing(false)}
-                style={{
-                  background: "#e2e8f0",
-                  color: "#475569",
-                  border: "none",
-                  padding: "5px 10px",
-                  borderRadius: "6px",
-                  fontSize: "0.78rem",
-                  cursor: "pointer"
-                }}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={saving}
-                style={{
-                  background: "#001b3a",
-                  color: "white",
-                  border: "none",
-                  padding: "5px 12px",
-                  borderRadius: "6px",
-                  fontSize: "0.78rem",
-                  fontWeight: 700,
-                  cursor: "pointer"
-                }}
-              >
-                {saving ? "Salvando..." : "Salvar Alterações"}
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Botões de Ação do Modal */}
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
           <button
-            onClick={() => setIsEditing(!isEditing)}
+            onClick={handleDownload}
             style={{
-              background: "#f1f5f9",
-              color: "#334155",
-              border: "1px solid #cbd5e1",
-              padding: "8px 12px",
+              flex: 1,
+              background: "#16a34a",
+              color: "white",
+              border: "none",
+              padding: "10px 14px",
               borderRadius: "8px",
-              fontSize: "0.8rem",
+              fontSize: "0.85rem",
               fontWeight: 700,
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
-              gap: "5px"
+              justifyContent: "center",
+              gap: "6px",
+              boxShadow: "0 2px 6px rgba(22,163,74,0.2)"
             }}
           >
-            <Edit3 size={15} /> {isEditing ? "Fechar Edição" : "Editar Código"}
+            <Download size={16} /> Baixar QR Code (PNG)
           </button>
 
-          <div style={{ display: "flex", gap: "6px" }}>
-            <button
-              onClick={handleDownload}
-              style={{
-                background: "#16a34a",
-                color: "white",
-                border: "none",
-                padding: "8px 12px",
-                borderRadius: "8px",
-                fontSize: "0.8rem",
-                fontWeight: 700,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-                boxShadow: "0 2px 6px rgba(22,163,74,0.2)"
-              }}
-            >
-              <Download size={15} /> Baixar QR Code
-            </button>
-
-            <button
-              onClick={handlePrint}
-              style={{
-                background: "#001b3a",
-                color: "white",
-                border: "none",
-                padding: "8px 14px",
-                borderRadius: "8px",
-                fontSize: "0.8rem",
-                fontWeight: 700,
-                cursor: "pointer",
-                display: "flex",
-                alignItems: "center",
-                gap: "5px",
-                boxShadow: "0 2px 6px rgba(0,27,58,0.2)"
-              }}
-            >
-              <Printer size={15} /> Imprimir
-            </button>
-          </div>
+          <button
+            onClick={handlePrint}
+            style={{
+              background: "#001b3a",
+              color: "white",
+              border: "none",
+              padding: "10px 16px",
+              borderRadius: "8px",
+              fontSize: "0.85rem",
+              fontWeight: 700,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "6px",
+              boxShadow: "0 2px 6px rgba(0,27,58,0.2)"
+            }}
+          >
+            <Printer size={16} /> Imprimir
+          </button>
         </div>
       </div>
     </div>

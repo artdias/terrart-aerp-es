@@ -7,6 +7,7 @@ import { sanitizeInput } from "@/lib/sanitize";
 import fs from "fs/promises";
 import path from "path";
 import { logAction } from "@/lib/audit";
+import { generateNextBadgeCode } from "@/lib/badgeCode";
 
 export async function createJobRole(name: string) {
   try {
@@ -184,6 +185,9 @@ export async function createEmployee(formData: FormData) {
       }
     }
 
+    const dept = roleTitle || "Operacional";
+    const badgeCode = await generateNextBadgeCode(dept);
+
     const employee = await prisma.employee.create({
       data: {
         userId: user.id,
@@ -210,6 +214,8 @@ export async function createEmployee(formData: FormData) {
         meiInscricaoEstadual,
         meiInscricaoMunicipal,
         roleTitle,
+        department: dept,
+        badgeCode: badgeCode,
         workplaceId,
         photoUrl,
         signatureUrl,
@@ -218,6 +224,13 @@ export async function createEmployee(formData: FormData) {
         overtimeAvailability: formData.get("disponibilidadeHorario") === "on"
       }
     });
+
+    if (user.id) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { department: dept, badgeCode: badgeCode }
+      }).catch(() => {});
+    }
 
     // 4. Processar e salvar os múltiplos arquivos de anexos
     const certificatesData = formData.getAll("certificatesData") as string[];

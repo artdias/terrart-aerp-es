@@ -1,10 +1,9 @@
 "use client";
 
 import React, { useState } from "react";
-import { QrCode, Search, RefreshCw, ExternalLink, UserCheck } from "lucide-react";
+import { QrCode, Search, ExternalLink, UserCheck } from "lucide-react";
 import styles from "../clientes/clientes.module.css";
 import BadgeModal from "@/components/BadgeModal";
-import { ensureAllBadgeCodes } from "@/actions/badgeActions";
 import Link from "next/link";
 
 export interface BadgeItem {
@@ -26,13 +25,11 @@ interface CrachasClientProps {
 }
 
 export default function CrachasClient({ initialItems }: CrachasClientProps) {
-  const [items, setItems] = useState<BadgeItem[]>(initialItems);
+  const [items] = useState<BadgeItem[]>(initialItems);
   const [search, setSearch] = useState("");
   const [typeFilter, setTypeFilter] = useState<"todos" | "employee" | "user">("todos");
   const [deptFilter, setDeptFilter] = useState("todos");
   const [selectedBadge, setSelectedBadge] = useState<BadgeItem | null>(null);
-  const [generating, setGenerating] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
 
   // Lista de departamentos únicos para o filtro
   const departments = Array.from(new Set(items.map(i => i.department).filter(Boolean)));
@@ -50,19 +47,6 @@ export default function CrachasClient({ initialItems }: CrachasClientProps) {
     return matchesSearch && matchesType && matchesDept;
   });
 
-  async function handleBatchGenerate() {
-    setGenerating(true);
-    setMsg(null);
-    const res = await ensureAllBadgeCodes();
-    setGenerating(false);
-    if (res.success) {
-      setMsg(res.message || "Códigos gerados com sucesso!");
-      setTimeout(() => window.location.reload(), 1200);
-    } else {
-      setMsg(`Erro: ${res.error}`);
-    }
-  }
-
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -71,47 +55,10 @@ export default function CrachasClient({ initialItems }: CrachasClientProps) {
             <QrCode size={28} color="#2563eb" /> Autenticação & QR Code de Funcionários
           </h1>
           <p className={styles.subtitle}>
-            Gere, visualize e baixe o QR Code de verificação individual dos colaboradores com código único por setor.
+            Visualize, baixe ou imprima o QR Code de verificação permanente individual dos colaboradores.
           </p>
         </div>
-        <div style={{ display: "flex", gap: "12px" }}>
-          <button
-            onClick={handleBatchGenerate}
-            disabled={generating}
-            className={styles.actionBtn}
-            style={{
-              background: "linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%)",
-              color: "white",
-              border: "none",
-              padding: "10px 18px",
-              borderRadius: "8px",
-              fontSize: "0.9rem",
-              fontWeight: 700,
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px"
-            }}
-          >
-            <RefreshCw size={18} className={generating ? "spin" : ""} />
-            {generating ? "Gerando..." : "Gerar Códigos Faltantes"}
-          </button>
-        </div>
       </div>
-
-      {msg && (
-        <div style={{
-          padding: "12px 16px",
-          background: "#e0f2fe",
-          color: "#0369a1",
-          borderRadius: "8px",
-          marginBottom: "1.5rem",
-          fontWeight: 600,
-          border: "1px solid #bae6fd"
-        }}>
-          {msg}
-        </div>
-      )}
 
       {/* Barra de Filtros */}
       <div style={{
@@ -131,7 +78,7 @@ export default function CrachasClient({ initialItems }: CrachasClientProps) {
           <Search size={18} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#94a3b8" }} />
           <input
             type="text"
-            placeholder="Pesquisar por nome, código (ex: TI-0001), setor..."
+            placeholder="Pesquisar por nome, código (ex: TI-7492), setor..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{
@@ -300,7 +247,7 @@ export default function CrachasClient({ initialItems }: CrachasClientProps) {
                           gap: "6px"
                         }}
                       >
-                        <QrCode size={15} /> Gerar / Ver QR Code
+                        <QrCode size={15} /> Ver QR Code
                       </button>
 
                       <Link
@@ -331,7 +278,7 @@ export default function CrachasClient({ initialItems }: CrachasClientProps) {
         </table>
       </div>
 
-      {/* Modal de QR Code de Verificação */}
+      {/* Modal de QR Code de Verificação Fixo/Imutável */}
       {selectedBadge && (
         <BadgeModal
           isOpen={!!selectedBadge}
