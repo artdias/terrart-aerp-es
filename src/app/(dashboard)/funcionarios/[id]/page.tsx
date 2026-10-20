@@ -93,7 +93,13 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
                 <strong style={{ color: '#666', fontSize: '0.85rem' }}>E-mail (Login):</strong>
                 <p style={{ margin: '4px 0 0', fontWeight: 600, color: '#1a1a1a' }}>{func.user?.email || "Sem e-mail"}</p>
               </div>
-              <div style={{ gridColumn: '1 / -1' }}>
+              <div>
+                <strong style={{ color: '#666', fontSize: '0.85rem' }}>Telefone Celular / WhatsApp:</strong>
+                <p style={{ margin: '4px 0 0', fontWeight: 600, color: '#1a1a1a' }}>
+                  {func.phone || "Não informado"}
+                </p>
+              </div>
+              <div>
                 <strong style={{ color: '#666', fontSize: '0.85rem' }}>Endereço Residencial:</strong>
                 <p style={{ margin: '4px 0 0', fontWeight: 600, color: '#1a1a1a' }}>
                   {func.address || "Não informado"}
@@ -133,6 +139,12 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
                 <strong style={{ color: '#666', fontSize: '0.85rem' }}>Salário Base / Pretensão:</strong>
                 <p style={{ margin: '4px 0 0', fontWeight: 600, color: '#1a1a1a' }}>
                   {func.salary !== null ? `R$ ${func.salary.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : "Não cadastrado"}
+                </p>
+              </div>
+              <div>
+                <strong style={{ color: '#666', fontSize: '0.85rem' }}>Chave PIX:</strong>
+                <p style={{ margin: '4px 0 0', fontWeight: 600, color: '#1a1a1a' }}>
+                  {func.pixKey || "Não cadastrada"}
                 </p>
               </div>
               <div>

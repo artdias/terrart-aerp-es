@@ -91,8 +91,25 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
 
   const [rg, setRg] = useState("");
   const [cnh, setCnh] = useState("");
+  const [phone, setPhone] = useState("");
   const [isMei, setIsMei] = useState(false);
   const [meiCnpj, setMeiCnpj] = useState("");
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    const digits = raw.replace(/\D/g, "");
+    let formatted = "";
+    if (digits.length <= 10) {
+      formatted = digits
+        .replace(/^(\d{2})(\d)/g, "($1) $2")
+        .replace(/(\d{4})(\d)/, "$1-$2");
+    } else {
+      formatted = digits
+        .replace(/^(\d{2})(\d)/g, "($1) $2")
+        .replace(/(\d{5})(\d)/, "$1-$2");
+    }
+    setPhone(formatted.substring(0, 15));
+  };
 
   const handleMeiCNPJChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/\D/g, "");
@@ -482,9 +499,20 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
           </div>
 
           <div className={`${styles.formRow} print-grid`}>
-            <div className={`print-box col-12 ${styles.inputGroup}`}>
+            <div className={`print-box col-8 ${styles.inputGroup}`} style={{ flex: 2 }}>
               <label htmlFor="address">Endereço completo</label>
               <input type="text" id="address" name="address" placeholder="Rua, número, bairro, cidade - UF" />
+            </div>
+            <div className={`print-box col-4 ${styles.inputGroup}`} style={{ flex: 1 }}>
+              <label htmlFor="phone">Telefone Celular / WhatsApp</label>
+              <input 
+                type="text" 
+                id="phone" 
+                name="phone" 
+                placeholder="(00) 90000-0000" 
+                value={phone}
+                onChange={handlePhoneChange}
+              />
             </div>
           </div>
 
@@ -751,13 +779,17 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
           <div className="print-section-title" style={{ marginTop: '20px' }}>03 • DADOS DE CONTRATO & SISTEMA</div>
           
           <div className={`${styles.formRow} print-grid`}>
-            <div className={`print-box col-6 ${styles.inputGroup}`}>
+            <div className={`print-box col-4 ${styles.inputGroup}`}>
               <label htmlFor="email">Melhor e-mail <span className="no-print" style={{ color: '#e74c3c' }}>*</span></label>
               <input type="email" id="email" name="email" required placeholder="ex.: nome@empresa.com" />
             </div>
-            <div className={`print-box col-6 ${styles.inputGroup}`}>
+            <div className={`print-box col-4 ${styles.inputGroup}`}>
               <label htmlFor="salary">Salário base / Pretensão (R$)</label>
               <input type="number" step="0.01" id="salary" name="salary" placeholder="Ex.: 0,00" />
+            </div>
+            <div className={`print-box col-4 ${styles.inputGroup}`}>
+              <label htmlFor="pixKey">Chave PIX</label>
+              <input type="text" id="pixKey" name="pixKey" placeholder="CPF, Celular, E-mail ou Chave Aleatória" />
             </div>
           </div>
 

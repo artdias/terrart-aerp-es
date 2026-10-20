@@ -201,8 +201,10 @@ model Employee {
 
   roleTitle String
   salary    Float?
+  pixKey    String?
   photoUrl  String?
   signatureUrl String?
+  phone     String?
   address   String?
   previousExperience String?
 

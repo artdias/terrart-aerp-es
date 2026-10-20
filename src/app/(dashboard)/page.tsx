@@ -247,9 +247,11 @@ export default async function DashboardHome() {
         lastName: true,
         rg: true,
         birthDate: true,
+        phone: true,
         address: true,
         photoUrl: true,
         salary: true,
+        pixKey: true,
         isMei: true,
         meiCnpj: true,
         meiRazaoSocial: true,
@@ -262,9 +264,11 @@ export default async function DashboardHome() {
       const missing: string[] = [];
       if (!emp.rg) missing.push("RG");
       if (!emp.birthDate) missing.push("Data Nasc.");
+      if (!emp.phone) missing.push("Celular");
       if (!emp.address) missing.push("Endereço");
       if (!emp.photoUrl) missing.push("Foto");
       if (emp.salary === null || emp.salary === undefined) missing.push("Salário");
+      if (!emp.pixKey) missing.push("Chave PIX");
       if (emp.isMei) {
         if (!emp.meiCnpj) missing.push("CNPJ da MEI");
         if (!emp.meiRazaoSocial) missing.push("Razão Social MEI");

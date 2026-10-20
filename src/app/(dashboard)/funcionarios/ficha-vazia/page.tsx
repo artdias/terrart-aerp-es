@@ -140,9 +140,13 @@ export default function FichaVaziaPage() {
         </div>
 
         <div className="print-grid">
-          <div className="print-box col-12">
+          <div className="print-box col-8">
             <label>Endereço Residencial Completo (Rua, Nº, Bairro, Cidade - UF, CEP)</label>
             <span></span>
+          </div>
+          <div className="print-box col-4">
+            <label>Telefone Celular / WhatsApp</label>
+            <span>(    ) _____-____</span>
           </div>
         </div>
 
@@ -205,11 +209,15 @@ export default function FichaVaziaPage() {
         </div>
 
         <div className="print-grid">
-          <div className="print-box col-6">
+          <div className="print-box col-4">
             <label>Salário Base / Pretensão (R$)</label>
             <span></span>
           </div>
-          <div className="print-box col-6">
+          <div className="print-box col-4">
+            <label>Chave PIX</label>
+            <span></span>
+          </div>
+          <div className="print-box col-4">
             <label>Jornada de Trabalho Pretendida</label>
             <span></span>
           </div>

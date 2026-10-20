@@ -28,22 +28,24 @@ export async function GET(req: NextRequest) {
     });
 
     let csvContent = "\uFEFF"; // BOM
-    csvContent += "ID,Nome Completo,E-mail,CPF,RG,CNH,Cargo / Função,Salário (R$),Posto de Trabalho,Cliente Alocado,Status Contratual,Data de Cadastro\r\n";
+    csvContent += "ID,Nome Completo,E-mail,Telefone Celular,CPF,RG,CNH,Cargo / Função,Salário (R$),Chave PIX,Posto de Trabalho,Cliente Alocado,Status Contratual,Data de Cadastro\r\n";
 
     for (const e of employees) {
       const dateFormatted = new Date(e.createdAt).toLocaleDateString("pt-BR");
       const fullName = `${e.firstName} ${e.lastName || ""}`.trim().replace(/"/g, '""');
       const email = (e.user?.email || "").replace(/"/g, '""');
+      const phone = (e.phone || "").replace(/"/g, '""');
       const cpf = (e.cpf || "").replace(/"/g, '""');
       const rg = (e.rg || "").replace(/"/g, '""');
       const cnh = (e.cnh || "").replace(/"/g, '""');
       const role = (e.roleTitle || "").replace(/"/g, '""');
       const salary = e.salary ? e.salary.toFixed(2) : "0.00";
+      const pixKey = (e.pixKey || "").replace(/"/g, '""');
       const workplaceName = (e.workplace?.name || "").replace(/"/g, '""');
       const clientName = (e.workplace?.client?.companyName || "").replace(/"/g, '""');
       const status = (e.status || "").replace(/"/g, '""');
 
-      csvContent += `"${e.id}","${fullName}","${email}","${cpf}","${rg}","${cnh}","${role}","${salary}","${workplaceName}","${clientName}","${status}","${dateFormatted}"\r\n`;
+      csvContent += `"${e.id}","${fullName}","${email}","${phone}","${cpf}","${rg}","${cnh}","${role}","${salary}","${pixKey}","${workplaceName}","${clientName}","${status}","${dateFormatted}"\r\n`;
     }
 
     return new NextResponse(csvContent, {

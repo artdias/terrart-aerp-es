@@ -22,6 +22,8 @@ interface EmployeeType {
   status: string;
   photoUrl: string | null;
   salary: number | null;
+  pixKey?: string | null;
+  phone?: string | null;
   address: string | null;
   previousExperience: string | null;
   uniformSize?: string | null;
@@ -74,8 +76,25 @@ export default function EditFuncionarioForm({
   const [cpf, setCpf] = useState(employee.cpf);
   const [rg, setRg] = useState(employee.rg || "");
   const [cnh, setCnh] = useState(employee.cnh || "");
+  const [phone, setPhone] = useState(employee.phone || "");
   const [isMei, setIsMei] = useState(employee.isMei || false);
   const [meiCnpj, setMeiCnpj] = useState(employee.meiCnpj || "");
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    const digits = raw.replace(/\D/g, "");
+    let formatted = "";
+    if (digits.length <= 10) {
+      formatted = digits
+        .replace(/^(\d{2})(\d)/g, "($1) $2")
+        .replace(/(\d{4})(\d)/, "$1-$2");
+    } else {
+      formatted = digits
+        .replace(/^(\d{2})(\d)/g, "($1) $2")
+        .replace(/(\d{5})(\d)/, "$1-$2");
+    }
+    setPhone(formatted.substring(0, 15));
+  };
 
   const handleMeiCNPJChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value.replace(/\D/g, "");
@@ -350,6 +369,18 @@ export default function EditFuncionarioForm({
             <div className={styles.inputGroup}>
               <label htmlFor="address">Endereço completo</label>
               <input type="text" id="address" name="address" defaultValue={employee.address || ""} placeholder="Rua, número, bairro, cidade - UF" />
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label htmlFor="phone">Telefone Celular / WhatsApp</label>
+              <input 
+                type="text" 
+                id="phone" 
+                name="phone" 
+                placeholder="(00) 90000-0000" 
+                value={phone}
+                onChange={handlePhoneChange}
+              />
             </div>
           </div>
 
@@ -628,6 +659,11 @@ export default function EditFuncionarioForm({
             <div className={styles.inputGroup}>
               <label htmlFor="salary">Salário Base / Pretensão (R$)</label>
               <input type="number" step="0.01" id="salary" name="salary" defaultValue={employee.salary || ""} placeholder="0.00" />
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label htmlFor="pixKey">Chave PIX</label>
+              <input type="text" id="pixKey" name="pixKey" defaultValue={employee.pixKey || ""} placeholder="CPF, Celular, E-mail ou Chave Aleatória" />
             </div>
           </div>
 

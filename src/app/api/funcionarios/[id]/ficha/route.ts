@@ -295,11 +295,15 @@ export async function GET(
               </div>
             </div>
 
-            <div class="field col-6">
+            <div class="field col-4">
               <div class="field-label">E-mail (Login de Acesso)</div>
               <div class="field-value">${func.user?.email || "Não cadastrado"}</div>
             </div>
-            <div class="field col-6">
+            <div class="field col-4">
+              <div class="field-label">Telefone Celular / WhatsApp</div>
+              <div class="field-value">${func.phone || "Não informado"}</div>
+            </div>
+            <div class="field col-4">
               <div class="field-label">Endereço Residencial Completo</div>
               <div class="field-value">${func.address || "Não informado"}</div>
             </div>
@@ -332,7 +336,7 @@ export async function GET(
               <div class="field-value">${func.educationLevel || "Não informado"}</div>
             </div>
 
-            <div class="field col-4">
+            <div class="field col-3">
               <div class="field-label">Salário Base / Pretensão</div>
               <div class="field-value">
                 ${
@@ -345,11 +349,15 @@ export async function GET(
                 }
               </div>
             </div>
-            <div class="field col-4">
+            <div class="field col-3">
+              <div class="field-label">Chave PIX</div>
+              <div class="field-value">${func.pixKey || "Não cadastrada"}</div>
+            </div>
+            <div class="field col-3">
               <div class="field-label">Cobertura de Faltas/Plantão</div>
               <div class="field-value">${func.overtimeAvailability ? "Sim (Disponível)" : "Não"}</div>
             </div>
-            <div class="field col-4">
+            <div class="field col-3">
               <div class="field-label">Disponibilidade de Viagens</div>
               <div class="field-value">${func.travelAvailability ? "Sim (Disponível)" : "Não"}</div>
             </div>

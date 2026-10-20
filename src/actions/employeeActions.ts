@@ -105,6 +105,7 @@ export async function createEmployee(formData: FormData) {
     const status = sanitizeInput(formData.get("status") as string);
       const isPublic = formData.get("isPublic") === "true";
       const signatureUrl = formData.get("signatureUrl") as string;
+      const phone = sanitizeInput(formData.get("phone") as string);
       const address = sanitizeInput(formData.get("address") as string);
       const previousExperience = sanitizeInput(formData.get("previousExperience") as string);
       
@@ -122,6 +123,7 @@ export async function createEmployee(formData: FormData) {
     
     const salaryStr = sanitizeInput(formData.get("salary") as string);
     const salary = salaryStr ? parseFloat(salaryStr) : null;
+    const pixKey = sanitizeInput(formData.get("pixKey") as string);
 
     if (!firstName || !email || !cpf || !roleTitle) {
       return { success: false, error: "Preencha todos os campos obrigatórios" };
@@ -201,6 +203,7 @@ export async function createEmployee(formData: FormData) {
         educationLevel,
         gender,
         status: status || (isPublic ? "Em Entrevista" : "Ativo"),
+        phone,
         address,
         previousExperience,
         uniformSize,
@@ -220,6 +223,7 @@ export async function createEmployee(formData: FormData) {
         photoUrl,
         signatureUrl,
         salary,
+        pixKey,
         travelAvailability: formData.get("disponibilidadeViagem") === "on",
         overtimeAvailability: formData.get("disponibilidadeHorario") === "on"
       }
@@ -298,6 +302,7 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
     const status = sanitizeInput(formData.get("status") as string);
       const isPublic = formData.get("isPublic") === "true";
       const signatureUrl = formData.get("signatureUrl") as string;
+      const phone = sanitizeInput(formData.get("phone") as string);
       const address = sanitizeInput(formData.get("address") as string);
       const previousExperience = sanitizeInput(formData.get("previousExperience") as string);
       
@@ -315,6 +320,7 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
     
     const salaryStr = sanitizeInput(formData.get("salary") as string);
     const salary = salaryStr ? parseFloat(salaryStr) : null;
+    const pixKey = sanitizeInput(formData.get("pixKey") as string);
 
     if (!firstName || !email || !cpf || !roleTitle) {
       return { success: false, error: "Preencha todos os campos obrigatórios" };
@@ -402,6 +408,7 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
       educationLevel,
       gender,
       status: status || (isPublic ? "Em Entrevista" : "Ativo"),
+      phone,
       address,
       previousExperience,
       uniformSize,
@@ -417,6 +424,7 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
       roleTitle,
       workplaceId,
       salary,
+      pixKey,
       travelAvailability: formData.get("disponibilidadeViagem") === "on",
       overtimeAvailability: formData.get("disponibilidadeHorario") === "on"
     };
