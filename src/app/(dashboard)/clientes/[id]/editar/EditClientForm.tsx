@@ -24,10 +24,18 @@ interface ClientData {
   observations: string | null;
   managerName: string | null;
   managerContact: string | null;
+  supervisorId?: string | null;
   logoUrl?: string | null;
 }
 
-export default function EditClientForm({ client }: { client: ClientData }) {
+export interface SupervisorOption {
+  id: string;
+  name: string;
+  roleTitle: string;
+  phone: string | null;
+}
+
+export default function EditClientForm({ client, supervisors = [] }: { client: ClientData; supervisors?: SupervisorOption[] }) {
   const [cnpj, setCnpj] = useState(client.cnpj);
   const [cep, setCep] = useState(client.cep || "");
   const [phone, setPhone] = useState(client.phone || "");
@@ -346,10 +354,10 @@ export default function EditClientForm({ client }: { client: ClientData }) {
             </div>
           </div>
 
-          <h3 className={styles.sectionTitle}>Gestão e Observações</h3>
+          <h3 className={styles.sectionTitle}>Gestão, Supervisão e Observações</h3>
           <div className={styles.formRow}>
             <div className={styles.inputGroup}>
-              <label htmlFor="managerName">Gestor Responsável</label>
+              <label htmlFor="managerName">Gestor Responsável (Cliente)</label>
               <input 
                 type="text" 
                 id="managerName" 
@@ -368,6 +376,25 @@ export default function EditClientForm({ client }: { client: ClientData }) {
                 value={managerContact}
                 onChange={handleManagerContactChange}
               />
+            </div>
+          </div>
+
+          <div className={styles.formRow}>
+            <div className={styles.inputGroup} style={{ flex: 1 }}>
+              <label htmlFor="supervisorId">Supervisor Responsável pelo Posto (Aparece na Validação do Crachá)</label>
+              <select
+                id="supervisorId"
+                name="supervisorId"
+                defaultValue={client.supervisorId || ""}
+                style={{ padding: '0.95rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa', width: '100%' }}
+              >
+                <option value="">-- Nenhum selecionado (Usar Gestor do Cliente) --</option>
+                {supervisors.map((sup) => (
+                  <option key={sup.id} value={sup.id}>
+                    {sup.name} ({sup.roleTitle}) {sup.phone ? `- Tel: ${sup.phone}` : "- Sem telefone cadastrado"}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 

@@ -11,7 +11,17 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
     where: { id: params.id },
     include: {
       user: true,
-      workplace: { include: { client: true } },
+      workplace: {
+        include: {
+          client: {
+            include: {
+              supervisor: {
+                include: { user: { select: { name: true } } }
+              }
+            }
+          }
+        }
+      },
       jobAllocations: {
         orderBy: { createdAt: 'desc' },
         include: { client: true }
@@ -162,13 +172,13 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
               <div>
                 <strong style={{ color: '#666', fontSize: '0.85rem' }}>Supervisor Responsável:</strong>
                 <p style={{ margin: '4px 0 0', fontWeight: 600, color: '#1a1a1a' }}>
-                  {func.supervisorName || func.workplace?.client?.managerName || "Não informado"}
+                  {func.supervisorName || (func.workplace?.client?.supervisor ? (func.workplace.client.supervisor.user?.name || `${func.workplace.client.supervisor.firstName} ${func.workplace.client.supervisor.lastName}`.trim()) : null) || func.workplace?.client?.managerName || "Não informado"}
                 </p>
               </div>
               <div>
                 <strong style={{ color: '#666', fontSize: '0.85rem' }}>Telefone do Supervisor:</strong>
                 <p style={{ margin: '4px 0 0', fontWeight: 600, color: '#1a1a1a' }}>
-                  {func.supervisorPhone || func.workplace?.client?.managerContact || "Não informado"}
+                  {func.supervisorPhone || func.workplace?.client?.supervisor?.phone || func.workplace?.client?.managerContact || "Não informado"}
                 </p>
               </div>
 

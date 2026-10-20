@@ -25,6 +25,8 @@ export async function createClient(formData: FormData) {
     const observations = sanitizeInput(formData.get("observations") as string);
     const managerName = sanitizeInput(formData.get("managerName") as string);
     const managerContact = sanitizeInput(formData.get("managerContact") as string);
+    const supervisorIdRaw = sanitizeInput(formData.get("supervisorId") as string);
+    const supervisorId = supervisorIdRaw || null;
     const logoUrl = formData.get("logoUrl") as string || null;
 
     if (!companyName || !cnpj || !address) {
@@ -61,6 +63,7 @@ export async function createClient(formData: FormData) {
         observations,
         managerName,
         managerContact,
+        supervisorId,
         logoUrl,
         workplaces: {
           create: {
@@ -142,6 +145,8 @@ export async function updateClient(clientId: string, formData: FormData) {
     const observations = sanitizeInput(formData.get("observations") as string);
     const managerName = sanitizeInput(formData.get("managerName") as string);
     const managerContact = sanitizeInput(formData.get("managerContact") as string);
+    const supervisorIdRaw = sanitizeInput(formData.get("supervisorId") as string);
+    const supervisorId = supervisorIdRaw || null;
     const logoUrl = formData.get("logoUrl") as string || null;
 
     if (!clientId || !companyName || !cnpj || !address) {
@@ -178,6 +183,7 @@ export async function updateClient(clientId: string, formData: FormData) {
         observations,
         managerName,
         managerContact,
+        supervisorId,
         logoUrl
       }
     });

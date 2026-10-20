@@ -13,6 +13,7 @@ export default async function ClienteDetalhePage({
   const client = await prisma.client.findUnique({
     where: { id: params.id },
     include: {
+      supervisor: { include: { user: { select: { name: true } } } },
       workplaces: true,
       contracts: true,
       documents: {
@@ -176,19 +177,34 @@ export default async function ClienteDetalhePage({
         {/* Coluna Direita - Representante Legal e Contratos */}
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
           
-          {/* Card: Representante Legal */}
+          {/* Card: Representante Legal e Supervisão */}
           <div style={{ background: "white", borderRadius: "10px", padding: "20px", boxShadow: "0 2px 10px rgba(0,0,0,0.02)", border: "1px solid #eee" }}>
             <h3 style={{ margin: "0 0 16px 0", fontSize: "1.1rem", borderBottom: "1px solid #eee", paddingBottom: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
-              <User size={18} color="#003366" /> Representante Legal
+              <User size={18} color="#003366" /> Representante Legal & Supervisão
             </h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
               <div>
-                <strong style={{ display: "block", fontSize: "0.75rem", color: "#777" }}>NOME COMPLETO</strong>
+                <strong style={{ display: "block", fontSize: "0.75rem", color: "#777" }}>GESTOR RESPONSÁVEL (CLIENTE)</strong>
                 <span style={{ fontSize: "0.9rem", color: "#333", fontWeight: 600 }}>{client.managerName || "Não cadastrado"}</span>
               </div>
               <div>
-                <strong style={{ display: "block", fontSize: "0.75rem", color: "#777" }}>CONTATO DIRETO</strong>
+                <strong style={{ display: "block", fontSize: "0.75rem", color: "#777" }}>CONTATO DO GESTOR</strong>
                 <span style={{ fontSize: "0.9rem", color: "#333" }}>{client.managerContact || "Não cadastrado"}</span>
+              </div>
+              <div style={{ borderTop: "1px dashed #e2e8f0", paddingTop: "10px" }}>
+                <strong style={{ display: "block", fontSize: "0.75rem", color: "#003366" }}>SUPERVISOR RESPONSÁVEL (SISTEMA)</strong>
+                {client.supervisor ? (
+                  <div style={{ marginTop: "4px" }}>
+                    <span style={{ fontSize: "0.9rem", color: "#1e293b", fontWeight: 700, display: "block" }}>
+                      {client.supervisor.user?.name || `${client.supervisor.firstName || ""} ${client.supervisor.lastName || ""}`.trim()}
+                    </span>
+                    <span style={{ fontSize: "0.82rem", color: "#475569" }}>
+                      Tel: {client.supervisor.phone || "Sem telefone cadastrado"}
+                    </span>
+                  </div>
+                ) : (
+                  <span style={{ fontSize: "0.9rem", color: "#888" }}>Não selecionado</span>
+                )}
               </div>
             </div>
           </div>

@@ -25,7 +25,19 @@ export default async function ValidarCrachaPage({ params }: PageProps) {
     },
     include: {
       user: true,
-      workplace: { include: { client: true } }
+      workplace: {
+        include: {
+          client: {
+            include: {
+              supervisor: {
+                include: {
+                  user: { select: { name: true } }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   });
 
@@ -52,9 +64,20 @@ export default async function ValidarCrachaPage({ params }: PageProps) {
   const cpf = cpfDigits.length >= 3 ? `${cpfDigits.slice(0, 3)}.***.***-**` : null;
   const workplaceName = employee?.workplace?.client?.companyName || employee?.workplace?.name || "Base Operacional";
 
-  const supervisorName = employee?.supervisorName || employee?.workplace?.client?.managerName || null;
+  const clientSupervisor = employee?.workplace?.client?.supervisor;
+  const clientSupervisorFullName = clientSupervisor
+    ? clientSupervisor.user?.name || `${clientSupervisor.firstName || ""} ${clientSupervisor.lastName || ""}`.trim()
+    : null;
+
+  const supervisorName =
+    employee?.supervisorName ||
+    clientSupervisorFullName ||
+    employee?.workplace?.client?.managerName ||
+    null;
+
   const supervisorPhone =
     employee?.supervisorPhone ||
+    clientSupervisor?.phone ||
     employee?.workplace?.client?.managerContact ||
     employee?.workplace?.client?.cellphone ||
     employee?.workplace?.client?.phone ||
