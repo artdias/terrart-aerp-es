@@ -10,6 +10,8 @@ import { useRouter } from "next/navigation";
 interface ClientOption {
   id: string;
   companyName: string;
+  supervisorName?: string | null;
+  supervisorPhone?: string | null;
 }
 
 interface CargoOption {
@@ -22,7 +24,14 @@ interface JornadaOption {
   name: string;
 }
 
-export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPublic = false }: { clientes: ClientOption[], cargos: CargoOption[], jornadas: JornadaOption[], isPublic?: boolean }) {
+interface SupervisorOption {
+  id: string;
+  name: string;
+  roleTitle: string;
+  phone: string;
+}
+
+export default function NovoFuncionarioForm({ clientes, cargos, jornadas, supervisors = [], isPublic = false }: { clientes: ClientOption[], cargos: CargoOption[], jornadas: JornadaOption[], supervisors?: SupervisorOption[], isPublic?: boolean }) {
   const [cpf, setCpf] = useState("");
   const [signature, setSignature] = useState<string | null>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -92,9 +101,30 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
   const [rg, setRg] = useState("");
   const [cnh, setCnh] = useState("");
   const [phone, setPhone] = useState("");
+  const [supervisorName, setSupervisorName] = useState("");
   const [supervisorPhone, setSupervisorPhone] = useState("");
   const [isMei, setIsMei] = useState(false);
   const [meiCnpj, setMeiCnpj] = useState("");
+
+  const handleSupervisorSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedName = e.target.value;
+    setSupervisorName(selectedName);
+    const found = supervisors.find(s => s.name === selectedName);
+    if (found) {
+      setSupervisorPhone(found.phone || "");
+    } else if (!selectedName) {
+      setSupervisorPhone("");
+    }
+  };
+
+  const handleClientChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedClientId = e.target.value;
+    const foundClient = clientes.find(c => c.id === selectedClientId);
+    if (foundClient?.supervisorName) {
+      setSupervisorName(foundClient.supervisorName);
+      setSupervisorPhone(foundClient.supervisorPhone || "");
+    }
+  };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
@@ -1075,7 +1105,7 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
 
                   <div className={styles.inputGroup}>
                     <label htmlFor="clientId">Alocar no Cliente (Posto)</label>
-                    <select id="clientId" name="clientId" style={{ padding: '0.95rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa' }}>
+                    <select id="clientId" name="clientId" onChange={handleClientChange} style={{ padding: '0.95rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa' }}>
                       <option value="">(Nenhum / Não alocado)</option>
                       {clientes.map(c => (
                         <option key={c.id} value={c.id}>{c.companyName}</option>
@@ -1087,7 +1117,20 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
                 <div className={styles.formRow}>
                   <div className={styles.inputGroup}>
                     <label htmlFor="supervisorName">Nome do Supervisor Responsável (Crachá / Validação)</label>
-                    <input type="text" id="supervisorName" name="supervisorName" placeholder="Ex: Carlos Silva (Opcional — usa o gestor do cliente se vazio)" />
+                    <select
+                      id="supervisorName"
+                      name="supervisorName"
+                      value={supervisorName}
+                      onChange={handleSupervisorSelect}
+                      style={{ padding: '0.95rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa', width: '100%' }}
+                    >
+                      <option value="">-- Selecione o Supervisor Cadastrado --</option>
+                      {supervisors.map((sup) => (
+                        <option key={sup.id} value={sup.name}>
+                          {sup.name} ({sup.roleTitle}) {sup.phone ? `- Tel: ${sup.phone}` : ""}
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div className={styles.inputGroup}>
@@ -1096,7 +1139,7 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
                       type="text" 
                       id="supervisorPhone" 
                       name="supervisorPhone" 
-                      placeholder="(00) 90000-0000" 
+                      placeholder="Preenchido automaticamente ao selecionar o supervisor" 
                       value={supervisorPhone}
                       onChange={handleSupervisorPhoneChange}
                     />

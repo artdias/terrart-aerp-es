@@ -59,6 +59,8 @@ interface EmployeeType {
 interface ClientOption {
   id: string;
   companyName: string;
+  supervisorName?: string | null;
+  supervisorPhone?: string | null;
 }
 
 interface CargoOption {
@@ -66,22 +68,52 @@ interface CargoOption {
   name: string;
 }
 
+interface SupervisorOption {
+  id: string;
+  name: string;
+  roleTitle: string;
+  phone: string;
+}
+
 export default function EditFuncionarioForm({ 
   employee, 
   clientes,
-  cargos
+  cargos,
+  supervisors = []
 }: { 
   employee: EmployeeType; 
   clientes: ClientOption[];
   cargos: CargoOption[];
+  supervisors?: SupervisorOption[];
 }) {
   const [cpf, setCpf] = useState(employee.cpf);
   const [rg, setRg] = useState(employee.rg || "");
   const [cnh, setCnh] = useState(employee.cnh || "");
   const [phone, setPhone] = useState(employee.phone || "");
+  const [supervisorName, setSupervisorName] = useState(employee.supervisorName || "");
   const [supervisorPhone, setSupervisorPhone] = useState(employee.supervisorPhone || "");
   const [isMei, setIsMei] = useState(employee.isMei || false);
   const [meiCnpj, setMeiCnpj] = useState(employee.meiCnpj || "");
+
+  const handleSupervisorSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedName = e.target.value;
+    setSupervisorName(selectedName);
+    const found = supervisors.find(s => s.name === selectedName);
+    if (found) {
+      setSupervisorPhone(found.phone || "");
+    } else if (!selectedName) {
+      setSupervisorPhone("");
+    }
+  };
+
+  const handleClientChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const selectedClientId = e.target.value;
+    const foundClient = clientes.find(c => c.id === selectedClientId);
+    if (foundClient?.supervisorName && !supervisorName) {
+      setSupervisorName(foundClient.supervisorName);
+      setSupervisorPhone(foundClient.supervisorPhone || "");
+    }
+  };
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
@@ -801,7 +833,7 @@ export default function EditFuncionarioForm({
 
             <div className={styles.inputGroup}>
               <label htmlFor="clientId">Alocar no Cliente (Posto)</label>
-              <select id="clientId" name="clientId" defaultValue={employee.workplace?.clientId || ""} style={{ padding: '0.95rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa' }}>
+              <select id="clientId" name="clientId" defaultValue={employee.workplace?.clientId || ""} onChange={handleClientChange} style={{ padding: '0.95rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa' }}>
                 <option value="">Sem alocação no momento (Banco de talentos)</option>
                 {clientes.map(c => (
                   <option key={c.id} value={c.id}>{c.companyName}</option>
@@ -813,7 +845,23 @@ export default function EditFuncionarioForm({
           <div className={styles.formRow}>
             <div className={styles.inputGroup}>
               <label htmlFor="supervisorName">Nome do Supervisor Responsável (Crachá / Validação)</label>
-              <input type="text" id="supervisorName" name="supervisorName" defaultValue={employee.supervisorName || ""} placeholder="Ex: Carlos Silva (Opcional — usa o gestor do cliente se vazio)" />
+              <select
+                id="supervisorName"
+                name="supervisorName"
+                value={supervisorName}
+                onChange={handleSupervisorSelect}
+                style={{ padding: '0.95rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa', width: '100%' }}
+              >
+                <option value="">-- Selecione o Supervisor Cadastrado --</option>
+                {supervisorName && !supervisors.some(s => s.name === supervisorName) && (
+                  <option value={supervisorName}>{supervisorName}</option>
+                )}
+                {supervisors.map((sup) => (
+                  <option key={sup.id} value={sup.name}>
+                    {sup.name} ({sup.roleTitle}) {sup.phone ? `- Tel: ${sup.phone}` : ""}
+                  </option>
+                ))}
+              </select>
             </div>
 
             <div className={styles.inputGroup}>
@@ -822,7 +870,7 @@ export default function EditFuncionarioForm({
                 type="text" 
                 id="supervisorPhone" 
                 name="supervisorPhone" 
-                placeholder="(00) 90000-0000" 
+                placeholder="Preenchido automaticamente ao selecionar o supervisor" 
                 value={supervisorPhone}
                 onChange={handleSupervisorPhoneChange}
               />
