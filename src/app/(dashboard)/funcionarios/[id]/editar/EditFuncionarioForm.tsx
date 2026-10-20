@@ -884,6 +884,16 @@ export default function EditFuncionarioForm({
                 value={supervisorPhone}
                 onChange={handleSupervisorPhoneChange}
               />
+              {supervisorName && !supervisorPhone && (
+                <small style={{ color: '#d97706', fontWeight: 600, marginTop: '4px', display: 'block' }}>
+                  ⚠️ {supervisorName} ainda não tem telefone cadastrado na própria ficha. Digite o telefone acima e salve para vincular automaticamente!
+                </small>
+              )}
+              {supervisorName && supervisorPhone && (
+                <small style={{ color: '#059669', fontWeight: 600, marginTop: '4px', display: 'block' }}>
+                  ✓ Telefone vinculado ao supervisor {supervisorName} (será exibido na validação do crachá).
+                </small>
+              )}
             </div>
           </div>
 

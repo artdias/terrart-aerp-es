@@ -17,19 +17,29 @@ async function syncSupervisorPhone(supervisorName: string, supervisorPhone: stri
     include: { user: { select: { name: true } } }
   });
 
+  const target = supervisorName.trim().toLowerCase();
   const matchedSup = supervisors.find((emp) => {
-    const empName = emp.user?.name || `${emp.firstName || ""} ${emp.lastName || ""}`.trim();
-    return empName.trim().toLowerCase() === supervisorName.trim().toLowerCase();
+    const empName = (emp.user?.name || `${emp.firstName || ""} ${emp.lastName || ""}`).trim().toLowerCase();
+    const firstLast = `${emp.firstName || ""} ${emp.lastName || ""}`.trim().toLowerCase();
+    return empName === target || firstLast === target;
   });
 
   if (matchedSup) {
     if (!supervisorPhone && matchedSup.phone) {
       return matchedSup.phone;
     }
-    if (supervisorPhone && !matchedSup.phone) {
+    if (supervisorPhone && matchedSup.phone !== supervisorPhone) {
       await prisma.employee.update({
         where: { id: matchedSup.id },
         data: { phone: supervisorPhone }
+      });
+      await prisma.employee.updateMany({
+        where: {
+          supervisorName: { equals: supervisorName.trim(), mode: "insensitive" }
+        },
+        data: {
+          supervisorPhone
+        }
       });
     }
   }

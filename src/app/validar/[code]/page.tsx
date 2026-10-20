@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { ShieldCheck, ShieldAlert, CheckCircle2, User, Building2, Tag, Calendar, UserCheck, Phone, Siren } from "lucide-react";
 import Link from "next/link";
 
+export const dynamic = "force-dynamic";
 export const revalidate = 0; // Sempre busca dados atualizados em tempo real
 
 interface PageProps {
@@ -76,21 +77,23 @@ export default async function ValidarCrachaPage({ params }: PageProps) {
     null;
 
   let lookedUpSupervisorPhone: string | null = null;
-  if (employee?.supervisorName && !employee?.supervisorPhone) {
+  if (employee?.supervisorName) {
     const sups = await prisma.employee.findMany({
       where: { deleted: false },
       select: { firstName: true, lastName: true, phone: true, user: { select: { name: true } } }
     });
+    const target = employee.supervisorName.trim().toLowerCase();
     const matched = sups.find((s) => {
-      const fullName = s.user?.name || `${s.firstName || ""} ${s.lastName || ""}`.trim();
-      return fullName.trim().toLowerCase() === employee.supervisorName!.trim().toLowerCase();
+      const fullName = (s.user?.name || `${s.firstName || ""} ${s.lastName || ""}`).trim().toLowerCase();
+      const firstLast = `${s.firstName || ""} ${s.lastName || ""}`.trim().toLowerCase();
+      return fullName === target || firstLast === target;
     });
     lookedUpSupervisorPhone = matched?.phone || null;
   }
 
   const supervisorPhone =
-    employee?.supervisorPhone ||
     lookedUpSupervisorPhone ||
+    employee?.supervisorPhone ||
     clientSupervisor?.phone ||
     employee?.workplace?.client?.managerContact ||
     employee?.workplace?.client?.cellphone ||
