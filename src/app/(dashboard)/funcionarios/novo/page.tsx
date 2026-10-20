@@ -40,18 +40,14 @@ export default async function NovoFuncionarioPage() {
   });
 
   const supervisors = employees
+    .filter((emp) => (emp.roleTitle || "").toLowerCase().includes("supervisor"))
     .map((emp) => ({
       id: emp.id,
       name: emp.user?.name || `${emp.firstName || ""} ${emp.lastName || ""}`.trim() || "Sem Nome",
-      roleTitle: emp.roleTitle || "Colaborador",
+      roleTitle: emp.roleTitle || "Supervisor",
       phone: emp.phone || ""
     }))
-    .sort((a, b) => {
-      const aIsSup = a.roleTitle.toLowerCase().includes("supervisor") ? 0 : 1;
-      const bIsSup = b.roleTitle.toLowerCase().includes("supervisor") ? 0 : 1;
-      if (aIsSup !== bIsSup) return aIsSup - bIsSup;
-      return a.name.localeCompare(b.name);
-    });
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return <NovoFuncionarioForm clientes={clientes} cargos={cargos} jornadas={jornadas} supervisors={supervisors} />;
 }

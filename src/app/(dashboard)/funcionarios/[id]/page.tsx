@@ -43,6 +43,20 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
     return notFound();
   }
 
+  if (func.supervisorName && !func.supervisorPhone) {
+    const sups = await prisma.employee.findMany({
+      where: { deleted: false },
+      select: { firstName: true, lastName: true, phone: true, user: { select: { name: true } } }
+    });
+    const matched = sups.find((s) => {
+      const fullName = s.user?.name || `${s.firstName || ""} ${s.lastName || ""}`.trim();
+      return fullName.trim().toLowerCase() === func.supervisorName!.trim().toLowerCase();
+    });
+    if (matched?.phone) {
+      func.supervisorPhone = matched.phone;
+    }
+  }
+
   // Filtrar os anexos por tipo
   const certificados = func.attachments.filter(a => a.type === "CERTIFICATE");
   const documentos = func.attachments.filter(a => a.type === "DOCUMENT");

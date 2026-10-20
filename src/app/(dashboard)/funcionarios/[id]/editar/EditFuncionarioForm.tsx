@@ -86,19 +86,26 @@ export default function EditFuncionarioForm({
   cargos: CargoOption[];
   supervisors?: SupervisorOption[];
 }) {
+  const initialMatchedSup = supervisors.find(
+    (s) => s.name.trim().toLowerCase() === (employee.supervisorName || "").trim().toLowerCase()
+  );
   const [cpf, setCpf] = useState(employee.cpf);
   const [rg, setRg] = useState(employee.rg || "");
   const [cnh, setCnh] = useState(employee.cnh || "");
   const [phone, setPhone] = useState(employee.phone || "");
   const [supervisorName, setSupervisorName] = useState(employee.supervisorName || "");
-  const [supervisorPhone, setSupervisorPhone] = useState(employee.supervisorPhone || "");
+  const [supervisorPhone, setSupervisorPhone] = useState(
+    employee.supervisorPhone || initialMatchedSup?.phone || ""
+  );
   const [isMei, setIsMei] = useState(employee.isMei || false);
   const [meiCnpj, setMeiCnpj] = useState(employee.meiCnpj || "");
 
   const handleSupervisorSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedName = e.target.value;
     setSupervisorName(selectedName);
-    const found = supervisors.find(s => s.name === selectedName);
+    const found = supervisors.find(
+      (s) => s.name.trim().toLowerCase() === selectedName.trim().toLowerCase()
+    );
     if (found) {
       setSupervisorPhone(found.phone || "");
     } else if (!selectedName) {
@@ -109,9 +116,12 @@ export default function EditFuncionarioForm({
   const handleClientChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedClientId = e.target.value;
     const foundClient = clientes.find(c => c.id === selectedClientId);
-    if (foundClient?.supervisorName && !supervisorName) {
+    if (foundClient?.supervisorName) {
       setSupervisorName(foundClient.supervisorName);
-      setSupervisorPhone(foundClient.supervisorPhone || "");
+      const matchedSup = supervisors.find(
+        (s) => s.name.trim().toLowerCase() === foundClient.supervisorName!.trim().toLowerCase()
+      );
+      setSupervisorPhone(foundClient.supervisorPhone || matchedSup?.phone || "");
     }
   };
 

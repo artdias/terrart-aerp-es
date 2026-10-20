@@ -75,8 +75,22 @@ export default async function ValidarCrachaPage({ params }: PageProps) {
     employee?.workplace?.client?.managerName ||
     null;
 
+  let lookedUpSupervisorPhone: string | null = null;
+  if (employee?.supervisorName && !employee?.supervisorPhone) {
+    const sups = await prisma.employee.findMany({
+      where: { deleted: false },
+      select: { firstName: true, lastName: true, phone: true, user: { select: { name: true } } }
+    });
+    const matched = sups.find((s) => {
+      const fullName = s.user?.name || `${s.firstName || ""} ${s.lastName || ""}`.trim();
+      return fullName.trim().toLowerCase() === employee.supervisorName!.trim().toLowerCase();
+    });
+    lookedUpSupervisorPhone = matched?.phone || null;
+  }
+
   const supervisorPhone =
     employee?.supervisorPhone ||
+    lookedUpSupervisorPhone ||
     clientSupervisor?.phone ||
     employee?.workplace?.client?.managerContact ||
     employee?.workplace?.client?.cellphone ||

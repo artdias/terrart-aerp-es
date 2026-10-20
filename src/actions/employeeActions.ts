@@ -9,6 +9,34 @@ import path from "path";
 import { logAction } from "@/lib/audit";
 import { generateNextBadgeCode } from "@/lib/badgeCode";
 
+async function syncSupervisorPhone(supervisorName: string, supervisorPhone: string): Promise<string> {
+  if (!supervisorName) return supervisorPhone;
+
+  const supervisors = await prisma.employee.findMany({
+    where: { deleted: false },
+    include: { user: { select: { name: true } } }
+  });
+
+  const matchedSup = supervisors.find((emp) => {
+    const empName = emp.user?.name || `${emp.firstName || ""} ${emp.lastName || ""}`.trim();
+    return empName.trim().toLowerCase() === supervisorName.trim().toLowerCase();
+  });
+
+  if (matchedSup) {
+    if (!supervisorPhone && matchedSup.phone) {
+      return matchedSup.phone;
+    }
+    if (supervisorPhone && !matchedSup.phone) {
+      await prisma.employee.update({
+        where: { id: matchedSup.id },
+        data: { phone: supervisorPhone }
+      });
+    }
+  }
+
+  return supervisorPhone;
+}
+
 export async function createJobRole(name: string) {
   try {
     const cleanName = sanitizeInput(name);
@@ -103,16 +131,16 @@ export async function createEmployee(formData: FormData) {
     const educationLevel = sanitizeInput(formData.get("educationLevel") as string);
     const gender = sanitizeInput(formData.get("gender") as string);
     const status = sanitizeInput(formData.get("status") as string);
-      const isPublic = formData.get("isPublic") === "true";
-      const signatureUrl = formData.get("signatureUrl") as string;
-      const phone = sanitizeInput(formData.get("phone") as string);
-      const address = sanitizeInput(formData.get("address") as string);
-      const previousExperience = sanitizeInput(formData.get("previousExperience") as string);
-      
-      const uniformSize = sanitizeInput(formData.get("uniformSize") as string);
-      const pantsSize = sanitizeInput(formData.get("pantsSize") as string);
-      const shoeSize = sanitizeInput(formData.get("shoeSize") as string);
-      const uniformMeasurements = sanitizeInput(formData.get("uniformMeasurements") as string);
+    const isPublic = formData.get("isPublic") === "true";
+    const signatureUrl = formData.get("signatureUrl") as string;
+    const phone = sanitizeInput(formData.get("phone") as string);
+    const address = sanitizeInput(formData.get("address") as string);
+    const previousExperience = sanitizeInput(formData.get("previousExperience") as string);
+    
+    const uniformSize = sanitizeInput(formData.get("uniformSize") as string);
+    const pantsSize = sanitizeInput(formData.get("pantsSize") as string);
+    const shoeSize = sanitizeInput(formData.get("shoeSize") as string);
+    const uniformMeasurements = sanitizeInput(formData.get("uniformMeasurements") as string);
     
     const isMei = formData.get("isMei") === "true" || formData.get("isMei") === "on";
     const meiCnpj = sanitizeInput(formData.get("meiCnpj") as string);
@@ -125,7 +153,8 @@ export async function createEmployee(formData: FormData) {
     const salary = salaryStr ? parseFloat(salaryStr) : null;
     const pixKey = sanitizeInput(formData.get("pixKey") as string);
     const supervisorName = sanitizeInput(formData.get("supervisorName") as string);
-    const supervisorPhone = sanitizeInput(formData.get("supervisorPhone") as string);
+    const rawSupervisorPhone = sanitizeInput(formData.get("supervisorPhone") as string);
+    const supervisorPhone = await syncSupervisorPhone(supervisorName, rawSupervisorPhone);
 
     if (!firstName || !email || !cpf || !roleTitle) {
       return { success: false, error: "Preencha todos os campos obrigatórios" };
@@ -240,6 +269,17 @@ export async function createEmployee(formData: FormData) {
       }).catch(() => {});
     }
 
+    if (phone) {
+      await prisma.employee.updateMany({
+        where: {
+          supervisorName: { equals: fullName, mode: "insensitive" }
+        },
+        data: {
+          supervisorPhone: phone
+        }
+      });
+    }
+
     // 4. Processar e salvar os múltiplos arquivos de anexos
     const certificatesData = formData.getAll("certificatesData") as string[];
     const documentsData = formData.getAll("documentsData") as string[];
@@ -279,6 +319,7 @@ export async function createEmployee(formData: FormData) {
     }
 
     revalidatePath("/funcionarios");
+    revalidatePath("/funcionarios/novo");
     return { success: true };
   } catch (error: any) {
     console.error("Erro em createEmployee:", error);
@@ -304,16 +345,16 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
     const educationLevel = sanitizeInput(formData.get("educationLevel") as string);
     const gender = sanitizeInput(formData.get("gender") as string);
     const status = sanitizeInput(formData.get("status") as string);
-      const isPublic = formData.get("isPublic") === "true";
-      const signatureUrl = formData.get("signatureUrl") as string;
-      const phone = sanitizeInput(formData.get("phone") as string);
-      const address = sanitizeInput(formData.get("address") as string);
-      const previousExperience = sanitizeInput(formData.get("previousExperience") as string);
-      
-      const uniformSize = sanitizeInput(formData.get("uniformSize") as string);
-      const pantsSize = sanitizeInput(formData.get("pantsSize") as string);
-      const shoeSize = sanitizeInput(formData.get("shoeSize") as string);
-      const uniformMeasurements = sanitizeInput(formData.get("uniformMeasurements") as string);
+    const isPublic = formData.get("isPublic") === "true";
+    const signatureUrl = formData.get("signatureUrl") as string;
+    const phone = sanitizeInput(formData.get("phone") as string);
+    const address = sanitizeInput(formData.get("address") as string);
+    const previousExperience = sanitizeInput(formData.get("previousExperience") as string);
+    
+    const uniformSize = sanitizeInput(formData.get("uniformSize") as string);
+    const pantsSize = sanitizeInput(formData.get("pantsSize") as string);
+    const shoeSize = sanitizeInput(formData.get("shoeSize") as string);
+    const uniformMeasurements = sanitizeInput(formData.get("uniformMeasurements") as string);
 
     const isMei = formData.get("isMei") === "true" || formData.get("isMei") === "on";
     const meiCnpj = sanitizeInput(formData.get("meiCnpj") as string);
@@ -326,7 +367,8 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
     const salary = salaryStr ? parseFloat(salaryStr) : null;
     const pixKey = sanitizeInput(formData.get("pixKey") as string);
     const supervisorName = sanitizeInput(formData.get("supervisorName") as string);
-    const supervisorPhone = sanitizeInput(formData.get("supervisorPhone") as string);
+    const rawSupervisorPhone = sanitizeInput(formData.get("supervisorPhone") as string);
+    const supervisorPhone = await syncSupervisorPhone(supervisorName, rawSupervisorPhone);
 
     if (!firstName || !email || !cpf || !roleTitle) {
       return { success: false, error: "Preencha todos os campos obrigatórios" };
@@ -446,6 +488,17 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
       data: updateData
     });
 
+    if (phone) {
+      await prisma.employee.updateMany({
+        where: {
+          supervisorName: { equals: fullName, mode: "insensitive" }
+        },
+        data: {
+          supervisorPhone: phone
+        }
+      });
+    }
+
     // 5. Processar novos arquivos se enviados
     const certificatesData = formData.getAll("certificatesData") as string[];
     const documentsData = formData.getAll("documentsData") as string[];
@@ -485,7 +538,9 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
     }
 
     revalidatePath("/funcionarios");
+    revalidatePath("/funcionarios/novo");
     revalidatePath(`/funcionarios/${employeeId}`);
+    revalidatePath(`/funcionarios/${employeeId}/editar`);
     return { success: true };
   } catch (error: any) {
     console.error("Erro em updateEmployee:", error);
