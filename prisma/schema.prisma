@@ -225,9 +225,11 @@ model Employee {
   meiInscricaoEstadual  String?
   meiInscricaoMunicipal String?
 
-  // Informações de Crachá
-  department String?
-  badgeCode  String? @unique
+  // Informações de Crachá e Supervisão
+  department      String?
+  badgeCode       String? @unique
+  supervisorName  String?
+  supervisorPhone String?
 
   // Onde o funcionário está alocado atualmente
   workplaceId String?

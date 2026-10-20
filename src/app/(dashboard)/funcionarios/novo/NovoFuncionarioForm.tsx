@@ -92,6 +92,7 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
   const [rg, setRg] = useState("");
   const [cnh, setCnh] = useState("");
   const [phone, setPhone] = useState("");
+  const [supervisorPhone, setSupervisorPhone] = useState("");
   const [isMei, setIsMei] = useState(false);
   const [meiCnpj, setMeiCnpj] = useState("");
 
@@ -109,6 +110,22 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
         .replace(/(\d{5})(\d)/, "$1-$2");
     }
     setPhone(formatted.substring(0, 15));
+  };
+
+  const handleSupervisorPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    const digits = raw.replace(/\D/g, "");
+    let formatted = "";
+    if (digits.length <= 10) {
+      formatted = digits
+        .replace(/^(\d{2})(\d)/g, "($1) $2")
+        .replace(/(\d{4})(\d)/, "$1-$2");
+    } else {
+      formatted = digits
+        .replace(/^(\d{2})(\d)/g, "($1) $2")
+        .replace(/(\d{5})(\d)/, "$1-$2");
+    }
+    setSupervisorPhone(formatted.substring(0, 15));
   };
 
   const handleMeiCNPJChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -1044,27 +1061,48 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, isPubl
 
           <div className="no-print">
             {!isPublic && (
-              <div className={styles.formRow}>
-                <div className={styles.inputGroup}>
-                  <label htmlFor="status">Status do Funcionário</label>
-                  <select id="status" name="status" style={{ padding: '0.95rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa' }}>
-                    <option value="Ativo">Ativo</option>
-                    <option value="Ausente">Ausente</option>
-                    <option value="Inativo">Inativo</option>
-                    <option value="Em Entrevista">Em Entrevista</option>
-                  </select>
+              <>
+                <div className={styles.formRow}>
+                  <div className={styles.inputGroup}>
+                    <label htmlFor="status">Status do Funcionário</label>
+                    <select id="status" name="status" style={{ padding: '0.95rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa' }}>
+                      <option value="Ativo">Ativo</option>
+                      <option value="Ausente">Ausente</option>
+                      <option value="Inativo">Inativo</option>
+                      <option value="Em Entrevista">Em Entrevista</option>
+                    </select>
+                  </div>
+
+                  <div className={styles.inputGroup}>
+                    <label htmlFor="clientId">Alocar no Cliente (Posto)</label>
+                    <select id="clientId" name="clientId" style={{ padding: '0.95rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa' }}>
+                      <option value="">(Nenhum / Não alocado)</option>
+                      {clientes.map(c => (
+                        <option key={c.id} value={c.id}>{c.companyName}</option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
-                <div className={styles.inputGroup}>
-                  <label htmlFor="clientId">Alocar no Cliente (Posto)</label>
-                  <select id="clientId" name="clientId" style={{ padding: '0.95rem', borderRadius: '8px', border: '1px solid #ddd', background: '#fafafa' }}>
-                    <option value="">(Nenhum / Não alocado)</option>
-                    {clientes.map(c => (
-                      <option key={c.id} value={c.id}>{c.companyName}</option>
-                    ))}
-                  </select>
+                <div className={styles.formRow}>
+                  <div className={styles.inputGroup}>
+                    <label htmlFor="supervisorName">Nome do Supervisor Responsável (Crachá / Validação)</label>
+                    <input type="text" id="supervisorName" name="supervisorName" placeholder="Ex: Carlos Silva (Opcional — usa o gestor do cliente se vazio)" />
+                  </div>
+
+                  <div className={styles.inputGroup}>
+                    <label htmlFor="supervisorPhone">Telefone do Supervisor Responsável (Crachá / Validação)</label>
+                    <input 
+                      type="text" 
+                      id="supervisorPhone" 
+                      name="supervisorPhone" 
+                      placeholder="(00) 90000-0000" 
+                      value={supervisorPhone}
+                      onChange={handleSupervisorPhoneChange}
+                    />
+                  </div>
                 </div>
-              </div>
+              </>
             )}
           </div>
 

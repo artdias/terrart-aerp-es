@@ -38,6 +38,8 @@ interface EmployeeType {
   meiNomeFantasia?: string | null;
   meiInscricaoEstadual?: string | null;
   meiInscricaoMunicipal?: string | null;
+  supervisorName?: string | null;
+  supervisorPhone?: string | null;
   workplaceId: string | null;
   workplace?: {
     clientId: string;
@@ -77,6 +79,7 @@ export default function EditFuncionarioForm({
   const [rg, setRg] = useState(employee.rg || "");
   const [cnh, setCnh] = useState(employee.cnh || "");
   const [phone, setPhone] = useState(employee.phone || "");
+  const [supervisorPhone, setSupervisorPhone] = useState(employee.supervisorPhone || "");
   const [isMei, setIsMei] = useState(employee.isMei || false);
   const [meiCnpj, setMeiCnpj] = useState(employee.meiCnpj || "");
 
@@ -94,6 +97,22 @@ export default function EditFuncionarioForm({
         .replace(/(\d{5})(\d)/, "$1-$2");
     }
     setPhone(formatted.substring(0, 15));
+  };
+
+  const handleSupervisorPhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    const digits = raw.replace(/\D/g, "");
+    let formatted = "";
+    if (digits.length <= 10) {
+      formatted = digits
+        .replace(/^(\d{2})(\d)/g, "($1) $2")
+        .replace(/(\d{4})(\d)/, "$1-$2");
+    } else {
+      formatted = digits
+        .replace(/^(\d{2})(\d)/g, "($1) $2")
+        .replace(/(\d{5})(\d)/, "$1-$2");
+    }
+    setSupervisorPhone(formatted.substring(0, 15));
   };
 
   const handleMeiCNPJChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -788,6 +807,25 @@ export default function EditFuncionarioForm({
                   <option key={c.id} value={c.id}>{c.companyName}</option>
                 ))}
               </select>
+            </div>
+          </div>
+
+          <div className={styles.formRow}>
+            <div className={styles.inputGroup}>
+              <label htmlFor="supervisorName">Nome do Supervisor Responsável (Crachá / Validação)</label>
+              <input type="text" id="supervisorName" name="supervisorName" defaultValue={employee.supervisorName || ""} placeholder="Ex: Carlos Silva (Opcional — usa o gestor do cliente se vazio)" />
+            </div>
+
+            <div className={styles.inputGroup}>
+              <label htmlFor="supervisorPhone">Telefone do Supervisor Responsável (Crachá / Validação)</label>
+              <input 
+                type="text" 
+                id="supervisorPhone" 
+                name="supervisorPhone" 
+                placeholder="(00) 90000-0000" 
+                value={supervisorPhone}
+                onChange={handleSupervisorPhoneChange}
+              />
             </div>
           </div>
 

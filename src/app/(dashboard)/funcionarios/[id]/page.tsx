@@ -159,6 +159,18 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
                   {func.travelAvailability ? "Sim (Disponível)" : "Não"}
                 </p>
               </div>
+              <div>
+                <strong style={{ color: '#666', fontSize: '0.85rem' }}>Supervisor Responsável:</strong>
+                <p style={{ margin: '4px 0 0', fontWeight: 600, color: '#1a1a1a' }}>
+                  {func.supervisorName || func.workplace?.client?.managerName || "Não informado"}
+                </p>
+              </div>
+              <div>
+                <strong style={{ color: '#666', fontSize: '0.85rem' }}>Telefone do Supervisor:</strong>
+                <p style={{ margin: '4px 0 0', fontWeight: 600, color: '#1a1a1a' }}>
+                  {func.supervisorPhone || func.workplace?.client?.managerContact || "Não informado"}
+                </p>
+              </div>
 
               <div style={{ gridColumn: '1 / -1', marginTop: '12px', background: '#f8fafc', padding: '14px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
                 <div style={{ fontWeight: 700, color: '#0f172a', fontSize: '0.9rem', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>

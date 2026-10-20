@@ -124,6 +124,8 @@ export async function createEmployee(formData: FormData) {
     const salaryStr = sanitizeInput(formData.get("salary") as string);
     const salary = salaryStr ? parseFloat(salaryStr) : null;
     const pixKey = sanitizeInput(formData.get("pixKey") as string);
+    const supervisorName = sanitizeInput(formData.get("supervisorName") as string);
+    const supervisorPhone = sanitizeInput(formData.get("supervisorPhone") as string);
 
     if (!firstName || !email || !cpf || !roleTitle) {
       return { success: false, error: "Preencha todos os campos obrigatórios" };
@@ -219,6 +221,8 @@ export async function createEmployee(formData: FormData) {
         roleTitle,
         department: dept,
         badgeCode: badgeCode,
+        supervisorName,
+        supervisorPhone,
         workplaceId,
         photoUrl,
         signatureUrl,
@@ -321,6 +325,8 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
     const salaryStr = sanitizeInput(formData.get("salary") as string);
     const salary = salaryStr ? parseFloat(salaryStr) : null;
     const pixKey = sanitizeInput(formData.get("pixKey") as string);
+    const supervisorName = sanitizeInput(formData.get("supervisorName") as string);
+    const supervisorPhone = sanitizeInput(formData.get("supervisorPhone") as string);
 
     if (!firstName || !email || !cpf || !roleTitle) {
       return { success: false, error: "Preencha todos os campos obrigatórios" };
@@ -422,6 +428,8 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
       meiInscricaoEstadual,
       meiInscricaoMunicipal,
       roleTitle,
+      supervisorName,
+      supervisorPhone,
       workplaceId,
       salary,
       pixKey,

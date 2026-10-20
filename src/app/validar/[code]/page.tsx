@@ -1,6 +1,6 @@
 import React from "react";
 import { prisma } from "@/lib/prisma";
-import { ShieldCheck, ShieldAlert, CheckCircle2, User, Building2, Tag, Calendar, UserCheck } from "lucide-react";
+import { ShieldCheck, ShieldAlert, CheckCircle2, User, Building2, Tag, Calendar, UserCheck, Phone, Siren } from "lucide-react";
 import Link from "next/link";
 
 export const revalidate = 0; // Sempre busca dados atualizados em tempo real
@@ -51,6 +51,14 @@ export default async function ValidarCrachaPage({ params }: PageProps) {
   const cpfDigits = employee?.cpf ? employee.cpf.replace(/\D/g, "") : "";
   const cpf = cpfDigits.length >= 3 ? `${cpfDigits.slice(0, 3)}.***.***-**` : null;
   const workplaceName = employee?.workplace?.client?.companyName || employee?.workplace?.name || "Base Operacional";
+
+  const supervisorName = employee?.supervisorName || employee?.workplace?.client?.managerName || null;
+  const supervisorPhone =
+    employee?.supervisorPhone ||
+    employee?.workplace?.client?.managerContact ||
+    employee?.workplace?.client?.cellphone ||
+    employee?.workplace?.client?.phone ||
+    null;
 
   const currentDateStr = new Date().toLocaleDateString("pt-BR", {
     weekday: "long",
@@ -214,11 +222,127 @@ export default async function ValidarCrachaPage({ params }: PageProps) {
                   </div>
                 )}
 
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span style={{ color: "#64748b", display: "flex", alignItems: "center", gap: "6px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px" }}>
+                  <span style={{ color: "#64748b", display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
                     <Building2 size={16} color="#3b82f6" /> Posto / Unidade:
                   </span>
-                  <strong style={{ color: "#334155" }}>{workplaceName}</strong>
+                  <strong style={{ color: "#334155", textAlign: "right" }}>{workplaceName}</strong>
+                </div>
+
+                {/* Supervisor Responsável */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "12px", borderTop: "1px dashed #cbd5e1", paddingTop: "10px" }}>
+                  <span style={{ color: "#64748b", display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
+                    <Phone size={16} color="#2563eb" /> Supervisor Responsável:
+                  </span>
+                  <div style={{ textAlign: "right" }}>
+                    {supervisorName && (
+                      <div style={{ fontSize: "0.82rem", color: "#475569", fontWeight: 600 }}>{supervisorName}</div>
+                    )}
+                    {supervisorPhone ? (
+                      <a
+                        href={`tel:${supervisorPhone.replace(/\D/g, "")}`}
+                        style={{
+                          color: "#1d4ed8",
+                          fontWeight: 800,
+                          textDecoration: "none",
+                          background: "#dbeafe",
+                          padding: "3px 8px",
+                          borderRadius: "6px",
+                          fontSize: "0.88rem",
+                          display: "inline-block",
+                          marginTop: supervisorName ? "2px" : 0
+                        }}
+                      >
+                        {supervisorPhone}
+                      </a>
+                    ) : (
+                      <strong style={{ color: "#64748b", fontSize: "0.85rem" }}>Central de Operações</strong>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Números de Emergência Brasileiros */}
+              <div style={{
+                marginTop: "16px",
+                background: "#fef2f2",
+                borderRadius: "14px",
+                padding: "14px 16px",
+                border: "1px solid #fecaca"
+              }}>
+                <div style={{
+                  fontSize: "0.78rem",
+                  fontWeight: 800,
+                  color: "#991b1b",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  marginBottom: "10px"
+                }}>
+                  <Siren size={16} color="#dc2626" />
+                  <span>Números de Emergência (Brasil)</span>
+                </div>
+                <div style={{
+                  display: "grid",
+                  gridTemplateColumns: "repeat(3, 1fr)",
+                  gap: "8px",
+                  textAlign: "center"
+                }}>
+                  <a
+                    href="tel:190"
+                    style={{
+                      background: "white",
+                      border: "1px solid #fca5a5",
+                      borderRadius: "8px",
+                      padding: "8px 6px",
+                      textDecoration: "none",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "2px"
+                    }}
+                  >
+                    <strong style={{ fontSize: "1.05rem", color: "#dc2626", fontWeight: 900 }}>190</strong>
+                    <span style={{ fontSize: "0.7rem", color: "#7f1d1d", fontWeight: 700 }}>Polícia Militar</span>
+                  </a>
+
+                  <a
+                    href="tel:192"
+                    style={{
+                      background: "white",
+                      border: "1px solid #fca5a5",
+                      borderRadius: "8px",
+                      padding: "8px 6px",
+                      textDecoration: "none",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "2px"
+                    }}
+                  >
+                    <strong style={{ fontSize: "1.05rem", color: "#dc2626", fontWeight: 900 }}>192</strong>
+                    <span style={{ fontSize: "0.7rem", color: "#7f1d1d", fontWeight: 700 }}>SAMU (Ambulância)</span>
+                  </a>
+
+                  <a
+                    href="tel:193"
+                    style={{
+                      background: "white",
+                      border: "1px solid #fca5a5",
+                      borderRadius: "8px",
+                      padding: "8px 6px",
+                      textDecoration: "none",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: "2px"
+                    }}
+                  >
+                    <strong style={{ fontSize: "1.05rem", color: "#dc2626", fontWeight: 900 }}>193</strong>
+                    <span style={{ fontSize: "0.7rem", color: "#7f1d1d", fontWeight: 700 }}>Bombeiros</span>
+                  </a>
                 </div>
               </div>
 
