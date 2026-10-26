@@ -152,7 +152,11 @@ export async function createEmployee(formData: FormData) {
     const shoeSize = sanitizeInput(formData.get("shoeSize") as string);
     const uniformMeasurements = sanitizeInput(formData.get("uniformMeasurements") as string);
     
-    const isMei = formData.get("isMei") === "true" || formData.get("isMei") === "on";
+    const isMeiRaw = formData.get("isMei");
+    if (isMeiRaw !== "true" && isMeiRaw !== "false" && isMeiRaw !== "on") {
+      return { success: false, error: "Informe obrigatoriamente se possui MEI ou não." };
+    }
+    const isMei = isMeiRaw === "true" || isMeiRaw === "on";
     const meiCnpj = sanitizeInput(formData.get("meiCnpj") as string);
     const meiRazaoSocial = sanitizeInput(formData.get("meiRazaoSocial") as string);
     const meiNomeFantasia = sanitizeInput(formData.get("meiNomeFantasia") as string);
@@ -293,6 +297,7 @@ export async function createEmployee(formData: FormData) {
     // 4. Processar e salvar os múltiplos arquivos de anexos
     const certificatesData = formData.getAll("certificatesData") as string[];
     const documentsData = formData.getAll("documentsData") as string[];
+    const paymentReceiptsData = formData.getAll("paymentReceiptsData") as string[];
 
     // Salvar Certificados
     for (const jsonStr of certificatesData) {
@@ -323,6 +328,23 @@ export async function createEmployee(formData: FormData) {
             fileName: sanitizedFileName,
             fileUrl: file.data,
             type: "DOCUMENT"
+          }
+        });
+      }
+    }
+
+    // Salvar Comprovantes de Pagamento
+    for (const jsonStr of paymentReceiptsData) {
+      if (jsonStr) {
+        const file = JSON.parse(jsonStr);
+        const sanitizedFileName = sanitizeInput(file.name);
+
+        await prisma.attachment.create({
+          data: {
+            employeeId: employee.id,
+            fileName: sanitizedFileName,
+            fileUrl: file.data,
+            type: "PAYMENT_RECEIPT"
           }
         });
       }
@@ -366,7 +388,11 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
     const shoeSize = sanitizeInput(formData.get("shoeSize") as string);
     const uniformMeasurements = sanitizeInput(formData.get("uniformMeasurements") as string);
 
-    const isMei = formData.get("isMei") === "true" || formData.get("isMei") === "on";
+    const isMeiRaw = formData.get("isMei");
+    if (isMeiRaw !== "true" && isMeiRaw !== "false" && isMeiRaw !== "on") {
+      return { success: false, error: "Informe obrigatoriamente se possui MEI ou não." };
+    }
+    const isMei = isMeiRaw === "true" || isMeiRaw === "on";
     const meiCnpj = sanitizeInput(formData.get("meiCnpj") as string);
     const meiRazaoSocial = sanitizeInput(formData.get("meiRazaoSocial") as string);
     const meiNomeFantasia = sanitizeInput(formData.get("meiNomeFantasia") as string);
@@ -512,6 +538,7 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
     // 5. Processar novos arquivos se enviados
     const certificatesData = formData.getAll("certificatesData") as string[];
     const documentsData = formData.getAll("documentsData") as string[];
+    const paymentReceiptsData = formData.getAll("paymentReceiptsData") as string[];
 
     // Salvar novos Certificados
     for (const jsonStr of certificatesData) {
@@ -547,6 +574,23 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
       }
     }
 
+    // Salvar novos Comprovantes de Pagamento
+    for (const jsonStr of paymentReceiptsData) {
+      if (jsonStr) {
+        const file = JSON.parse(jsonStr);
+        const sanitizedFileName = sanitizeInput(file.name);
+
+        await prisma.attachment.create({
+          data: {
+            employeeId,
+            fileName: sanitizedFileName,
+            fileUrl: file.data,
+            type: "PAYMENT_RECEIPT"
+          }
+        });
+      }
+    }
+
     revalidatePath("/funcionarios");
     revalidatePath("/funcionarios/novo");
     revalidatePath(`/funcionarios/${employeeId}`);
@@ -561,11 +605,60 @@ export async function updateEmployee(employeeId: string, formData: FormData) {
 // -----------------------------------------------------------------------------------------------------------------
 // Ações de Anexos
 // -----------------------------------------------------------------------------------------------------------------
+export async function addEmployeePaymentReceipts(
+  employeeId: string,
+  receiptsJson: string[],
+  descriptionPrefix?: string
+) {
+  try {
+    if (!employeeId || !receiptsJson || receiptsJson.length === 0) {
+      return { success: false, error: "Selecione pelo menos um comprovante para anexar." };
+    }
+
+    const prefix = descriptionPrefix ? `${sanitizeInput(descriptionPrefix)} - ` : "";
+
+    for (const jsonStr of receiptsJson) {
+      if (jsonStr) {
+        const file = JSON.parse(jsonStr);
+        const sanitizedFileName = `${prefix}${sanitizeInput(file.name)}`;
+
+        await prisma.attachment.create({
+          data: {
+            employeeId,
+            fileName: sanitizedFileName,
+            fileUrl: file.data,
+            type: "PAYMENT_RECEIPT"
+          }
+        });
+      }
+    }
+
+    await logAction(
+      "ADD_EMPLOYEE_PAYMENT_RECEIPT",
+      `Anexou ${receiptsJson.length} comprovante(s) de pagamento para o funcionário ID ${employeeId}.`
+    );
+
+    revalidatePath(`/funcionarios/${employeeId}`);
+    revalidatePath(`/funcionarios/${employeeId}/editar`);
+    return { success: true };
+  } catch (error) {
+    console.error("Erro ao anexar comprovantes de pagamento:", error);
+    return { success: false, error: "Erro ao anexar comprovantes de pagamento." };
+  }
+}
+
 export async function deleteAttachment(attachmentId: string) {
   try {
+    const existing = await prisma.attachment.findUnique({
+      where: { id: attachmentId }
+    });
     await prisma.attachment.delete({
       where: { id: attachmentId }
     });
+    if (existing?.employeeId) {
+      revalidatePath(`/funcionarios/${existing.employeeId}`);
+      revalidatePath(`/funcionarios/${existing.employeeId}/editar`);
+    }
     return { success: true };
   } catch (error) {
     console.error("Erro ao deletar anexo:", error);

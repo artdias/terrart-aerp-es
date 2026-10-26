@@ -53,6 +53,7 @@ export async function GET(
 
     const certificados = func.attachments.filter((a) => a.type === "CERTIFICATE");
     const documentos = func.attachments.filter((a) => a.type === "DOCUMENT");
+    const comprovantesPagamento = func.attachments.filter((a) => a.type === "PAYMENT_RECEIPT");
     const equipmentsInUse = func.equipments.filter((e) => e.status === "EM USO");
 
     const htmlContent = `
@@ -529,7 +530,7 @@ export async function GET(
           <!-- DOCUMENTOS E ANEXOS -->
           <div class="section-title">06 • DOCUMENTOS E ANEXOS CADASTRADOS</div>
           <div class="grid">
-            <div class="field col-6">
+            <div class="field col-4">
               <div class="field-label">Certificados (${certificados.length})</div>
               <div class="field-value" style="font-size: 11px;">
                 ${
@@ -539,13 +540,23 @@ export async function GET(
                 }
               </div>
             </div>
-            <div class="field col-6">
+            <div class="field col-4">
               <div class="field-label">Documentos Pessoais (${documentos.length})</div>
               <div class="field-value" style="font-size: 11px;">
                 ${
                   documentos.length > 0
                     ? documentos.map((d) => `• ${d.fileName}`).join("<br/>")
                     : "Nenhum documento anexado"
+                }
+              </div>
+            </div>
+            <div class="field col-4">
+              <div class="field-label">Comprovantes de Pagamento (${comprovantesPagamento.length})</div>
+              <div class="field-value" style="font-size: 11px;">
+                ${
+                  comprovantesPagamento.length > 0
+                    ? comprovantesPagamento.map((p) => `• ${p.fileName}`).join("<br/>")
+                    : "Nenhum comprovante anexado"
                 }
               </div>
             </div>

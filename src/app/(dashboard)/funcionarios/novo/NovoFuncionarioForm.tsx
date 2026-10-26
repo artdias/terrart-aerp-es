@@ -103,7 +103,8 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, superv
   const [phone, setPhone] = useState("");
   const [supervisorName, setSupervisorName] = useState("");
   const [supervisorPhone, setSupervisorPhone] = useState("");
-  const [isMei, setIsMei] = useState(false);
+  const [meiOption, setMeiOption] = useState<"" | "true" | "false">("");
+  const isMei = meiOption === "true";
   const [meiCnpj, setMeiCnpj] = useState("");
 
   const handleSupervisorSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -178,11 +179,13 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, superv
 
   const [certificates, setCertificates] = useState<File[]>([]);
   const [documents, setDocuments] = useState<File[]>([]);
+  const [paymentReceipts, setPaymentReceipts] = useState<File[]>([]);
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   
   const certInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
+  const receiptInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -256,12 +259,24 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, superv
     }
   };
 
+  const handlePaymentReceiptsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      setPaymentReceipts(prev => [...prev, ...newFiles]);
+      e.target.value = "";
+    }
+  };
+
   const removeCertificate = (index: number) => {
     setCertificates(prev => prev.filter((_, i) => i !== index));
   };
 
   const removeDocument = (index: number) => {
     setDocuments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removePaymentReceipt = (index: number) => {
+    setPaymentReceipts(prev => prev.filter((_, i) => i !== index));
   };
 
   const [loading, setLoading] = useState(false);
@@ -318,6 +333,11 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, superv
       alert("Por favor, preencha o CPF completo (11 dígitos).");
       return;
     }
+
+    if (!meiOption) {
+      alert("Por favor, informe obrigatoriamente se possui MEI ou não.");
+      return;
+    }
     
     setLoading(true);
     try {
@@ -327,6 +347,7 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, superv
       // Removemos os inputs nativos pois seus FileLists são imutáveis e podem conter itens deletados
       formData.delete("certificados-nativos");
       formData.delete("documentos-nativos");
+      formData.delete("comprovantes-nativos");
       formData.delete("photo-nativa");
 
       const toBase64 = (f: File) => new Promise<string>((resolve, reject) => {
@@ -349,6 +370,11 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, superv
       for (const file of documents) {
         const base64 = await toBase64(file);
         formData.append("documentsData", JSON.stringify({ name: file.name, data: base64 }));
+      }
+
+      for (const file of paymentReceipts) {
+        const base64 = await toBase64(file);
+        formData.append("paymentReceiptsData", JSON.stringify({ name: file.name, data: base64 }));
       }
 
       // Chama a Server Action diretamente
@@ -750,19 +776,73 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, superv
           </div>
 
           <div className="print-section-title" style={{ marginTop: '20px' }}>03 • DADOS DA MEI (PESSOA JURÍDICA)</div>
+          <h3 className={`${styles.sectionTitle} no-print`} style={{ marginTop: '1.5rem' }}>Dados da MEI (Pessoa Jurídica)</h3>
           
           <div className={`${styles.formRow} print-grid`} style={{ marginBottom: '1rem' }}>
             <div className={`print-box col-12 ${styles.inputGroup}`}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#0f172a' }}>
-                <input 
-                  type="checkbox" 
-                  name="isMei" 
-                  checked={isMei} 
-                  onChange={(e) => setIsMei(e.target.checked)} 
-                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                />
-                Possui MEI (Prestador de Serviço PJ)?
+              <label style={{ fontSize: '0.95rem', fontWeight: 600, color: '#0f172a', marginBottom: '8px', display: 'block' }}>
+                Possui MEI (Prestador de Serviço PJ)? <span className="no-print" style={{ color: '#e74c3c' }}>*</span>
               </label>
+              <div className="no-print" style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    cursor: 'pointer',
+                    padding: '10px 16px',
+                    background: meiOption === 'true' ? '#eff6ff' : '#fafafa',
+                    border: meiOption === 'true' ? '2px solid #003366' : '1px solid #ddd',
+                    borderRadius: '8px',
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    color: '#0f172a',
+                    margin: 0
+                  }}
+                >
+                  <input 
+                    type="radio" 
+                    name="isMei" 
+                    value="true"
+                    required
+                    checked={meiOption === "true"} 
+                    onChange={() => setMeiOption("true")} 
+                    style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#003366' }}
+                  />
+                  Sim, possuo MEI
+                </label>
+
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    cursor: 'pointer',
+                    padding: '10px 16px',
+                    background: meiOption === 'false' ? '#eff6ff' : '#fafafa',
+                    border: meiOption === 'false' ? '2px solid #003366' : '1px solid #ddd',
+                    borderRadius: '8px',
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    color: '#0f172a',
+                    margin: 0
+                  }}
+                >
+                  <input 
+                    type="radio" 
+                    name="isMei" 
+                    value="false"
+                    required
+                    checked={meiOption === "false"} 
+                    onChange={() => setMeiOption("false")} 
+                    style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#003366' }}
+                  />
+                  Não possuo MEI
+                </label>
+              </div>
+              <div className="print-only" style={{ color: '#333', marginTop: '4px', fontSize: '11px' }}>
+                ( &nbsp; ) Sim, possui MEI &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ( &nbsp; ) Não possui MEI
+              </div>
             </div>
           </div>
 
@@ -1233,6 +1313,49 @@ export default function NovoFuncionarioForm({ clientes, cargos, jornadas, superv
                   </div>
                 )}
               </div>
+
+              {/* Comprovantes de Pagamento */}
+              {!isPublic && (
+                <div className={styles.inputGroup} style={{ flex: 1 }}>
+                  <label>Anexar Comprovantes de Pagamento</label>
+                  <div 
+                    onClick={() => receiptInputRef.current?.click()} 
+                    style={{ padding: '1.2rem', background: '#f0fdf4', borderRadius: '8px', border: '1px dashed #86efac', textAlign: 'center', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}
+                  >
+                    <Paperclip size={20} style={{ color: '#16a34a' }} />
+                    <span style={{ fontSize: '0.9rem', color: '#15803d', fontWeight: 500 }}>Selecionar comprovantes...</span>
+                  </div>
+                  <input 
+                    type="file" 
+                    id="comprovantes-nativos"
+                    name="comprovantes-nativos"
+                    ref={receiptInputRef}
+                    multiple 
+                    style={{ display: 'none' }} 
+                    onChange={handlePaymentReceiptsChange}
+                    accept=".pdf,.png,.jpg,.jpeg"
+                  />
+                  <small style={{ color: '#666', marginTop: '4px' }}>Somente PDF, JPG ou PNG.</small>
+
+                  {/* Lista de Comprovantes selecionados */}
+                  {paymentReceipts.length > 0 && (
+                    <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {paymentReceipts.map((file, idx) => (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: '#f1f5f9', borderRadius: '6px', fontSize: '0.85rem' }}>
+                          <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '80%' }}>{file.name}</span>
+                          <button 
+                            type="button" 
+                            onClick={() => removePaymentReceipt(idx)} 
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', color: '#ef4444' }}
+                          >
+                            <X size={16} />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
 

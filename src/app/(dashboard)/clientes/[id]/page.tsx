@@ -2,7 +2,20 @@ import React from "react";
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Building2, MapPin, User, Phone, Mail, FileText, Briefcase, Calendar } from "lucide-react";
+import {
+  ArrowLeft,
+  Building2,
+  MapPin,
+  User,
+  Phone,
+  Mail,
+  FileText,
+  Briefcase,
+  Receipt,
+  CheckCircle2,
+  AlertTriangle,
+  Clock
+} from "lucide-react";
 import styles from "../novo/novoCliente.module.css";
 
 export default async function ClienteDetalhePage({
@@ -16,6 +29,11 @@ export default async function ClienteDetalhePage({
       supervisor: { include: { user: { select: { name: true } } } },
       workplaces: true,
       contracts: true,
+      invoices: {
+        where: { status: { not: "CANCELED" } },
+        orderBy: { dueDate: "desc" },
+        take: 6
+      },
       documents: {
         orderBy: { createdAt: "desc" }
       }
@@ -27,11 +45,13 @@ export default async function ClienteDetalhePage({
   }
 
   const dateCreated = new Date(client.createdAt).toLocaleDateString("pt-BR");
+  const now = new Date();
+  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
 
   return (
     <div className={styles.container}>
       {/* Header com botão de voltar */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px", marginBottom: "20px" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
           <Link 
             href="/clientes" 
@@ -59,21 +79,41 @@ export default async function ClienteDetalhePage({
             </p>
           </div>
         </div>
-        <Link 
-          href={`/clientes/${client.id}/editar`} 
-          style={{
-            background: "#f39c12",
-            color: "white",
-            textDecoration: "none",
-            padding: "8px 16px",
-            borderRadius: "6px",
-            fontSize: "0.88rem",
-            fontWeight: 600,
-            transition: "background 0.2s"
-          }}
-        >
-          Editar Cadastro
-        </Link>
+        <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+          <Link
+            href={`/clientes/${client.id}/notas`}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "6px",
+              background: "#0284c7",
+              color: "white",
+              textDecoration: "none",
+              padding: "8px 16px",
+              borderRadius: "6px",
+              fontSize: "0.88rem",
+              fontWeight: 600
+            }}
+          >
+            <Receipt size={16} />
+            Financeiro de Notas
+          </Link>
+          <Link 
+            href={`/clientes/${client.id}/editar`} 
+            style={{
+              background: "#f39c12",
+              color: "white",
+              textDecoration: "none",
+              padding: "8px 16px",
+              borderRadius: "6px",
+              fontSize: "0.88rem",
+              fontWeight: 600,
+              transition: "background 0.2s"
+            }}
+          >
+            Editar Cadastro
+          </Link>
+        </div>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "24px" }}>
@@ -174,8 +214,111 @@ export default async function ClienteDetalhePage({
           </div>
         </div>
 
-        {/* Coluna Direita - Representante Legal e Contratos */}
+        {/* Coluna Direita - Notas Fiscais, Representante Legal e Contratos */}
         <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+
+          {/* Card: Financeiro de Notas do Cliente */}
+          <div style={{ background: "white", borderRadius: "10px", padding: "20px", boxShadow: "0 2px 10px rgba(0,0,0,0.02)", border: "1px solid #dbeafe" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #eee", paddingBottom: "8px", marginBottom: "14px" }}>
+              <h3 style={{ margin: 0, fontSize: "1.05rem", display: "flex", alignItems: "center", gap: "6px", color: "#003366" }}>
+                <Receipt size={18} color="#0284c7" /> Financeiro de Notas
+              </h3>
+              <Link
+                href={`/clientes/${client.id}/notas`}
+                style={{
+                  fontSize: "0.78rem",
+                  fontWeight: 700,
+                  color: "#0284c7",
+                  textDecoration: "none"
+                }}
+              >
+                Gerenciar / Importar →
+              </Link>
+            </div>
+
+            {client.invoices.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "12px 0" }}>
+                <p style={{ margin: "0 0 10px", color: "#64748b", fontSize: "0.84rem" }}>
+                  Nenhuma nota fiscal importada para este cliente ainda.
+                </p>
+                <Link
+                  href={`/clientes/${client.id}/notas`}
+                  style={{
+                    display: "inline-block",
+                    background: "#0284c7",
+                    color: "white",
+                    textDecoration: "none",
+                    padding: "7px 14px",
+                    borderRadius: "6px",
+                    fontSize: "0.8rem",
+                    fontWeight: 600
+                  }}
+                >
+                  + Importar Nota do Mês
+                </Link>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {client.invoices.map((inv) => {
+                  const due = new Date(inv.dueDate);
+                  const dueMidnight = new Date(due.getFullYear(), due.getMonth(), due.getDate(), 0, 0, 0);
+                  const isPaid = inv.status === "PAID";
+                  const isOverdue = !isPaid && dueMidnight < todayMidnight;
+
+                  return (
+                    <Link
+                      key={inv.id}
+                      href={`/clientes/${client.id}/notas`}
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        padding: "9px 12px",
+                        background: isOverdue ? "#fff5f5" : isPaid ? "#f0fdf4" : "#f8fafc",
+                        border: `1px solid ${isOverdue ? "#fecaca" : isPaid ? "#bbf7d0" : "#e2e8f0"}`,
+                        borderRadius: "6px",
+                        textDecoration: "none"
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontSize: "0.82rem", fontWeight: 700, color: "#1e293b" }}>
+                          {inv.description || "Nota Fiscal"}
+                        </div>
+                        <div style={{ fontSize: "0.75rem", color: "#64748b", marginTop: "2px" }}>
+                          Pagto: {due.toLocaleDateString("pt-BR")} •{" "}
+                          <strong>{inv.amount.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}</strong>
+                        </div>
+                      </div>
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "3px",
+                          fontSize: "0.72rem",
+                          fontWeight: 700,
+                          color: isPaid ? "#15803d" : isOverdue ? "#b91c1c" : "#b45309"
+                        }}
+                      >
+                        {isPaid ? (
+                          <>
+                            <CheckCircle2 size={13} /> Pago
+                          </>
+                        ) : isOverdue ? (
+                          <>
+                            <AlertTriangle size={13} /> Não pago
+                          </>
+                        ) : (
+                          <>
+                            <Clock size={13} /> No prazo
+                          </>
+                        )}
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+          </div>
           
           {/* Card: Representante Legal e Supervisão */}
           <div style={{ background: "white", borderRadius: "10px", padding: "20px", boxShadow: "0 2px 10px rgba(0,0,0,0.02)", border: "1px solid #eee" }}>

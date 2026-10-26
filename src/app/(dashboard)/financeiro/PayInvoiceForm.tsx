@@ -1,45 +1,51 @@
 "use client";
 
 import { payInvoice } from "@/actions/financeActions";
-import React from "react";
+import React, { useState } from "react";
+import { Check } from "lucide-react";
 
 interface PayInvoiceFormProps {
   invoiceId: string;
 }
 
 export default function PayInvoiceForm({ invoiceId }: PayInvoiceFormProps) {
+  const [loading, setLoading] = useState(false);
+
+  const handleMarkAsPaid = async () => {
+    if (loading) return;
+    setLoading(true);
+    try {
+      const formData = new FormData();
+      formData.set("invoiceId", invoiceId);
+      formData.set("paidAt", new Date().toISOString().split("T")[0]);
+      await payInvoice(formData);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <form action={async (formData) => { await payInvoice(formData); }} encType="multipart/form-data" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-      <input type="hidden" name="invoiceId" value={invoiceId} />
-      <label 
-        htmlFor={`receipt-${invoiceId}`} 
-        style={{ 
-          background: '#27ae60', 
-          color: 'white', 
-          border: '1px solid #27ae60',
-          padding: '5px 10px',
-          borderRadius: '6px',
-          cursor: 'pointer',
-          fontWeight: 600,
-          fontSize: '0.8rem',
-          display: 'inline-block',
-          transition: 'all 0.2s'
-        }}
-      >
-        Dar Baixa
-      </label>
-      <input 
-        type="file" 
-        id={`receipt-${invoiceId}`} 
-        name="receipt" 
-        required
-        style={{ display: 'none' }}
-        onChange={(e) => {
-          if (e.target.files?.length) {
-            e.target.form?.requestSubmit();
-          }
-        }}
-      />
-    </form>
+    <button
+      type="button"
+      onClick={handleMarkAsPaid}
+      disabled={loading}
+      style={{
+        background: "#27ae60",
+        color: "white",
+        border: "1px solid #27ae60",
+        padding: "5px 10px",
+        borderRadius: "6px",
+        cursor: loading ? "not-allowed" : "pointer",
+        fontWeight: 600,
+        fontSize: "0.8rem",
+        display: "inline-flex",
+        alignItems: "center",
+        gap: "4px",
+        transition: "all 0.2s"
+      }}
+    >
+      <Check size={14} />
+      {loading ? "Salvando..." : "Marcar como Pago"}
+    </button>
   );
 }

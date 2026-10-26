@@ -176,12 +176,14 @@ export default function EditFuncionarioForm({
   };
   const [certificates, setCertificates] = useState<File[]>([]);
   const [documents, setDocuments] = useState<File[]>([]);
+  const [paymentReceipts, setPaymentReceipts] = useState<File[]>([]);
   const [existingAttachments, setExistingAttachments] = useState(employee.attachments || []);
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(employee.photoUrl || null);
   
   const certInputRef = useRef<HTMLInputElement>(null);
   const docInputRef = useRef<HTMLInputElement>(null);
+  const receiptInputRef = useRef<HTMLInputElement>(null);
   const photoInputRef = useRef<HTMLInputElement>(null);
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -263,12 +265,24 @@ export default function EditFuncionarioForm({
     }
   };
 
+  const handlePaymentReceiptsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      setPaymentReceipts(prev => [...prev, ...newFiles]);
+      e.target.value = "";
+    }
+  };
+
   const removeCertificate = (index: number) => {
     setCertificates(prev => prev.filter((_, i) => i !== index));
   };
 
   const removeDocument = (index: number) => {
     setDocuments(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removePaymentReceipt = (index: number) => {
+    setPaymentReceipts(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleDeleteExistingAttachment = async (id: string) => {
@@ -297,6 +311,7 @@ export default function EditFuncionarioForm({
 
       formData.delete("certificados-nativos");
       formData.delete("documentos-nativos");
+      formData.delete("comprovantes-nativos");
       formData.delete("photo-nativa");
 
       const toBase64 = (f: File) => new Promise<string>((resolve, reject) => {
@@ -322,6 +337,11 @@ export default function EditFuncionarioForm({
       for (const file of documents) {
         const base64 = await toBase64(file);
         formData.append("documentsData", JSON.stringify({ name: file.name, data: base64 }));
+      }
+
+      for (const file of paymentReceipts) {
+        const base64 = await toBase64(file);
+        formData.append("paymentReceiptsData", JSON.stringify({ name: file.name, data: base64 }));
       }
 
       const result = await updateEmployee(employee.id, formData);
@@ -636,16 +656,66 @@ export default function EditFuncionarioForm({
           <h3 className={styles.sectionTitle}>Dados da MEI (Pessoa Jurídica)</h3>
           <div className={styles.formRow} style={{ marginBottom: '1rem' }}>
             <div className={styles.inputGroup}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.95rem', fontWeight: 600, color: '#0f172a' }}>
-                <input 
-                  type="checkbox" 
-                  name="isMei" 
-                  checked={isMei} 
-                  onChange={(e) => setIsMei(e.target.checked)} 
-                  style={{ width: '18px', height: '18px', cursor: 'pointer' }}
-                />
-                Possui MEI (Prestador de Serviço PJ)?
+              <label style={{ fontSize: '0.95rem', fontWeight: 600, color: '#0f172a', marginBottom: '8px', display: 'block' }}>
+                Possui MEI (Prestador de Serviço PJ)? <span style={{ color: '#e74c3c' }}>*</span>
               </label>
+              <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    cursor: 'pointer',
+                    padding: '10px 16px',
+                    background: isMei ? '#eff6ff' : '#fafafa',
+                    border: isMei ? '2px solid #003366' : '1px solid #ddd',
+                    borderRadius: '8px',
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    color: '#0f172a',
+                    margin: 0
+                  }}
+                >
+                  <input 
+                    type="radio" 
+                    name="isMei" 
+                    value="true"
+                    required
+                    checked={isMei === true} 
+                    onChange={() => setIsMei(true)} 
+                    style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#003366' }}
+                  />
+                  Sim, possuo MEI
+                </label>
+
+                <label
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    cursor: 'pointer',
+                    padding: '10px 16px',
+                    background: !isMei ? '#eff6ff' : '#fafafa',
+                    border: !isMei ? '2px solid #003366' : '1px solid #ddd',
+                    borderRadius: '8px',
+                    fontSize: '0.95rem',
+                    fontWeight: 600,
+                    color: '#0f172a',
+                    margin: 0
+                  }}
+                >
+                  <input 
+                    type="radio" 
+                    name="isMei" 
+                    value="false"
+                    required
+                    checked={isMei === false} 
+                    onChange={() => setIsMei(false)} 
+                    style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#003366' }}
+                  />
+                  Não possuo MEI
+                </label>
+              </div>
             </div>
           </div>
 
@@ -987,6 +1057,54 @@ export default function EditFuncionarioForm({
                     <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: '#f1f5f9', borderRadius: '6px', fontSize: '0.85rem' }}>
                       <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '80%' }}>{file.name}</span>
                       <button type="button" onClick={() => removeDocument(idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}>
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className={styles.inputGroup} style={{ flex: 1 }}>
+              <label>Comprovantes de Pagamento</label>
+
+              {/* Comprovantes Existentes */}
+              {existingAttachments.filter(a => a.type === "PAYMENT_RECEIPT").length > 0 && (
+                <div style={{ marginBottom: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {existingAttachments.filter(a => a.type === "PAYMENT_RECEIPT").map((file) => (
+                    <div key={file.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: '#dcfce7', borderRadius: '6px', fontSize: '0.85rem' }}>
+                      <a href={file.fileUrl} download={file.fileName} style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '80%', color: '#15803d', fontWeight: 600, textDecoration: 'none' }}>{file.fileName}</a>
+                      <button type="button" onClick={() => handleDeleteExistingAttachment(file.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#dc2626' }} title="Excluir comprovante">
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div 
+                onClick={() => receiptInputRef.current?.click()} 
+                style={{ padding: '1.2rem', background: '#f0fdf4', borderRadius: '8px', border: '1px dashed #86efac', textAlign: 'center', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}
+              >
+                <Paperclip size={20} style={{ color: '#16a34a' }} />
+                <span style={{ fontSize: '0.9rem', color: '#15803d', fontWeight: 500 }}>Adicionar comprovantes de pagamento...</span>
+              </div>
+              <input 
+                type="file" 
+                id="comprovantes-nativos"
+                name="comprovantes-nativos"
+                ref={receiptInputRef}
+                multiple 
+                style={{ display: 'none' }} 
+                onChange={handlePaymentReceiptsChange}
+                accept=".pdf,.png,.jpg,.jpeg"
+              />
+              {paymentReceipts.length > 0 && (
+                <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  {paymentReceipts.map((file, idx) => (
+                    <div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 10px', background: '#f1f5f9', borderRadius: '6px', fontSize: '0.85rem' }}>
+                      <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '80%' }}>{file.name}</span>
+                      <button type="button" onClick={() => removePaymentReceipt(idx)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#ef4444' }}>
                         <X size={16} />
                       </button>
                     </div>

@@ -1,5 +1,5 @@
 import styles from "../clientes/clientes.module.css";
-import { Plus, DollarSign, Calendar, FileText, CheckCircle2, Building2, Paperclip, Receipt, AlertCircle } from "lucide-react";
+import { Plus, Calendar, FileText, CheckCircle2, Building2, Paperclip, Receipt, AlertCircle, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import PayExpenseForm from "./PayExpenseForm";
@@ -39,6 +39,9 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
     })
   ]);
 
+  const now = new Date();
+  const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
@@ -46,7 +49,7 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
           <h1 className={styles.title}>Financeiro</h1>
           <p className={styles.subtitle}>
             {activeTab === "faturamento"
-              ? "Gerencie o faturamento, contas a receber e cobranças dos clientes."
+              ? "Gerencie o faturamento, notas fiscais de clientes e contas a receber."
               : "Gerencie as contas a pagar, despesas de custeio e compras da empresa."}
           </p>
         </div>
@@ -54,7 +57,7 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
         {activeTab === "faturamento" ? (
           <Link href="/financeiro/novo" className={styles.addButton}>
             <Plus size={20} />
-            <span>Nova Fatura</span>
+            <span>Nova Fatura / Nota</span>
           </Link>
         ) : (
           <Link href="/financeiro/despesa" className={styles.addButton} style={{ backgroundColor: '#c0392b' }}>
@@ -80,7 +83,7 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
             transition: 'all 0.2s'
           }}
         >
-          Contas a Receber (Faturamento)
+          Contas a Receber (Faturamento / Notas)
         </Link>
         <Link 
           href="/financeiro?tab=despesas" 
@@ -122,7 +125,7 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
           <div style={{ flex: '3 1 600px', minWidth: 0 }}>
             <div style={{ marginBottom: '1rem' }}>
               <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--primary-color)', margin: 0 }}>
-                {activeTab === 'historico' ? "Histórico de Faturas" : "Faturas Lançadas"}
+                {activeTab === 'historico' ? "Histórico de Faturas / Notas" : "Faturas e Notas Lançadas"}
               </h2>
             </div>
             <div className={styles.card}>
@@ -131,9 +134,9 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
                   <thead>
                     <tr>
                       <th>Cliente</th>
-                      <th>Descrição</th>
+                      <th>Nota / Descrição</th>
                       <th>Valor (R$)</th>
-                      <th>Vencimento</th>
+                      <th>Data Pagamento</th>
                       <th>Status</th>
                       <th>Ações</th>
                     </tr>
@@ -142,14 +145,25 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
                     {faturas.length === 0 ? (
                       <tr>
                         <td colSpan={6} className={styles.emptyState}>
-                          Nenhuma fatura lançada no sistema ainda.
+                          Nenhuma fatura ou nota lançada no sistema ainda.
                         </td>
                       </tr>
                     ) : (
-                      faturas.map(fatura => (
+                      faturas.map(fatura => {
+                        const due = new Date(fatura.dueDate);
+                        const dueMidnight = new Date(due.getFullYear(), due.getMonth(), due.getDate(), 0, 0, 0);
+                        const isOverdue = fatura.status === "PENDING" && dueMidnight < todayMidnight;
+
+                        return (
                         <tr key={fatura.id}>
                           <td>
-                            <div className={styles.strongText}>{fatura.client.companyName}</div>
+                            <Link
+                              href={`/clientes/${fatura.clientId}/notas`}
+                              style={{ textDecoration: "none", color: "inherit" }}
+                              className={styles.strongText}
+                            >
+                              {fatura.client.companyName}
+                            </Link>
                           </td>
                           <td>
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -173,7 +187,7 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
                                     width: 'fit-content'
                                   }}
                                 >
-                                  <Paperclip size={12} /> Ver Anexo
+                                  <Paperclip size={12} /> Ver Nota ({fatura.fileName || "Anexo"})
                                 </a>
                               )}
                             </div>
@@ -200,8 +214,12 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
                               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#e74c3c', fontWeight: 600, background: '#fdedec', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>
                                 <AlertCircle size={14} /> Cancelada
                               </div>
+                            ) : isOverdue ? (
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#b91c1c', fontWeight: 700, background: '#fee2e2', padding: '4px 8px', borderRadius: '4px', fontSize: '0.78rem' }}>
+                                <AlertTriangle size={14} /> Não pago na data
+                              </div>
                             ) : (
-                              <span style={{ color: '#d35400', fontWeight: 600, background: '#fdebd0', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>Pendente</span>
+                              <span style={{ color: '#d35400', fontWeight: 600, background: '#fdebd0', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem' }}>No prazo</span>
                             )}
                           </td>
                           <td style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
@@ -220,7 +238,8 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
                             </Link>
                           </td>
                         </tr>
-                      ))
+                        );
+                      })
                     )}
                   </tbody>
                 </table>
@@ -232,7 +251,7 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
           {activeTab !== "historico" && (
             <div style={{ flex: '2 1 400px', minWidth: 0 }}>
             <div style={{ marginBottom: '1rem' }}>
-              <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--primary-color)', margin: 0 }}>Clientes Cadastrados</h2>
+              <h2 style={{ fontSize: '1.4rem', fontWeight: 700, color: 'var(--primary-color)', margin: 0 }}>Notas por Cliente</h2>
             </div>
             <div className={styles.card}>
               <div style={{ overflowX: 'auto' }}>
@@ -240,7 +259,7 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
                   <thead>
                     <tr>
                       <th>Empresa</th>
-                      <th style={{ textAlign: 'right' }}>Ação</th>
+                      <th style={{ textAlign: 'right' }}>Ações</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -263,13 +282,22 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
                             </div>
                           </td>
                           <td style={{ textAlign: 'right' }}>
-                            <Link 
-                              href={`/financeiro/novo?clientId=${cliente.id}`} 
-                              className={styles.actionBtn}
-                              style={{ textDecoration: 'none', display: 'inline-block' }}
-                            >
-                              Nova Fatura
-                            </Link>
+                            <div style={{ display: 'inline-flex', gap: '6px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                              <Link 
+                                href={`/clientes/${cliente.id}/notas`} 
+                                className={styles.actionBtn}
+                                style={{ background: '#0284c7', color: 'white', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '6px 10px', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600 }}
+                              >
+                                <Receipt size={14} /> Notas do Mês
+                              </Link>
+                              <Link 
+                                href={`/financeiro/novo?clientId=${cliente.id}`} 
+                                className={styles.actionBtn}
+                                style={{ textDecoration: 'none', display: 'inline-block', fontSize: '0.8rem' }}
+                              >
+                                Nova Fatura
+                              </Link>
+                            </div>
                           </td>
                         </tr>
                       ))

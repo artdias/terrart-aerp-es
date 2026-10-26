@@ -5,6 +5,7 @@ import { ArrowLeft, Edit2, Users, Briefcase, FileText, CalendarClock, Shield, Pa
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import InterviewModal from "@/components/InterviewModal";
+import PaymentReceiptsSection from "./PaymentReceiptsSection";
 
 export default async function FuncionarioDetalhePage({ params }: { params: { id: string } }) {
   const func = await prisma.employee.findUnique({
@@ -60,6 +61,15 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
   // Filtrar os anexos por tipo
   const certificados = func.attachments.filter(a => a.type === "CERTIFICATE");
   const documentos = func.attachments.filter(a => a.type === "DOCUMENT");
+  const comprovantesPagamento = func.attachments
+    .filter(a => a.type === "PAYMENT_RECEIPT")
+    .map(a => ({
+      id: a.id,
+      fileName: a.fileName,
+      fileUrl: a.fileUrl,
+      type: a.type,
+      createdAt: a.createdAt.toISOString()
+    }));
 
   return (
     <div className={styles.container}>
@@ -181,6 +191,12 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
                 <strong style={{ color: '#666', fontSize: '0.85rem' }}>Disponibilidade de Viagens:</strong>
                 <p style={{ margin: '4px 0 0', fontWeight: 600, color: func.travelAvailability ? '#27ae60' : '#7f8c8d' }}>
                   {func.travelAvailability ? "Sim (Disponível)" : "Não"}
+                </p>
+              </div>
+              <div>
+                <strong style={{ color: '#666', fontSize: '0.85rem' }}>Possui MEI (PJ):</strong>
+                <p style={{ margin: '4px 0 0', fontWeight: 600, color: func.isMei ? '#0284c7' : '#7f8c8d' }}>
+                  {func.isMei ? "Sim (Possui MEI)" : "Não possui MEI"}
                 </p>
               </div>
               <div>
@@ -327,6 +343,12 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
                 )}
               </div>
             </div>
+
+            {/* Comprovantes de Pagamento do Funcionário */}
+            <PaymentReceiptsSection
+              employeeId={func.id}
+              initialReceipts={comprovantesPagamento}
+            />
           </div>
 
           {/* Card 3 - Histórico de Alocações */}
