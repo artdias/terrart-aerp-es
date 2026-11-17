@@ -8,7 +8,7 @@ import {
   Users, Briefcase, Box, DollarSign, LogOut, Home, CalendarClock, ShieldCheck, 
   Scale, HandCoins, ConciergeBell, Settings, MessageSquare, ShieldAlert, Trash2, 
   FileSpreadsheet, UserCheck, Wallet, ChevronDown, ChevronRight, QrCode,
-  Database, Contact, Landmark, Gavel, Search
+  Database, Contact, Landmark, Gavel, Search, Receipt
 } from "lucide-react";
 import styles from "./Sidebar.module.css";
 
@@ -50,6 +50,7 @@ export function Sidebar() {
       icon: Landmark,
       items: [
         { name: "Contas", path: "/financeiro", icon: DollarSign },
+        { name: "Pagamentos", path: "/financeiro/pagamentos", icon: Receipt },
         { name: "Folha de Pagamento", path: "/financeiro/folha-pagamento", icon: Wallet },
         { name: "Faturamento Clientes", path: "/financeiro-clientes", icon: HandCoins },
       ]
@@ -87,6 +88,7 @@ export function Sidebar() {
       if (item.path === "/estoque") return p.allowEstoque;
       if (item.path === "/cautelas") return p.allowCautelas;
       if (item.path === "/financeiro") return p.allowFinanceiro;
+      if (item.path === "/financeiro/pagamentos") return p.allowFinanceiro;
       if (item.path === "/financeiro/folha-pagamento") return p.allowFinanceiro;
       if (item.path === "/juridico") return p.allowJuridico;
       if (item.path === "/financeiro-clientes") return p.allowFaturamento;
@@ -190,7 +192,14 @@ export function Sidebar() {
                 <div style={{ paddingLeft: '16px', marginTop: '4px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
                   {section.items.map((item) => {
                     const Icon = item.icon;
-                    const isActive = pathname === item.path || (item.path !== "/" && pathname.startsWith(item.path + "/"));
+                    const isSubpathOfAnotherItem =
+                      item.path === "/financeiro" &&
+                      (pathname.startsWith("/financeiro/pagamentos") ||
+                        pathname.startsWith("/financeiro/folha-pagamento"));
+                    const isActive =
+                      !isSubpathOfAnotherItem &&
+                      (pathname === item.path ||
+                        (item.path !== "/" && pathname.startsWith(item.path + "/")));
                     return (
                       <Link 
                         key={item.path} 

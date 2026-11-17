@@ -640,10 +640,145 @@ export async function addEmployeePaymentReceipts(
 
     revalidatePath(`/funcionarios/${employeeId}`);
     revalidatePath(`/funcionarios/${employeeId}/editar`);
+    revalidatePath("/financeiro");
+    revalidatePath("/financeiro/pagamentos");
     return { success: true };
   } catch (error) {
     console.error("Erro ao anexar comprovantes de pagamento:", error);
     return { success: false, error: "Erro ao anexar comprovantes de pagamento." };
+  }
+}
+
+export async function addEmployeeSignedNotes(
+  employeeId: string,
+  notesJson: string[],
+  descriptionPrefix?: string
+) {
+  try {
+    if (!employeeId || !notesJson || notesJson.length === 0) {
+      return { success: false, error: "Selecione pelo menos uma nota assinada para anexar." };
+    }
+
+    const prefix = descriptionPrefix ? `${sanitizeInput(descriptionPrefix)} - ` : "";
+
+    for (const jsonStr of notesJson) {
+      if (jsonStr) {
+        const file = JSON.parse(jsonStr);
+        const sanitizedFileName = `${prefix}${sanitizeInput(file.name)}`;
+
+        await prisma.attachment.create({
+          data: {
+            employeeId,
+            fileName: sanitizedFileName,
+            fileUrl: file.data,
+            type: "SIGNED_NOTE"
+          }
+        });
+      }
+    }
+
+    await logAction(
+      "ADD_EMPLOYEE_SIGNED_NOTE",
+      `Anexou ${notesJson.length} nota(s) assinada(s) para o funcionário ID ${employeeId}.`
+    );
+
+    revalidatePath(`/funcionarios/${employeeId}`);
+    revalidatePath(`/funcionarios/${employeeId}/editar`);
+    revalidatePath("/financeiro");
+    revalidatePath("/financeiro/pagamentos");
+    return { success: true };
+  } catch (error) {
+    console.error("Erro ao anexar notas assinadas:", error);
+    return { success: false, error: "Erro ao anexar notas assinadas." };
+  }
+}
+
+export async function addEmployeePaymentAndNotes(params: {
+  employeeId: string;
+  receiptsJson: string[];
+  signedNotesJson: string[];
+  descriptionPrefix?: string;
+}) {
+  try {
+    const { employeeId, receiptsJson = [], signedNotesJson = [], descriptionPrefix } = params;
+
+    if (!employeeId) {
+      return { success: false, error: "Selecione o funcionário." };
+    }
+    if (receiptsJson.length === 0 && signedNotesJson.length === 0) {
+      return {
+        success: false,
+        error: "Anexe pelo menos um comprovante de pagamento ou uma nota assinada."
+      };
+    }
+
+    const prefix = descriptionPrefix ? `${sanitizeInput(descriptionPrefix)} - ` : "";
+    const createdItems: Array<{
+      id: string;
+      fileName: string;
+      fileUrl: string;
+      type: string;
+      createdAt: string;
+    }> = [];
+
+    for (const jsonStr of receiptsJson) {
+      if (jsonStr) {
+        const file = JSON.parse(jsonStr);
+        const sanitizedFileName = `${prefix}${sanitizeInput(file.name)}`;
+        const created = await prisma.attachment.create({
+          data: {
+            employeeId,
+            fileName: sanitizedFileName,
+            fileUrl: file.data,
+            type: "PAYMENT_RECEIPT"
+          }
+        });
+        createdItems.push({
+          id: created.id,
+          fileName: created.fileName,
+          fileUrl: created.fileUrl,
+          type: created.type,
+          createdAt: created.createdAt.toISOString()
+        });
+      }
+    }
+
+    for (const jsonStr of signedNotesJson) {
+      if (jsonStr) {
+        const file = JSON.parse(jsonStr);
+        const sanitizedFileName = `${prefix}${sanitizeInput(file.name)}`;
+        const created = await prisma.attachment.create({
+          data: {
+            employeeId,
+            fileName: sanitizedFileName,
+            fileUrl: file.data,
+            type: "SIGNED_NOTE"
+          }
+        });
+        createdItems.push({
+          id: created.id,
+          fileName: created.fileName,
+          fileUrl: created.fileUrl,
+          type: created.type,
+          createdAt: created.createdAt.toISOString()
+        });
+      }
+    }
+
+    await logAction(
+      "ADD_EMPLOYEE_PAYMENT_PACKAGE",
+      `Anexou ${receiptsJson.length} comprovante(s) de pagamento e ${signedNotesJson.length} nota(s) assinada(s) para o funcionário ID ${employeeId}.`
+    );
+
+    revalidatePath(`/funcionarios/${employeeId}`);
+    revalidatePath(`/funcionarios/${employeeId}/editar`);
+    revalidatePath("/financeiro");
+    revalidatePath("/financeiro/pagamentos");
+
+    return { success: true, createdItems };
+  } catch (error) {
+    console.error("Erro ao anexar pagamentos e notas:", error);
+    return { success: false, error: "Erro ao anexar comprovantes e notas assinadas." };
   }
 }
 
@@ -659,6 +794,8 @@ export async function deleteAttachment(attachmentId: string) {
       revalidatePath(`/funcionarios/${existing.employeeId}`);
       revalidatePath(`/funcionarios/${existing.employeeId}/editar`);
     }
+    revalidatePath("/financeiro");
+    revalidatePath("/financeiro/pagamentos");
     return { success: true };
   } catch (error) {
     console.error("Erro ao deletar anexo:", error);

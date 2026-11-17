@@ -7,6 +7,7 @@ import SearchInput from "@/components/SearchInput";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 export default async function AdmissaoListPage({ searchParams }: { searchParams: { search?: string } }) {
   const session = await getServerSession(authOptions);
@@ -71,6 +72,7 @@ export default async function AdmissaoListPage({ searchParams }: { searchParams:
             <tr>
               <th>Candidato</th>
               <th>CPF</th>
+              <th>Telefone / WhatsApp</th>
               <th>Cargo / Pretensão</th>
               <th>Status Atual</th>
               <th>Ação</th>
@@ -79,7 +81,7 @@ export default async function AdmissaoListPage({ searchParams }: { searchParams:
           <tbody>
             {candidatos.length === 0 ? (
               <tr>
-                <td colSpan={5} className={styles.emptyState}>Nenhum candidato pendente encontrado.</td>
+                <td colSpan={6} className={styles.emptyState}>Nenhum candidato pendente encontrado.</td>
               </tr>
             ) : (
               candidatos.map(c => (
@@ -91,6 +93,16 @@ export default async function AdmissaoListPage({ searchParams }: { searchParams:
                     </div>
                   </td>
                   <td>{c.cpf}</td>
+                  <td>
+                    {c.phone ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                        <span style={{ fontSize: "0.85rem", fontWeight: 600 }}>{c.phone}</span>
+                        <WhatsAppButton phone={c.phone} name={`${c.firstName} ${c.lastName || ""}`.trim()} size="sm" />
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: "0.8rem", color: "#94a3b8" }}>Sem telefone</span>
+                    )}
+                  </td>
                   <td>{c.roleTitle || "-"}</td>
                   <td>
                     <span style={{ background: '#fef5e7', color: '#f39c12', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', fontWeight: 600 }}>

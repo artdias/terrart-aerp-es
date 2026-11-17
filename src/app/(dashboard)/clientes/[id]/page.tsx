@@ -17,6 +17,7 @@ import {
   Clock
 } from "lucide-react";
 import styles from "../novo/novoCliente.module.css";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 export default async function ClienteDetalhePage({
   params,
@@ -133,15 +134,21 @@ export default async function ClienteDetalhePage({
               </div>
               <div>
                 <strong style={{ display: "block", fontSize: "0.75rem", color: "#777" }}>TELEFONE COMERCIAL</strong>
-                <span style={{ fontSize: "0.9rem", color: "#333", display: "flex", alignItems: "center", gap: "4px" }}>
-                  <Phone size={14} color="#888" /> {client.phone || "Não informado"}
-                </span>
+                <div style={{ fontSize: "0.9rem", color: "#333", display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginTop: "2px" }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <Phone size={14} color="#888" /> {client.phone || "Não informado"}
+                  </span>
+                  {client.phone && <WhatsAppButton phone={client.phone} name={client.companyName} size="sm" />}
+                </div>
               </div>
               <div>
                 <strong style={{ display: "block", fontSize: "0.75rem", color: "#777" }}>CELULAR / WHATSAPP</strong>
-                <span style={{ fontSize: "0.9rem", color: "#333", display: "flex", alignItems: "center", gap: "4px" }}>
-                  <Phone size={14} color="#888" /> {client.cellphone || "Não informado"}
-                </span>
+                <div style={{ fontSize: "0.9rem", color: "#333", display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap", marginTop: "2px" }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <Phone size={14} color="#888" /> {client.cellphone || "Não informado"}
+                  </span>
+                  {client.cellphone && <WhatsAppButton phone={client.cellphone} name={client.companyName} size="sm" />}
+                </div>
               </div>
               <div>
                 <strong style={{ display: "block", fontSize: "0.75rem", color: "#777" }}>EMAIL PRINCIPAL</strong>

@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import InterviewModal from "@/components/InterviewModal";
 import PaymentReceiptsSection from "./PaymentReceiptsSection";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 export default async function FuncionarioDetalhePage({ params }: { params: { id: string } }) {
   const func = await prisma.employee.findUnique({
@@ -70,6 +71,15 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
       type: a.type,
       createdAt: a.createdAt.toISOString()
     }));
+  const notasAssinadas = func.attachments
+    .filter(a => a.type === "SIGNED_NOTE")
+    .map(a => ({
+      id: a.id,
+      fileName: a.fileName,
+      fileUrl: a.fileUrl,
+      type: a.type,
+      createdAt: a.createdAt.toISOString()
+    }));
 
   return (
     <div className={styles.container}>
@@ -85,7 +95,15 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+          {func.phone && (
+            <WhatsAppButton
+              phone={func.phone}
+              name={func.user?.name || `${func.firstName} ${func.lastName || ''}`.trim()}
+              label={`WhatsApp (${func.phone})`}
+              size="md"
+            />
+          )}
           <Link 
             href={`/api/funcionarios/${func.id}/ficha`} 
             target="_blank"
@@ -129,9 +147,18 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
               </div>
               <div>
                 <strong style={{ color: '#666', fontSize: '0.85rem' }}>Telefone Celular / WhatsApp:</strong>
-                <p style={{ margin: '4px 0 0', fontWeight: 600, color: '#1a1a1a' }}>
-                  {func.phone || "Não informado"}
-                </p>
+                <div style={{ margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <span style={{ fontWeight: 600, color: '#1a1a1a' }}>
+                    {func.phone || "Não informado"}
+                  </span>
+                  {func.phone && (
+                    <WhatsAppButton
+                      phone={func.phone}
+                      name={func.user?.name || `${func.firstName} ${func.lastName || ''}`.trim()}
+                      size="sm"
+                    />
+                  )}
+                </div>
               </div>
               <div>
                 <strong style={{ color: '#666', fontSize: '0.85rem' }}>Endereço Residencial:</strong>
@@ -207,9 +234,18 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
               </div>
               <div>
                 <strong style={{ color: '#666', fontSize: '0.85rem' }}>Telefone do Supervisor:</strong>
-                <p style={{ margin: '4px 0 0', fontWeight: 600, color: '#1a1a1a' }}>
-                  {func.supervisorPhone || func.workplace?.client?.supervisor?.phone || func.workplace?.client?.managerContact || "Não informado"}
-                </p>
+                <div style={{ margin: '4px 0 0', display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <span style={{ fontWeight: 600, color: '#1a1a1a' }}>
+                    {func.supervisorPhone || func.workplace?.client?.supervisor?.phone || func.workplace?.client?.managerContact || "Não informado"}
+                  </span>
+                  {(func.supervisorPhone || func.workplace?.client?.supervisor?.phone || func.workplace?.client?.managerContact) && (
+                    <WhatsAppButton
+                      phone={func.supervisorPhone || func.workplace?.client?.supervisor?.phone || func.workplace?.client?.managerContact}
+                      name={func.supervisorName || "Supervisor"}
+                      size="sm"
+                    />
+                  )}
+                </div>
               </div>
 
               <div style={{ gridColumn: '1 / -1', marginTop: '12px', background: '#f8fafc', padding: '14px', borderRadius: '8px', border: '1px solid #cbd5e1' }}>
@@ -344,10 +380,11 @@ export default async function FuncionarioDetalhePage({ params }: { params: { id:
               </div>
             </div>
 
-            {/* Comprovantes de Pagamento do Funcionário */}
+            {/* Comprovantes de Pagamento e Notas Assinadas do Funcionário */}
             <PaymentReceiptsSection
               employeeId={func.id}
               initialReceipts={comprovantesPagamento}
+              initialSignedNotes={notasAssinadas}
             />
           </div>
 

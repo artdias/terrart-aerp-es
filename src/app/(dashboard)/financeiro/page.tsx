@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import PayExpenseForm from "./PayExpenseForm";
 import PayInvoiceForm from "./PayInvoiceForm";
 import CancelInvoiceForm from "./CancelInvoiceForm";
+import PagamentosFuncionariosClient, { EmployeePaymentRow } from "./pagamentos/PagamentosFuncionariosClient";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -24,7 +25,7 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
 
   const activeTab = searchParams.tab || "faturamento";
 
-  const [faturas, clientes, despesas] = await Promise.all([
+  const [faturas, clientes, despesas, employeesRaw] = await Promise.all([
     prisma.invoice.findMany({
       where: activeTab === "historico" ? { status: { not: "PENDING" } } : { status: "PENDING" },
       orderBy: { dueDate: 'asc' },
@@ -36,8 +37,67 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
     prisma.expense.findMany({
       where: activeTab === "historico" ? { status: { not: "PENDING" } } : { status: "PENDING" },
       orderBy: { dueDate: 'asc' }
-    })
+    }),
+    activeTab === "pagamentos"
+      ? prisma.employee.findMany({
+          where: { deleted: false },
+          include: {
+            user: { select: { name: true } },
+            workplace: {
+              include: {
+                client: { select: { companyName: true } }
+              }
+            },
+            attachments: {
+              where: {
+                type: { in: ["PAYMENT_RECEIPT", "SIGNED_NOTE"] }
+              },
+              orderBy: { createdAt: "desc" }
+            }
+          },
+          orderBy: { firstName: "asc" }
+        })
+      : Promise.resolve([])
   ]);
+
+  const serializedEmployees: EmployeePaymentRow[] = employeesRaw.map((emp) => {
+    const fullName =
+      emp.user?.name || `${emp.firstName || ""} ${emp.lastName || ""}`.trim() || "Sem Nome";
+
+    const paymentReceipts = emp.attachments
+      .filter((a) => a.type === "PAYMENT_RECEIPT")
+      .map((a) => ({
+        id: a.id,
+        fileName: a.fileName,
+        fileUrl: a.fileUrl,
+        type: a.type,
+        createdAt: a.createdAt.toISOString()
+      }));
+
+    const signedNotes = emp.attachments
+      .filter((a) => a.type === "SIGNED_NOTE")
+      .map((a) => ({
+        id: a.id,
+        fileName: a.fileName,
+        fileUrl: a.fileUrl,
+        type: a.type,
+        createdAt: a.createdAt.toISOString()
+      }));
+
+    return {
+      id: emp.id,
+      name: fullName,
+      cpf: emp.cpf,
+      roleTitle: emp.roleTitle,
+      status: emp.status,
+      salary: emp.salary,
+      pixKey: emp.pixKey,
+      clientName: emp.workplace?.client?.companyName || null,
+      workplaceName: emp.workplace?.name || null,
+      paymentReceipts,
+      signedNotes
+    };
+  });
 
   const now = new Date();
   const todayMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
@@ -50,6 +110,8 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
           <p className={styles.subtitle}>
             {activeTab === "faturamento"
               ? "Gerencie o faturamento, notas fiscais de clientes e contas a receber."
+              : activeTab === "pagamentos"
+              ? "Anexe aos funcionários os comprovantes de pagamento e as notas assinadas."
               : "Gerencie as contas a pagar, despesas de custeio e compras da empresa."}
           </p>
         </div>
@@ -59,7 +121,7 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
             <Plus size={20} />
             <span>Nova Fatura / Nota</span>
           </Link>
-        ) : (
+        ) : activeTab === "pagamentos" ? null : (
           <Link href="/financeiro/despesa" className={styles.addButton} style={{ backgroundColor: '#c0392b' }}>
             <Plus size={20} />
             <span>Nova Despesa</span>
@@ -68,7 +130,7 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
       </div>
 
       {/* Navegação por Abas */}
-      <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '2px solid #eee', marginBottom: '1.5rem', paddingBottom: '0.1rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', borderBottom: '2px solid #eee', marginBottom: '1.5rem', paddingBottom: '0.1rem' }}>
         <Link 
           href="/financeiro?tab=faturamento" 
           style={{ 
@@ -102,6 +164,22 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
           Contas a Pagar (Despesas)
         </Link>
         <Link 
+          href="/financeiro?tab=pagamentos" 
+          style={{ 
+            fontSize: '1.05rem', 
+            fontWeight: 600, 
+            color: activeTab === 'pagamentos' ? '#0284c7' : '#777', 
+            textDecoration: 'none',
+            borderBottom: activeTab === 'pagamentos' ? '3px solid #0284c7' : '3px solid transparent',
+            paddingBottom: '0.6rem',
+            paddingRight: '1.5rem',
+            paddingLeft: '1.5rem',
+            transition: 'all 0.2s'
+          }}
+        >
+          Pagamentos (Funcionários)
+        </Link>
+        <Link 
           href="/financeiro?tab=historico" 
           style={{ 
             fontSize: '1.05rem', 
@@ -118,6 +196,10 @@ export default async function FinanceiroPage({ searchParams }: PageProps) {
           Histórico (Concluídas)
         </Link>
       </div>
+
+      {activeTab === "pagamentos" && (
+        <PagamentosFuncionariosClient initialEmployees={serializedEmployees} embedded />
+      )}
 
       {(activeTab === "faturamento" || activeTab === "historico") && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', alignItems: 'start', marginBottom: activeTab === 'historico' ? '3rem' : '0' }}>

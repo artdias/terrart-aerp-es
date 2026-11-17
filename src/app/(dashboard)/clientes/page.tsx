@@ -9,6 +9,7 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { deleteClient } from "@/actions/clientActions";
 import DeleteButton from "@/components/DeleteButton";
+import WhatsAppButton from "@/components/WhatsAppButton";
 
 export default async function ClientesPage({
   searchParams,
@@ -90,6 +91,7 @@ export default async function ClientesPage({
             <tr>
               <th><SortableHeader label="Empresa" value="companyName" /></th>
               <th><SortableHeader label="CNPJ" value="cnpj" /></th>
+              <th>Telefone / WhatsApp</th>
               <th><SortableHeader label="Endereço" value="address" /></th>
               <th>Notas Fiscais</th>
               <th>Ações</th>
@@ -98,7 +100,7 @@ export default async function ClientesPage({
           <tbody>
             {clientes.length === 0 ? (
               <tr>
-                <td colSpan={5} className={styles.emptyState}>
+                <td colSpan={6} className={styles.emptyState}>
                   Nenhum cliente correspondente encontrado.
                 </td>
               </tr>
@@ -111,6 +113,7 @@ export default async function ClientesPage({
                   return dMidnight < todayMidnight;
                 });
                 const pendingNotes = cliente.invoices.filter(inv => inv.status !== "PAID");
+                const contactPhone = cliente.cellphone || cliente.phone || cliente.managerContact;
 
                 return (
                 <tr key={cliente.id}>
@@ -125,6 +128,18 @@ export default async function ClientesPage({
                       <FileText size={16} className={styles.icon} />
                       {cliente.cnpj}
                     </div>
+                  </td>
+                  <td>
+                    {contactPhone ? (
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+                        <span style={{ fontSize: "0.85rem", fontWeight: 600, color: "#1e293b" }}>
+                          {contactPhone}
+                        </span>
+                        <WhatsAppButton phone={contactPhone} name={cliente.companyName} size="sm" />
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: "0.78rem", color: "#94a3b8" }}>Sem telefone</span>
+                    )}
                   </td>
                   <td>
                     <div className={styles.cellWithIcon}>
